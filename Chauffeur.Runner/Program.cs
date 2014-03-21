@@ -4,7 +4,8 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Chauffeur.Host;
-namespace Chauffeur
+
+namespace Chauffeur.Runner
 {
     class Program
     {

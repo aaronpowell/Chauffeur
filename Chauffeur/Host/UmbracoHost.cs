@@ -8,7 +8,7 @@ using Umbraco.Core;
 
 namespace Chauffeur.Host
 {
-    internal class UmbracoHost
+    public sealed class UmbracoHost
     {
         private readonly TextReader reader;
         private readonly TextWriter writer;
