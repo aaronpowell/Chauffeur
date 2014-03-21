@@ -14,3 +14,8 @@ Ankh.NoLoad
 #NuGet
 packages/
 csx/
+
+Chauffeur.Demo/umbraco
+Chauffeur.Demo/umbraco_client
+Chauffeur.Demo/install
+*.backup
