@@ -69,20 +69,24 @@ namespace Chauffeur.Host
             var deliverableType = deliverableTypes
                 .FirstOrDefault(d => d.GetCustomAttribute<DeliverableNameAttribute>(false).Name == what);
 
-            if (deliverableType != null)
+            if (deliverableType == null)
             {
-                return new ProcessedDeliverable
-                {
-                    DeliverableType = deliverableType,
-                    Args = args.Skip(1).ToArray()
-                };
+                deliverableType = deliverableTypes
+                    .FirstOrDefault(d => d.GetCustomAttributes<DeliverableAliasAttribute>(false).Any(a => a.Alias == what));
+
+                if (deliverableType == null)
+                    deliverableType = typeof(Unknown);
+                else
+                    args = args.Skip(1).ToArray();
             }
+            else
+                args = args.Skip(1).ToArray();
 
             return new ProcessedDeliverable
-            {
-                DeliverableType = typeof(Unknown),
-                Args = args
-            };
+                        {
+                            DeliverableType = deliverableType,
+                            Args = args
+                        };
         }
 
         private async Task<string> Prompt()

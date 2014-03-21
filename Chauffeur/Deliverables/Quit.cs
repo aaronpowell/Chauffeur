@@ -5,16 +5,12 @@ using System.Threading.Tasks;
 namespace Chauffeur.Deliverables
 {
     [DeliverableName("quit")]
+    [DeliverableAlias("q")]
     public sealed class Quit : Deliverable, IProvideDirections
     {
         public Quit(TextReader reader, TextWriter writer)
             : base(reader, writer)
         {
-        }
-
-        public override IEnumerable<string> Aliases
-        {
-            get { return new[] { "q" }; }
         }
 
         public override async Task<DeliverableResponse> Run(string[] args)

@@ -8,16 +8,12 @@ using Umbraco.Core;
 namespace Chauffeur.Deliverables
 {
     [DeliverableName("help")]
+    [DeliverableAlias("h")]
     public class Help : Deliverable
     {
         public Help(TextReader reader, TextWriter writer)
             : base(reader, writer)
         {
-        }
-
-        public override IEnumerable<string> Aliases
-        {
-            get { return new[] { "h" }; }
         }
 
         public override async Task<DeliverableResponse> Run(string[] args)
