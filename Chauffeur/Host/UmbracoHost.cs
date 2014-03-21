@@ -67,12 +67,12 @@ namespace Chauffeur.Host
             var what = args[0].ToLower();
 
             var deliverableType = deliverableTypes
-                .FirstOrDefault(d => d.GetCustomAttribute<DeliverableNameAttribute>(false).Name == what);
+                .FirstOrDefault(d => string.Compare(d.GetCustomAttribute<DeliverableNameAttribute>(false).Name, what, StringComparison.InvariantCultureIgnoreCase) == 0);
 
             if (deliverableType == null)
             {
                 deliverableType = deliverableTypes
-                    .FirstOrDefault(d => d.GetCustomAttributes<DeliverableAliasAttribute>(false).Any(a => a.Alias == what));
+                    .FirstOrDefault(d => d.GetCustomAttributes<DeliverableAliasAttribute>(false).Any(a => string.Compare(a.Alias, what, StringComparison.InvariantCultureIgnoreCase) == 0));
 
                 if (deliverableType == null)
                     deliverableType = typeof(UnknownDeliverable);
