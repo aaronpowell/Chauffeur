@@ -2,18 +2,15 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+
 namespace Chauffeur.Deliverables
 {
+    [DeliverableName("unknown")]
     public sealed class Unknown : Deliverable
     {
         public Unknown(TextReader reader, TextWriter writer)
             : base(reader, writer)
         {
-        }
-
-        public override string Name
-        {
-            get { return "unknown"; }
         }
 
         public override IEnumerable<string> Aliases

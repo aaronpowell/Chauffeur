@@ -4,16 +4,12 @@ using System.Threading.Tasks;
 
 namespace Chauffeur.Deliverables
 {
+    [DeliverableName("quit")]
     public sealed class Quit : Deliverable
     {
         public Quit(TextReader reader, TextWriter writer)
             : base(reader, writer)
         {
-        }
-
-        public override string Name
-        {
-            get { return "quit"; }
         }
 
         public override IEnumerable<string> Aliases

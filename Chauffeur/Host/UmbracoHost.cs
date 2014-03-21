@@ -1,14 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Chauffeur.Deliverables;
+using Umbraco.Core;
 namespace Chauffeur.Host
 {
     internal class UmbracoHost
     {
         private readonly TextReader reader;
         private readonly TextWriter writer;
+
+        private IEnumerable<Type> deliverableTypes;
 
         public UmbracoHost(TextReader reader, TextWriter writer)
         {
@@ -22,6 +26,8 @@ namespace Chauffeur.Host
             await writer.WriteLineAsync();
             await writer.WriteLineAsync("Type `help` to list the commands and `help <command>` for help for a specific command.");
             await writer.WriteLineAsync();
+
+            deliverableTypes = TypeFinder.FindClassesOfType<Deliverable>();
 
             var result = DeliverableResponse.Continue;
 
@@ -57,19 +63,16 @@ namespace Chauffeur.Host
 
             var args = command.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
 
-            if (args[0].ToLower() == "quit")
+            var what = args[0].ToLower();
+
+            var deliverableType = deliverableTypes
+                .FirstOrDefault(d => d.GetCustomAttribute<DeliverableNameAttribute>(false).Name == what);
+
+            if (deliverableType != null)
             {
                 return new ProcessedDeliverable
                 {
-                    DeliverableType = typeof(Quit),
-                    Args = args.Skip(1).ToArray()
-                };
-            }
-            else if (args[0].ToLower() == "help")
-            {
-                return new ProcessedDeliverable
-                {
-                    DeliverableType = typeof(Help),
+                    DeliverableType = deliverableType,
                     Args = args.Skip(1).ToArray()
                 };
             }

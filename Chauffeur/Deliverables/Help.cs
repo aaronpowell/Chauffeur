@@ -5,16 +5,12 @@ using System.Threading.Tasks;
 
 namespace Chauffeur.Deliverables
 {
+    [DeliverableName("help")]
     public class Help : Deliverable
     {
         public Help(TextReader reader, TextWriter writer)
             : base(reader, writer)
         {
-        }
-
-        public override string Name
-        {
-            get { return "help"; }
         }
 
         public override IEnumerable<string> Aliases
