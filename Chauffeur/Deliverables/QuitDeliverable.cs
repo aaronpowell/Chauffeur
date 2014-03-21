@@ -6,9 +6,9 @@ namespace Chauffeur.Deliverables
 {
     [DeliverableName("quit")]
     [DeliverableAlias("q")]
-    public sealed class Quit : Deliverable, IProvideDirections
+    public sealed class QuitDeliverable : Deliverable, IProvideDirections
     {
-        public Quit(TextReader reader, TextWriter writer)
+        public QuitDeliverable(TextReader reader, TextWriter writer)
             : base(reader, writer)
         {
         }

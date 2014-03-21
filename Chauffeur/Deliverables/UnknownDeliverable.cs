@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 namespace Chauffeur.Deliverables
 {
     [DeliverableName("unknown")]
-    public sealed class Unknown : Deliverable
+    public sealed class UnknownDeliverable : Deliverable
     {
-        public Unknown(TextReader reader, TextWriter writer)
+        public UnknownDeliverable(TextReader reader, TextWriter writer)
             : base(reader, writer)
         {
         }

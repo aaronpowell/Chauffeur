@@ -75,7 +75,7 @@ namespace Chauffeur.Host
                     .FirstOrDefault(d => d.GetCustomAttributes<DeliverableAliasAttribute>(false).Any(a => a.Alias == what));
 
                 if (deliverableType == null)
-                    deliverableType = typeof(Unknown);
+                    deliverableType = typeof(UnknownDeliverable);
                 else
                     args = args.Skip(1).ToArray();
             }

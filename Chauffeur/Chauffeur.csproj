@@ -196,10 +196,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Deliverables\Help.cs" />
+    <Compile Include="Deliverables\HelpDeliverable.cs" />
     <Compile Include="Deliverable.cs" />
-    <Compile Include="Deliverables\Quit.cs" />
-    <Compile Include="Deliverables\Unknown.cs" />
+    <Compile Include="Deliverables\QuitDeliverable.cs" />
+    <Compile Include="Deliverables\UnknownDeliverable.cs" />
     <Compile Include="Host\UmbracoHost.cs" />
     <Compile Include="IProvideDirections.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
