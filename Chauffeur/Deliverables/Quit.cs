@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Chauffeur.Deliverables
 {
     [DeliverableName("quit")]
-    public sealed class Quit : Deliverable
+    public sealed class Quit : Deliverable, IProvideDirections
     {
         public Quit(TextReader reader, TextWriter writer)
             : base(reader, writer)
@@ -21,6 +21,13 @@ namespace Chauffeur.Deliverables
         {
             await Out.WriteLineAsync("Good bye!");
             return await Task.FromResult(DeliverableResponse.Shutdown);
+        }
+
+        public async Task Directions()
+        {
+            await Out.WriteLineAsync("quit");
+            await Out.WriteLineAsync("\talias: q");
+            await Out.WriteLineAsync("\tTo exit the Chauffeur type `quit` or `q`.");
         }
     }
 }

@@ -201,6 +201,7 @@
     <Compile Include="Deliverables\Quit.cs" />
     <Compile Include="Deliverables\Unknown.cs" />
     <Compile Include="Host\UmbracoHost.cs" />
+    <Compile Include="IProvideDirections.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
