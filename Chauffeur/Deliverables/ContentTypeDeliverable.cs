@@ -45,6 +45,12 @@ namespace Chauffeur.Deliverables
 
             var types = cts.GetAllContentTypes();
 
+            if (!types.Any())
+            {
+                await Out.WriteLineAsync("No content types found.");
+                return;
+            }
+
             await Out.WriteLineAsync("\tId\tAlias\tName");
             foreach (var type in types)
                 await Out.WriteLineAsync(string.Format("\t{0}\t{1}\t{2}", type.Id, type.Alias, type.Name));
