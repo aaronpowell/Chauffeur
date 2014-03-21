@@ -30,7 +30,8 @@ namespace Chauffeur.Host
                 var command = await Prompt();
 
                 var deliverable = Process(command);
-                result = await Execute(deliverable);
+                if (deliverable != null)
+                    result = await Execute(deliverable);
             }
         }
 
@@ -38,7 +39,15 @@ namespace Chauffeur.Host
         {
             var toRun = (Deliverable)Activator.CreateInstance(deliverable.DeliverableType, new object[] { reader, writer });
 
-            return await toRun.Run(deliverable.Args);
+            try
+            {
+                return await toRun.Run(deliverable.Args);
+            }
+            catch (Exception ex)
+            {
+                writer.WriteLine("Error running the current deliverable: " + ex.Message);
+                return DeliverableResponse.Continue;
+            }
         }
 
         private ProcessedDeliverable Process(string command)
@@ -65,7 +74,11 @@ namespace Chauffeur.Host
                 };
             }
 
-            return null;
+            return new ProcessedDeliverable
+            {
+                DeliverableType = typeof(Unknown),
+                Args = args
+            };
         }
 
         private async Task<string> Prompt()

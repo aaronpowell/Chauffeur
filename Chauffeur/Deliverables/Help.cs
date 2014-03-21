@@ -22,7 +22,7 @@ namespace Chauffeur.Deliverables
             get { return new[] { "h" }; }
         }
 
-        public virtual async Task<DeliverableResponse> Run(string[] args)
+        public override async Task<DeliverableResponse> Run(string[] args)
         {
             throw new NotImplementedException();
         }
