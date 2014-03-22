@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Umbraco.Core;
 using Umbraco.Core.Persistence;
+using Umbraco.Core.Persistence.SqlSyntax;
 using Umbraco.Core.Persistence.UnitOfWork;
 using Umbraco.Core.Services;
 
@@ -42,6 +45,16 @@ namespace Chauffeur.Deliverables
             var cs = new ContentService(rf);
             var ms = new MediaService(rf);
             var cts = new ContentTypeService(rf, cs, ms);
+
+            var providerName = ConfigurationManager.ConnectionStrings["umbracoDbDSN"].ProviderName;
+
+            var provider = TypeFinder.FindClassesWithAttribute<SqlSyntaxProviderAttribute>()
+                .FirstOrDefault(p => p.GetCustomAttribute<SqlSyntaxProviderAttribute>(false).ProviderName == providerName);
+
+            if (provider == null)
+                throw new FileNotFoundException(string.Format("Unable to find SqlSyntaxProvider that is used for the provider type '{0}'", providerName));
+
+            SqlSyntaxContext.SqlSyntaxProvider = (ISqlSyntaxProvider)Activator.CreateInstance(provider);
 
             var types = cts.GetAllContentTypes();
 
