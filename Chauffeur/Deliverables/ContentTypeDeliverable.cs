@@ -14,6 +14,7 @@ using Umbraco.Core.Services;
 namespace Chauffeur.Deliverables
 {
     [DeliverableName("content-type")]
+    [DeliverableAlias("ct")]
     public sealed class ContentTypeDeliverable : Deliverable, IProvideDirections
     {
         public ContentTypeDeliverable(TextReader reader, TextWriter writer)
