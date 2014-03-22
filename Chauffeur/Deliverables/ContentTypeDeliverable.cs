@@ -31,6 +31,10 @@ namespace Chauffeur.Deliverables
                     await GetAll();
                     break;
 
+                case "get":
+                    await Get(args.Skip(1).ToArray());
+                    break;
+
                 default:
                     await Out.WriteLineAsync(string.Format("The operation `{0}` is not supported", operation));
                     break;
@@ -39,7 +43,76 @@ namespace Chauffeur.Deliverables
             return await base.Run(args);
         }
 
+        private async Task Get(string[] args)
+        {
+            if (!args.Any())
+            {
+                await Out.WriteLineAsync("Please provide the numerical id or alias if the doc type to get");
+                return;
+            }
+
+            int id;
+            if (int.TryParse(args[0], out id))
+            {
+                var cts = CreateContentTypeService();
+                var contentType = cts.GetContentType(id);
+
+                if (contentType == null)
+                {
+                    await Out.WriteLineAsync(string.Format("No content type found with id of '{0}'", id));
+                }
+                else
+                {
+                    await Out.WriteLineAsync("\tId\tAlias\tName\tParent Id");
+                    await Out.WriteLineAsync(
+                        string.Format(
+                            "\t{0}\t{1}\t{2}\t{3}",
+                            contentType.Id,
+                            contentType.Alias,
+                            contentType.Name,
+                            contentType.ParentId
+                        )
+                    );
+
+                    await Out.WriteLineAsync("\tProperty Types");
+                    await Out.WriteLineAsync("\tId\tName\tAlias\tMandatory\tData Type Id");
+                    foreach (var propertyType in contentType.PropertyTypes)
+                    {
+                        await Out.WriteLineAsync(
+                            string.Format(
+                                "\t{0}\t{1}\t{2}\t{3}\t{4}",
+                                propertyType.Id,
+                                propertyType.Alias,
+                                propertyType.Name,
+                                propertyType.Mandatory,
+                                propertyType.DataTypeId
+                            )
+                        );
+                    }
+                }
+
+                return;
+            }
+        }
+
         private async Task GetAll()
+        {
+            var cts = CreateContentTypeService();
+
+            var types = cts.GetAllContentTypes();
+
+            if (!types.Any())
+            {
+                await Out.WriteLineAsync("No content types found.");
+                return;
+            }
+
+            await Out.WriteLineAsync("\tId\tAlias\tName");
+            foreach (var type in types)
+                await Out.WriteLineAsync(string.Format("\t{0}\t{1}\t{2}", type.Id, type.Alias, type.Name));
+        }
+
+        private static ContentTypeService CreateContentTypeService()
         {
             var rf = new RepositoryFactory(true);
             var cs = new ContentService(rf);
@@ -55,18 +128,7 @@ namespace Chauffeur.Deliverables
                 throw new FileNotFoundException(string.Format("Unable to find SqlSyntaxProvider that is used for the provider type '{0}'", providerName));
 
             SqlSyntaxContext.SqlSyntaxProvider = (ISqlSyntaxProvider)Activator.CreateInstance(provider);
-
-            var types = cts.GetAllContentTypes();
-
-            if (!types.Any())
-            {
-                await Out.WriteLineAsync("No content types found.");
-                return;
-            }
-
-            await Out.WriteLineAsync("\tId\tAlias\tName");
-            foreach (var type in types)
-                await Out.WriteLineAsync(string.Format("\t{0}\t{1}\t{2}", type.Id, type.Alias, type.Name));
+            return cts;
         }
 
         public async Task Directions()
