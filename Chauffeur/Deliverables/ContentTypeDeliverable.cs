@@ -6,10 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Umbraco.Core;
+using Umbraco.Core.Models;
 using Umbraco.Core.Persistence;
 using Umbraco.Core.Persistence.SqlSyntax;
 using Umbraco.Core.Persistence.UnitOfWork;
 using Umbraco.Core.Services;
+using Task = System.Threading.Tasks.Task;
 
 namespace Chauffeur.Deliverables
 {
@@ -52,47 +54,64 @@ namespace Chauffeur.Deliverables
                 return;
             }
 
+            var cts = CreateContentTypeService();
+            IContentType contentType = null;
+            var foundWith = "id";
             int id;
             if (int.TryParse(args[0], out id))
+                contentType = cts.GetContentType(id);
+            else
             {
-                var cts = CreateContentTypeService();
-                var contentType = cts.GetContentType(id);
+                //Sigh, can't use the GetByAlias because at the moment there are internal dependencies I can't load
+                //contentType = cts.GetContentType(args[0]);
+                
+                //instead we'll find the ID ourselves from the DB
+                var sql = new Sql()
+                    .Select("NodeId")
+                   .From("cmsContentType")
+                   .Where("alias = @0", new[] { args[0] })
+                   ;
+                var uow = new PetaPocoUnitOfWorkProvider().GetUnitOfWork();
+                var ids = uow.Database.Fetch<int>(sql);
+                if (ids.Any())
+                    contentType = cts.GetContentType(ids.First());
 
-                if (contentType == null)
-                {
-                    await Out.WriteLineAsync(string.Format("No content type found with id of '{0}'", id));
-                }
-                else
-                {
-                    await Out.WriteLineAsync("\tId\tAlias\tName\tParent Id");
-                    await Out.WriteLineAsync(
-                        string.Format(
-                            "\t{0}\t{1}\t{2}\t{3}",
-                            contentType.Id,
-                            contentType.Alias,
-                            contentType.Name,
-                            contentType.ParentId
-                        )
-                    );
+                foundWith = "alias";
+            }
 
-                    await Out.WriteLineAsync("\tProperty Types");
-                    await Out.WriteLineAsync("\tId\tName\tAlias\tMandatory\tData Type Id");
-                    foreach (var propertyType in contentType.PropertyTypes)
-                    {
-                        await Out.WriteLineAsync(
-                            string.Format(
-                                "\t{0}\t{1}\t{2}\t{3}\t{4}",
-                                propertyType.Id,
-                                propertyType.Alias,
-                                propertyType.Name,
-                                propertyType.Mandatory,
-                                propertyType.DataTypeId
-                            )
-                        );
-                    }
-                }
+            if (contentType == null)
+                await Out.WriteLineAsync(string.Format("No content type found with {0} of '{1}'", foundWith, args[0]));
+            else
+                await PrintContentType(contentType);
+        }
 
-                return;
+        private async Task PrintContentType(Umbraco.Core.Models.IContentType contentType)
+        {
+            await Out.WriteLineAsync("\tId\tAlias\tName\tParent Id");
+            await Out.WriteLineAsync(
+                string.Format(
+                    "\t{0}\t{1}\t{2}\t{3}",
+                    contentType.Id,
+                    contentType.Alias,
+                    contentType.Name,
+                    contentType.ParentId
+                )
+            );
+
+            await Out.WriteLineAsync("\tProperty Types");
+            await Out.WriteLineAsync("\tId\tName\tAlias\tMandatory\tData Type Id");
+            foreach (var propertyType in contentType.PropertyTypes)
+            {
+                await Out.WriteLineAsync(
+                    string.Format(
+                        "\t{0}\t{1}\t{2}\t{3}\t{4}",
+                        propertyType.Id,
+                        propertyType.Alias,
+                        propertyType.Name,
+                        propertyType.Mandatory,
+                        propertyType.DataTypeId
+                    )
+                );
             }
         }
 
