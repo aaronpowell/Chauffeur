@@ -43,6 +43,7 @@ namespace Chauffeur.Runner
             else
             {
                 var host = new UmbracoHost(Console.In, Console.Out);
+                UmbracoHost.Current = host;
                 host.Run();
             }
         }

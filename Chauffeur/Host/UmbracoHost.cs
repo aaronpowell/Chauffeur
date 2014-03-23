@@ -18,10 +18,15 @@ namespace Chauffeur.Host
 
         private IEnumerable<Type> deliverableTypes;
 
+        public static UmbracoHost Current { get; set; }
+        public ChauffeurSettings Settings { get; private set; }
+
         public UmbracoHost(TextReader reader, TextWriter writer)
         {
             this.reader = reader;
             this.writer = writer;
+
+            Settings = new ChauffeurSettings(writer);
         }
 
         public async Task Run()

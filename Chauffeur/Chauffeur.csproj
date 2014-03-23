@@ -197,6 +197,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Host\ChauffeurSettings.cs" />
     <Compile Include="Deliverables\ContentTypeDeliverable.cs" />
     <Compile Include="Deliverables\HelpDeliverable.cs" />
     <Compile Include="Deliverable.cs" />

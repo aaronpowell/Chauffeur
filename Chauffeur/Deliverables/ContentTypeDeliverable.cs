@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Chauffeur.Host;
 using Umbraco.Core;
 using Umbraco.Core.Models;
 using Umbraco.Core.Persistence;
@@ -59,20 +58,9 @@ namespace Chauffeur.Deliverables
             if (contentType == null)
                 return;
 
-            var exportDirectory = Path.Combine(new FileInfo(Assembly.GetExecutingAssembly().Location).Directory.FullName, "..", "App_Data", "Chauffeur");
-
-            if (!Directory.Exists(exportDirectory))
-            {
-                try
-                {
-                    Directory.CreateDirectory(exportDirectory);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    Out.WriteLine("Chauffer directory 'App_Data\\Chauffeur' cannot be created, check directory permissions");
-                    return;
-                }
-            }
+            string exportDirectory;
+            if (!UmbracoHost.Current.Settings.TryGetChauffeurDirectory(out exportDirectory))
+                return;
 
             var xml = new XDocument();
 
