@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Chauffeur.Deliverables;
 using Umbraco.Core;
@@ -24,6 +27,8 @@ namespace Chauffeur.Host
         public async Task Run()
         {
             await writer.WriteLineAsync("Welcome to Chauffeur, your Umbraco console.");
+            var fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+            await writer.WriteLineFormattedAsync("You're running Chauffeur v{0} against Umbraco '{1}'", fvi.FileVersion, ConfigurationManager.AppSettings["umbracoConfigurationStatus"]);
             await writer.WriteLineAsync();
             await writer.WriteLineAsync("Type `help` to list the commands and `help <command>` for help for a specific command.");
             await writer.WriteLineAsync();
