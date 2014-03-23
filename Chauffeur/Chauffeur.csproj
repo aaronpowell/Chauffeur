@@ -197,6 +197,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiWorkarounds\ApplicationContextWorkaround.cs" />
+    <Compile Include="ApiWorkarounds\MappingResolver.cs" />
     <Compile Include="Host\ChauffeurSettings.cs" />
     <Compile Include="Deliverables\ContentTypeDeliverable.cs" />
     <Compile Include="Deliverables\HelpDeliverable.cs" />

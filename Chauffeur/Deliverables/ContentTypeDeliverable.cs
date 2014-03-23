@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Chauffeur.ApiWorkarounds;
 using Chauffeur.Host;
 using Umbraco.Core;
 using Umbraco.Core.Models;
@@ -43,12 +44,73 @@ namespace Chauffeur.Deliverables
                     await Export(args.Skip(1).ToArray());
                     break;
 
+                case "import":
+                    await Import(args.Skip(1).ToArray());
+                    break;
+
                 default:
                     await Out.WriteLineFormattedAsync("The operation `{0}` is not supported", operation);
                     break;
             }
 
             return await base.Run(args);
+        }
+
+        private async Task Import(string[] args)
+        {
+            if (!args.Any())
+            {
+                await Out.WriteLineAsync("No import target defined");
+                return;
+            }
+
+            var deliveryName = args[0].Trim();
+
+            string directory;
+            if (!UmbracoHost.Current.Settings.TryGetChauffeurDirectory(out directory))
+                return;
+
+            var file = Path.Combine(directory, deliveryName + ".xml");
+            if (!System.IO.File.Exists(file))
+            {
+                await Out.WriteLineFormattedAsync("Unable to located the import script '{0}'", deliveryName);
+                return;
+            }
+
+            var xml = XDocument.Load(file);
+
+            MappingResolver.SetupMappingResolver();
+            ApplicationContextWorkaround.Create();
+
+            var rf = new RepositoryFactory(true);
+            var cs = new ContentService(rf);
+            var cts = new ContentTypeService(rf, cs, null);
+            var dts = new DataTypeService(rf);
+            var ps = new PackagingService(
+                cs,
+                cts,
+                null,
+                null,
+                dts,
+                null,
+                null,
+                rf,
+                null
+            );
+
+            var providerName = ConfigurationManager.ConnectionStrings["umbracoDbDSN"].ProviderName;
+
+            var provider = TypeFinder.FindClassesWithAttribute<SqlSyntaxProviderAttribute>()
+                .FirstOrDefault(p => p.GetCustomAttribute<SqlSyntaxProviderAttribute>(false).ProviderName == providerName);
+
+            if (provider == null)
+                throw new FileNotFoundException(string.Format("Unable to find SqlSyntaxProvider that is used for the provider type '{0}'", providerName));
+
+            SqlSyntaxContext.SqlSyntaxProvider = (ISqlSyntaxProvider)Activator.CreateInstance(provider);
+
+            ps.ImportContentTypes(xml.Elements().First());
+
+            await Out.WriteLineFormattedAsync("Content Type has been imported");
         }
 
         private async Task Export(string[] args)
