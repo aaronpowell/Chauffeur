@@ -75,49 +75,24 @@ namespace Chauffeur.Deliverables
             }
 
             var xml = new XDocument();
-            xml.Add(new XElement("DocumentType",
-                    new XElement("Info",
-                        new XElement("Name", contentType.Name),
-                        new XElement("Alias", contentType.Alias),
-                        new XElement("Icon", contentType.Icon),
-                        new XElement("Thumbnail", contentType.Thumbnail),
-                        new XElement("Description", contentType.Description),
-                        new XElement("AllowAtRoot", contentType.AllowedAsRoot),
-                        //todo - Master support
-                        new XElement("AllowedTemplates",
-                            contentType.AllowedTemplates.Select(t => new XElement("Template", t.Alias))
-                        ),
-                        new XElement("DefaultTemplate", contentType.DefaultTemplate == null ? string.Empty : contentType.DefaultTemplate.Alias)
-                    ),
-                    new XElement("Structure",
-                        contentType.AllowedContentTypes.Select(c => new XElement("DocumentType", c.Alias))
-                    ),
-                    new XElement("GenericProperties",
-                        contentType.PropertyTypes
-                            .Select(pt => new XElement(
-                                    "GenericProperty",
-                                    new XElement("Name", pt.Name),
-                                    new XElement("Alias", pt.Alias),
-                                    new XElement("Type", pt.PropertyEditorAlias),
-                                    //new XElement("Definition"),
-                                    //new XElement("Tab"),
-                                    new XElement("Mandatory", pt.Mandatory),
-                                    new XElement("Validation", pt.ValidationRegExp),
-                                    new XElement("Description", pt.Description)
-                                )
-                            )
-                    ),
-                    new XElement("Tabs",
-                        contentType.PropertyGroups.Select(pg =>
-                            new XElement("Tab",
-                                new XElement("Id", pg.Id),
-                                new XElement("Caption", pg.Name),
-                                new XElement("SortOrder", pg.SortOrder)
-                            )
-                        )
-                    )
-                )
+
+            var rf = new RepositoryFactory(true);
+            var cs = new ContentService(rf);
+            var cts = new ContentTypeService(rf, cs, null);
+            var dts = new DataTypeService(rf);
+            var ps = new PackagingService(
+                cs,
+                cts,
+                null,
+                null,
+                dts,
+                null,
+                null,
+                rf,
+                null
             );
+
+            xml.Add(ps.Export(contentType, false));
 
             var fileName = DateTime.UtcNow.ToString("yyyyMMdd") + "-" + contentType.Alias + ".xml";
             xml.Save(Path.Combine(exportDirectory, fileName));
@@ -158,8 +133,34 @@ namespace Chauffeur.Deliverables
             }
 
             if (contentType == null)
+            {
                 await Out.WriteLineAsync(string.Format("No content type found with {0} of '{1}'", foundWith, args[0]));
-            else if (dump)
+                return null;
+            }
+
+            // I'm sorry about the following code. In Umbraco 7.0.0 PropertyType.PropertyGroupId is:
+            //  a) Not set when you do GetContentType
+            //  b) An internal property (!!)
+            // So to ensure that the object is proprely constructed I have to use reflection and SQL
+            // and set it up myself!
+            var propertyTypes = contentType.PropertyTypes.ToArray();
+            foreach (var propertyType in propertyTypes)
+            {
+                var pi = propertyType.GetType().GetProperty("PropertyGroupId", BindingFlags.Instance | BindingFlags.NonPublic);
+                var uow = new PetaPocoUnitOfWorkProvider().GetUnitOfWork();
+                var sql = new Sql()
+                    .Select("PropertyTypeGroupId")
+                    .From("CmsPropertyType")
+                    .Where("Id = @0", new[] { propertyType.Id });
+
+                var groupId = uow.Database.Fetch<int?>(sql).FirstOrDefault();
+                if (groupId != null && groupId.HasValue)
+                    pi.SetValue(propertyType, new Lazy<int>(() => groupId.Value));
+                else
+                    pi.SetValue(propertyType, new Lazy<int>(() => -1));
+            }
+
+            if (dump)
                 await PrintContentType(contentType);
             return contentType;
         }

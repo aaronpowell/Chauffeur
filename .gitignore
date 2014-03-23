@@ -20,3 +20,4 @@ Chauffeur.Demo/umbraco_client
 Chauffeur.Demo/install
 *.backup
 App_Data
+media
