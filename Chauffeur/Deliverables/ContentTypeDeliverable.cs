@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Umbraco.Core;
 using Umbraco.Core.Models;
 using Umbraco.Core.Persistence;
@@ -38,6 +40,10 @@ namespace Chauffeur.Deliverables
                     await Get(args.Skip(1).ToArray());
                     break;
 
+                case "export":
+                    await Export(args.Skip(1).ToArray());
+                    break;
+
                 default:
                     await Out.WriteLineAsync(string.Format("The operation `{0}` is not supported", operation));
                     break;
@@ -46,12 +52,84 @@ namespace Chauffeur.Deliverables
             return await base.Run(args);
         }
 
-        private async Task Get(string[] args)
+        private async Task Export(string[] args)
+        {
+            var contentType = await Get(args, false);
+
+            if (contentType == null)
+                return;
+
+            var exportDirectory = Path.Combine(new FileInfo(Assembly.GetExecutingAssembly().Location).Directory.FullName, "..", "App_Data", "Chauffeur");
+
+            if (!Directory.Exists(exportDirectory))
+            {
+                try
+                {
+                    Directory.CreateDirectory(exportDirectory);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    Out.WriteLine("Chauffer directory 'App_Data\\Chauffeur' cannot be created, check directory permissions");
+                    return;
+                }
+            }
+
+            var xml = new XDocument();
+            xml.Add(new XElement("DocumentType",
+                    new XElement("Info",
+                        new XElement("Name", contentType.Name),
+                        new XElement("Alias", contentType.Alias),
+                        new XElement("Icon", contentType.Icon),
+                        new XElement("Thumbnail", contentType.Thumbnail),
+                        new XElement("Description", contentType.Description),
+                        new XElement("AllowAtRoot", contentType.AllowedAsRoot),
+                        //todo - Master support
+                        new XElement("AllowedTemplates",
+                            contentType.AllowedTemplates.Select(t => new XElement("Template", t.Alias))
+                        ),
+                        new XElement("DefaultTemplate", contentType.DefaultTemplate == null ? string.Empty : contentType.DefaultTemplate.Alias)
+                    ),
+                    new XElement("Structure",
+                        contentType.AllowedContentTypes.Select(c => new XElement("DocumentType", c.Alias))
+                    ),
+                    new XElement("GenericProperties",
+                        contentType.PropertyTypes
+                            .Select(pt => new XElement(
+                                    "GenericProperty",
+                                    new XElement("Name", pt.Name),
+                                    new XElement("Alias", pt.Alias),
+                                    new XElement("Type", pt.PropertyEditorAlias),
+                                    //new XElement("Definition"),
+                                    //new XElement("Tab"),
+                                    new XElement("Mandatory", pt.Mandatory),
+                                    new XElement("Validation", pt.ValidationRegExp),
+                                    new XElement("Description", pt.Description)
+                                )
+                            )
+                    ),
+                    new XElement("Tabs",
+                        contentType.PropertyGroups.Select(pg =>
+                            new XElement("Tab",
+                                new XElement("Id", pg.Id),
+                                new XElement("Caption", pg.Name),
+                                new XElement("SortOrder", pg.SortOrder)
+                            )
+                        )
+                    )
+                )
+            );
+
+            var fileName = DateTime.UtcNow.ToString("yyyyMMdd") + "-" + contentType.Alias + ".xml";
+            xml.Save(Path.Combine(exportDirectory, fileName));
+            await Out.WriteLineAsync(string.Format("Content Type has been exported with file name '{0}'", fileName));
+        }
+
+        private async Task<IContentType> Get(string[] args, bool dump = true)
         {
             if (!args.Any())
             {
                 await Out.WriteLineAsync("Please provide the numerical id or alias if the doc type to get");
-                return;
+                return null;
             }
 
             var cts = CreateContentTypeService();
@@ -64,7 +142,7 @@ namespace Chauffeur.Deliverables
             {
                 //Sigh, can't use the GetByAlias because at the moment there are internal dependencies I can't load
                 //contentType = cts.GetContentType(args[0]);
-                
+
                 //instead we'll find the ID ourselves from the DB
                 var sql = new Sql()
                     .Select("NodeId")
@@ -81,11 +159,12 @@ namespace Chauffeur.Deliverables
 
             if (contentType == null)
                 await Out.WriteLineAsync(string.Format("No content type found with {0} of '{1}'", foundWith, args[0]));
-            else
+            else if (dump)
                 await PrintContentType(contentType);
+            return contentType;
         }
 
-        private async Task PrintContentType(Umbraco.Core.Models.IContentType contentType)
+        private async Task PrintContentType(IContentType contentType)
         {
             await Out.WriteLineAsync("\tId\tAlias\tName\tParent Id");
             await Out.WriteLineAsync(
