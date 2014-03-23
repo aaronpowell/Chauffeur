@@ -45,7 +45,7 @@ namespace Chauffeur.Deliverables
                     break;
 
                 default:
-                    await Out.WriteLineAsync(string.Format("The operation `{0}` is not supported", operation));
+                    await Out.WriteLineFormattedAsync("The operation `{0}` is not supported", operation);
                     break;
             }
 
@@ -96,7 +96,7 @@ namespace Chauffeur.Deliverables
 
             var fileName = DateTime.UtcNow.ToString("yyyyMMdd") + "-" + contentType.Alias + ".xml";
             xml.Save(Path.Combine(exportDirectory, fileName));
-            await Out.WriteLineAsync(string.Format("Content Type has been exported with file name '{0}'", fileName));
+            await Out.WriteLineFormattedAsync("Content Type has been exported with file name '{0}'", fileName);
         }
 
         private async Task<IContentType> Get(string[] args, bool dump = true)
@@ -134,7 +134,7 @@ namespace Chauffeur.Deliverables
 
             if (contentType == null)
             {
-                await Out.WriteLineAsync(string.Format("No content type found with {0} of '{1}'", foundWith, args[0]));
+                await Out.WriteLineFormattedAsync("No content type found with {0} of '{1}'", foundWith, args[0]);
                 return null;
             }
 
@@ -168,29 +168,25 @@ namespace Chauffeur.Deliverables
         private async Task PrintContentType(IContentType contentType)
         {
             await Out.WriteLineAsync("\tId\tAlias\tName\tParent Id");
-            await Out.WriteLineAsync(
-                string.Format(
-                    "\t{0}\t{1}\t{2}\t{3}",
-                    contentType.Id,
-                    contentType.Alias,
-                    contentType.Name,
-                    contentType.ParentId
-                )
+            await Out.WriteLineFormattedAsync(
+                  "\t{0}\t{1}\t{2}\t{3}",
+                contentType.Id,
+                contentType.Alias,
+                contentType.Name,
+                contentType.ParentId
             );
 
             await Out.WriteLineAsync("\tProperty Types");
             await Out.WriteLineAsync("\tId\tName\tAlias\tMandatory\tData Type Id");
             foreach (var propertyType in contentType.PropertyTypes)
             {
-                await Out.WriteLineAsync(
-                    string.Format(
-                        "\t{0}\t{1}\t{2}\t{3}\t{4}",
-                        propertyType.Id,
-                        propertyType.Alias,
-                        propertyType.Name,
-                        propertyType.Mandatory,
-                        propertyType.DataTypeId
-                    )
+                await Out.WriteLineFormattedAsync(
+                    "\t{0}\t{1}\t{2}\t{3}\t{4}",
+                    propertyType.Id,
+                    propertyType.Alias,
+                    propertyType.Name,
+                    propertyType.Mandatory,
+                    propertyType.DataTypeId
                 );
             }
         }
@@ -209,7 +205,7 @@ namespace Chauffeur.Deliverables
 
             await Out.WriteLineAsync("\tId\tAlias\tName");
             foreach (var type in types)
-                await Out.WriteLineAsync(string.Format("\t{0}\t{1}\t{2}", type.Id, type.Alias, type.Name));
+                await Out.WriteLineFormattedAsync("\t{0}\t{1}\t{2}", type.Id, type.Alias, type.Name);
         }
 
         private static ContentTypeService CreateContentTypeService()
