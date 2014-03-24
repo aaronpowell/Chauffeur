@@ -22,3 +22,4 @@ Chauffeur.Demo/install
 App_Data
 media
 readme.html
+*.nupkg
