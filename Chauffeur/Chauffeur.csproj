@@ -211,6 +211,7 @@
     <Compile Include="TextWriterExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Chauffeur.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
