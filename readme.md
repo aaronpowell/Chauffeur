@@ -58,12 +58,12 @@ Imports a ContentType from the specified file, you don't need to provide the `.x
 
 * Why do I see all this extra text when I run `content-type` commands?
 
->> This is a fun bug in 7.0.4, they included some `Console.WriteLine` statements in the source code which Chauffeur ends up receiving. This seems to have been resolved in 7.1.0.
+> This is a fun bug in 7.0.4, they included some `Console.WriteLine` statements in the source code which Chauffeur ends up receiving. This seems to have been resolved in 7.1.0.
 
 * Can I make my own Deliverables?
 
->> Sure you can, you need to implement the `Deliverable` class and drop your assembly in the `bin` folder and it'll be loaded up.
+> Sure you can, you need to implement the `Deliverable` class and drop your assembly in the `bin` folder and it'll be loaded up.
 
 * What doesn't work?
 
->> Keep in mind that this is running outside of the web context so there's no HttpContext. This means that some Umbraco API's simply won't work, things like the publishing. Also be  aware of the pointy edges of the Umbraco API, there's a lot of `internal` classes and members that Umbraco will expect (have a look at the PropertyGroupId setup) so things might not be setup that you'd expect. Remember we're using the Umbraco APIs but we're bypassing the Umbraco "boot" process. At the moment you have to manage your own dependency chain, and if there are statics these can bleed across Deliverables so be aware.
+> Keep in mind that this is running outside of the web context so there's no HttpContext. This means that some Umbraco API's simply won't work, things like the publishing. Also be  aware of the pointy edges of the Umbraco API, there's a lot of `internal` classes and members that Umbraco will expect (have a look at the PropertyGroupId setup) so things might not be setup that you'd expect. Remember we're using the Umbraco APIs but we're bypassing the Umbraco "boot" process. At the moment you have to manage your own dependency chain, and if there are statics these can bleed across Deliverables so be aware.
