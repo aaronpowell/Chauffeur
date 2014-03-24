@@ -9,6 +9,7 @@ namespace Chauffeur.Deliverables
 {
     [DeliverableName("help")]
     [DeliverableAlias("h")]
+    [DeliverableAlias("?")]
     public class HelpDeliverable : Deliverable
     {
         public HelpDeliverable(TextReader reader, TextWriter writer)
