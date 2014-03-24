@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Chauffeur.Host;
@@ -38,13 +39,16 @@ namespace Chauffeur.Runner
                     }
                 }
                 var thisAssembly = new FileInfo(Assembly.GetExecutingAssembly().Location);
-                domain.ExecuteAssembly(thisAssembly.Name);
+                domain.ExecuteAssembly(thisAssembly.Name, args);
             }
             else
             {
                 var host = new UmbracoHost(Console.In, Console.Out);
                 UmbracoHost.Current = host;
-                host.Run();
+                if (args.Any())
+                    host.Run(args);
+                else
+                    host.Run();
             }
         }
     }

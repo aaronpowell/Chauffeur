@@ -52,6 +52,15 @@ namespace Chauffeur.Host
             }
         }
 
+        public async Task Run(string[] args)
+        {
+            deliverableTypes = TypeFinder.FindClassesOfType<Deliverable>();
+
+            var deliverable = Process(string.Join(" ", args));
+            if (deliverable != null)
+                await Execute(deliverable);
+        }
+
         private async Task<DeliverableResponse> Execute(ProcessedDeliverable deliverable)
         {
             var toRun = (Deliverable)Activator.CreateInstance(deliverable.DeliverableType, new object[] { reader, writer });
