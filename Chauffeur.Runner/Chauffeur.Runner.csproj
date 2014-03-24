@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Chauffeur.Runner.nuspec" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Chauffeur\Chauffeur.csproj">

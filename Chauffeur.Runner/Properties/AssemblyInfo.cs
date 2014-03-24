@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Chauffeur.Runner")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Chauffeur Runner is a CLI for executing Chauffeur deliverables against an Umbraco instance.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Aaron Powell")]
 [assembly: AssemblyProduct("Chauffeur.Runner")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]

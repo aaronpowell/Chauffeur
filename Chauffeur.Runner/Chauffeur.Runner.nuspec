@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Chauffeur.Runner</id>
+    <version>$version$</version>
+    <authors>$author$</authors>
+    <owners>aaron.powell</owners>
+    <licenseUrl>https://github.com/aaronpowell/Chauffeur/blob/master/License.md</licenseUrl>
+    <projectUrl>https://github.com/aaronpowell/Chauffeur/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>Initial release of the Chauffeur CLI</releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>umbraco deployment</tags>
+    <dependencies>
+      <dependency id="Chauffeur" version="$version$" />
+    </dependencies>
+  </metadata>
+</package>
