@@ -6,7 +6,7 @@ using Umbraco.Core;
 
 namespace Chauffeur
 {
-    class ShittyIoC
+    internal class ShittyIoC
     {
         private readonly Dictionary<Type, Func<object>> instanceDependencyMap = new Dictionary<Type, Func<object>>();
         private readonly Dictionary<string, Type> deliverablesByName = new Dictionary<string, Type>();
@@ -44,6 +44,11 @@ namespace Chauffeur
                     deliverablesByName["unknown"];
 
             return (Deliverable)Resolve(deliverableType);
+        }
+
+        public IEnumerable<Deliverable> ResolveAllDeliverables()
+        {
+            return deliverablesByName.Select(x => x.Value).Select(Resolve).OfType<Deliverable>();
         }
 
         private T Resolve<T>()

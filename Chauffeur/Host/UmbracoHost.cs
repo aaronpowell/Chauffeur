@@ -15,12 +15,12 @@ namespace Chauffeur.Host
     {
         private readonly TextReader reader;
         private readonly TextWriter writer;
-        private readonly ShittyIoC container;
 
         private IEnumerable<Type> deliverableTypes;
 
         public static UmbracoHost Current { get; set; }
         public ChauffeurSettings Settings { get; private set; }
+        internal ShittyIoC Container { get; private set; }
 
         public UmbracoHost(TextReader reader, TextWriter writer)
         {
@@ -29,9 +29,9 @@ namespace Chauffeur.Host
 
             Settings = new ChauffeurSettings(writer);
 
-            container = new ShittyIoC();
-            container.Register<TextReader>(() => reader);
-            container.Register<TextWriter>(() => writer);
+            Container = new ShittyIoC();
+            Container.Register<TextReader>(() => reader);
+            Container.Register<TextWriter>(() => writer);
         }
 
         public async Task Run()
@@ -70,7 +70,7 @@ namespace Chauffeur.Host
 
             try
             {
-                var deliverable = container.ResolveDeliverableByName(what);
+                var deliverable = Container.ResolveDeliverableByName(what);
                 return await deliverable.Run(what, args);
             }
             catch (Exception ex)
