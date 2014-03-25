@@ -26,7 +26,7 @@ namespace Chauffeur.Deliverables
         {
         }
 
-        public override async Task<DeliverableResponse> Run(string[] args)
+        public override async Task<DeliverableResponse> Run(string command, string[] args)
         {
             var operation = args[0];
 
@@ -53,7 +53,7 @@ namespace Chauffeur.Deliverables
                     break;
             }
 
-            return await base.Run(args);
+            return await base.Run(command, args);
         }
 
         private async Task Import(string[] args)
