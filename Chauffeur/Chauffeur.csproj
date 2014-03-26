@@ -199,6 +199,14 @@
   <ItemGroup>
     <Compile Include="ApiWorkarounds\ApplicationContextWorkaround.cs" />
     <Compile Include="ApiWorkarounds\MappingResolver.cs" />
+    <Compile Include="DependencyBuilders\ContentServiceBuilder.cs" />
+    <Compile Include="DependencyBuilders\ContentTypeServiceBuilder.cs" />
+    <Compile Include="DependencyBuilders\DatabaseUnitOfWorkProviderBuilder.cs" />
+    <Compile Include="DependencyBuilders\DataTypeServiceBuilder.cs" />
+    <Compile Include="DependencyBuilders\MediaServiceBuilder.cs" />
+    <Compile Include="DependencyBuilders\PackagingServiceBuilder.cs" />
+    <Compile Include="DependencyBuilders\RepositoryFactoryBuilder.cs" />
+    <Compile Include="DependencyBuilders\SqlSyntaxProviderBuilder.cs" />
     <Compile Include="Host\ChauffeurSettings.cs" />
     <Compile Include="Deliverables\ContentTypeDeliverable.cs" />
     <Compile Include="Deliverables\HelpDeliverable.cs" />

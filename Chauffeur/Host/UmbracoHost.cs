@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Chauffeur.Deliverables;
+using Chauffeur.DependencyBuilders;
 using Umbraco.Core;
 
 namespace Chauffeur.Host
@@ -32,6 +33,14 @@ namespace Chauffeur.Host
             Container = new ShittyIoC();
             Container.Register<TextReader>(() => reader);
             Container.Register<TextWriter>(() => writer);
+            Container.RegisterFrom<RepositoryFactoryBuilder>();
+            Container.RegisterFrom<MediaServiceBuilder>();
+            Container.RegisterFrom<ContentTypeServiceBuilder>();
+            Container.RegisterFrom<ContentServiceBuilder>();
+            Container.RegisterFrom<SqlSyntaxProviderBuilder>();
+            Container.RegisterFrom<DatabaseUnitOfWorkProviderBuilder>();
+            Container.RegisterFrom<DataTypeServiceBuilder>();
+            Container.RegisterFrom<PackagingServiceBuilder>();
         }
 
         public async Task Run()

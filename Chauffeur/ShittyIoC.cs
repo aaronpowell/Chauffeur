@@ -25,6 +25,17 @@ namespace Chauffeur
             instanceDependencyMap.Add(typeof(T), factory);
         }
 
+        public void Register<T>() where T : class, new()
+        {
+            Register<T>(() => new T());
+        }
+
+        public void RegisterFrom<T>()
+            where T : IBuildDependencies, new()
+        {
+            new T().Build(this);
+        }
+
         private void RegisterDeliverable(Type deliverable)
         {
             var name = deliverable.GetCustomAttribute<DeliverableNameAttribute>();
@@ -51,7 +62,7 @@ namespace Chauffeur
             return deliverablesByName.Select(x => x.Value).Select(Resolve).OfType<Deliverable>();
         }
 
-        private T Resolve<T>()
+        internal T Resolve<T>()
         {
             return (T)Resolve(typeof(T));
         }
@@ -61,11 +72,11 @@ namespace Chauffeur
             var resolvedTypeFactory = LookUpDependency(type);
             if (resolvedTypeFactory != null)
                 return resolvedTypeFactory();
-            
+
             var resolvedType = type;
             var constructor = resolvedType.GetConstructors().First();
             var parameters = constructor.GetParameters();
- 
+
             if (!parameters.Any())
             {
                 return Activator.CreateInstance(resolvedType);
@@ -77,19 +88,24 @@ namespace Chauffeur
                 );
             }
         }
- 
+
         private Func<object> LookUpDependency(Type type)
         {
             if (instanceDependencyMap.ContainsKey(type))
                 return instanceDependencyMap[type];
             return null;
         }
- 
+
         private IEnumerable<object> ResolveParameters(IEnumerable<ParameterInfo> parameters)
         {
             return parameters
                 .Select(p => Resolve(p.ParameterType))
                 .ToList();
         }
+    }
+
+    internal interface IBuildDependencies
+    {
+        void Build(ShittyIoC container);
     }
 }
