@@ -13,7 +13,7 @@ namespace Chauffeur.Deliverables
         {
         }
 
-        public override async Task<DeliverableResponse> Run(string[] args)
+        public override async Task<DeliverableResponse> Run(string command, string[] args)
         {
             await Out.WriteLineAsync("Good bye!");
             return await Task.FromResult(DeliverableResponse.Shutdown);

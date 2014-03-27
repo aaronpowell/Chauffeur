@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Chauffeur.Host;
 using Umbraco.Core;
 
 namespace Chauffeur.Deliverables
@@ -17,30 +18,22 @@ namespace Chauffeur.Deliverables
         {
         }
 
-        public override async Task<DeliverableResponse> Run(string[] args)
+        public override async Task<DeliverableResponse> Run(string command, string[] args)
         {
-            var deliverables = TypeFinder
-                .FindClassesOfType<Deliverable>();
-
             if (args.Any())
-                await Print(deliverables, args[0]);
+                await Print(args[0]);
             else
-                await PrintAll(deliverables);
+                await PrintAll();
 
             return DeliverableResponse.Continue;
         }
 
-        private async Task Print(IEnumerable<Type> deliverables, string command)
+        private async Task Print(string command)
         {
-            var ipd = typeof(IProvideDirections);
-            var deliverable = deliverables
-                .Where(t => ipd.IsAssignableFrom(t))
-                .FirstOrDefault(t => t.GetCustomAttribute<DeliverableNameAttribute>(false).Name == command);
-
+            var deliverable = UmbracoHost.Current.Container.ResolveDeliverableByName(command) as IProvideDirections;
             if (deliverable != null)
             {
-                var instance = (IProvideDirections)Activator.CreateInstance(deliverable, new object[] { In, Out });
-                await instance.Directions();
+                await deliverable.Directions();
                 return;
             }
 
@@ -51,14 +44,16 @@ namespace Chauffeur.Deliverables
 
         }
 
-        private async Task PrintAll(IEnumerable<Type> deliverables)
+        private async Task PrintAll()
         {
+            var deliverables = UmbracoHost.Current.Container.ResolveAllDeliverables();
             await Out.WriteLineAsync("The following deliverables are loaded. Use `help <deliverable>` for detailed help");
 
             foreach (var deliverable in deliverables)
             {
-                var name = deliverable.GetCustomAttribute<DeliverableNameAttribute>(false).Name;
-                var aliases = deliverable.GetCustomAttributes<DeliverableAliasAttribute>(false).Select(a => a.Alias);
+                var type = deliverable.GetType();
+                var name = type.GetCustomAttribute<DeliverableNameAttribute>(false).Name;
+                var aliases = type.GetCustomAttributes<DeliverableAliasAttribute>(false).Select(a => a.Alias);
 
                 await Out.WriteLineFormattedAsync(
                     "{0}{1}",

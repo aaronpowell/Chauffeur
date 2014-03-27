@@ -16,7 +16,7 @@ namespace Chauffeur
         protected TextReader In { get; private set; }
         protected TextWriter Out { get; private set; }
 
-        public virtual async Task<DeliverableResponse> Run(string[] args)
+        public virtual async Task<DeliverableResponse> Run(string command, string[] args)
         {
             return await Task.FromResult(DeliverableResponse.Continue);
         }

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Chauffeur.Deliverables;
+using Chauffeur.DependencyBuilders;
 using Umbraco.Core;
 
 namespace Chauffeur.Host
@@ -20,6 +21,7 @@ namespace Chauffeur.Host
 
         public static UmbracoHost Current { get; set; }
         public ChauffeurSettings Settings { get; private set; }
+        internal ShittyIoC Container { get; private set; }
 
         public UmbracoHost(TextReader reader, TextWriter writer)
         {
@@ -27,6 +29,22 @@ namespace Chauffeur.Host
             this.writer = writer;
 
             Settings = new ChauffeurSettings(writer);
+
+            Container = new ShittyIoC();
+            Container.Register<TextReader>(() => reader);
+            Container.Register<TextWriter>(() => writer);
+            Container.RegisterFrom<RepositoryFactoryBuilder>();
+            Container.RegisterFrom<MediaServiceBuilder>();
+            Container.RegisterFrom<ContentTypeServiceBuilder>();
+            Container.RegisterFrom<ContentServiceBuilder>();
+            Container.RegisterFrom<SqlSyntaxProviderBuilder>();
+            Container.RegisterFrom<DatabaseUnitOfWorkProviderBuilder>();
+            Container.RegisterFrom<DataTypeServiceBuilder>();
+            Container.RegisterFrom<PackagingServiceBuilder>();
+            Container.RegisterFrom<DatabaseBuilder>();
+
+            Container.RegisterFrom<MappingResolversBuilder>();
+            Container.RegisterFrom<ApplicationContextBuilder>();
         }
 
         public async Task Run()
@@ -38,36 +56,35 @@ namespace Chauffeur.Host
             await writer.WriteLineAsync("Type `help` to list the commands and `help <command>` for help for a specific command.");
             await writer.WriteLineAsync();
 
-            deliverableTypes = TypeFinder.FindClassesOfType<Deliverable>();
-
             var result = DeliverableResponse.Continue;
 
             while (result == DeliverableResponse.Continue)
             {
                 var command = await Prompt();
 
-                var deliverable = Process(command);
-                if (deliverable != null)
-                    result = await Execute(deliverable);
+                result = await Process(command);
             }
         }
 
         public async Task Run(string[] args)
         {
-            deliverableTypes = TypeFinder.FindClassesOfType<Deliverable>();
-
-            var deliverable = Process(string.Join(" ", args));
-            if (deliverable != null)
-                await Execute(deliverable);
+            await Process(string.Join(" ", args));
         }
 
-        private async Task<DeliverableResponse> Execute(ProcessedDeliverable deliverable)
+        private async Task<DeliverableResponse> Process(string command)
         {
-            var toRun = (Deliverable)Activator.CreateInstance(deliverable.DeliverableType, new object[] { reader, writer });
+            if (string.IsNullOrEmpty(command))
+                return DeliverableResponse.Continue;
+
+            var args = command.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+
+            var what = args[0].ToLower();
+            args = args.Skip(1).ToArray();
 
             try
             {
-                return await toRun.Run(deliverable.Args);
+                var deliverable = Container.ResolveDeliverableByName(what);
+                return await deliverable.Run(what, args);
             }
             catch (Exception ex)
             {
@@ -76,48 +93,10 @@ namespace Chauffeur.Host
             }
         }
 
-        private ProcessedDeliverable Process(string command)
-        {
-            if (string.IsNullOrEmpty(command))
-                return null;
-
-            var args = command.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-
-            var what = args[0].ToLower();
-
-            var deliverableType = deliverableTypes
-                .FirstOrDefault(d => string.Compare(d.GetCustomAttribute<DeliverableNameAttribute>(false).Name, what, StringComparison.InvariantCultureIgnoreCase) == 0);
-
-            if (deliverableType == null)
-            {
-                deliverableType = deliverableTypes
-                    .FirstOrDefault(d => d.GetCustomAttributes<DeliverableAliasAttribute>(false).Any(a => string.Compare(a.Alias, what, StringComparison.InvariantCultureIgnoreCase) == 0));
-
-                if (deliverableType == null)
-                    deliverableType = typeof(UnknownDeliverable);
-                else
-                    args = args.Skip(1).ToArray();
-            }
-            else
-                args = args.Skip(1).ToArray();
-
-            return new ProcessedDeliverable
-                        {
-                            DeliverableType = deliverableType,
-                            Args = args
-                        };
-        }
-
         private async Task<string> Prompt()
         {
             await writer.WriteAsync("umbraco> ");
             return await reader.ReadLineAsync();
-        }
-
-        private class ProcessedDeliverable
-        {
-            public Type DeliverableType { get; set; }
-            public string[] Args { get; set; }
         }
     }
 }

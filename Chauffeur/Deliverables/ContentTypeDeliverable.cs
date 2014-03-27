@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Chauffeur.ApiWorkarounds;
 using Chauffeur.Host;
-using Umbraco.Core;
 using Umbraco.Core.Models;
 using Umbraco.Core.Persistence;
-using Umbraco.Core.Persistence.SqlSyntax;
 using Umbraco.Core.Persistence.UnitOfWork;
 using Umbraco.Core.Services;
 using Task = System.Threading.Tasks.Task;
@@ -21,12 +17,25 @@ namespace Chauffeur.Deliverables
     [DeliverableAlias("ct")]
     public sealed class ContentTypeDeliverable : Deliverable, IProvideDirections
     {
-        public ContentTypeDeliverable(TextReader reader, TextWriter writer)
+        private readonly IContentTypeService contentTypeService;
+        private readonly IDatabaseUnitOfWorkProvider uowProvider;
+        private readonly IPackagingService packagingService;
+
+        public ContentTypeDeliverable(
+            TextReader reader,
+            TextWriter writer,
+            IContentTypeService contentTypeService,
+            IDatabaseUnitOfWorkProvider uowProvider,
+            IPackagingService packagingService
+            )
             : base(reader, writer)
         {
+            this.contentTypeService = contentTypeService;
+            this.uowProvider = uowProvider;
+            this.packagingService = packagingService;
         }
 
-        public override async Task<DeliverableResponse> Run(string[] args)
+        public override async Task<DeliverableResponse> Run(string command, string[] args)
         {
             var operation = args[0];
 
@@ -53,7 +62,7 @@ namespace Chauffeur.Deliverables
                     break;
             }
 
-            return await base.Run(args);
+            return await base.Run(command, args);
         }
 
         private async Task Import(string[] args)
@@ -79,36 +88,7 @@ namespace Chauffeur.Deliverables
 
             var xml = XDocument.Load(file);
 
-            MappingResolver.SetupMappingResolver();
-            ApplicationContextWorkaround.Create();
-
-            var rf = new RepositoryFactory(true);
-            var cs = new ContentService(rf);
-            var cts = new ContentTypeService(rf, cs, null);
-            var dts = new DataTypeService(rf);
-            var ps = new PackagingService(
-                cs,
-                cts,
-                null,
-                null,
-                dts,
-                null,
-                null,
-                rf,
-                null
-            );
-
-            var providerName = ConfigurationManager.ConnectionStrings["umbracoDbDSN"].ProviderName;
-
-            var provider = TypeFinder.FindClassesWithAttribute<SqlSyntaxProviderAttribute>()
-                .FirstOrDefault(p => p.GetCustomAttribute<SqlSyntaxProviderAttribute>(false).ProviderName == providerName);
-
-            if (provider == null)
-                throw new FileNotFoundException(string.Format("Unable to find SqlSyntaxProvider that is used for the provider type '{0}'", providerName));
-
-            SqlSyntaxContext.SqlSyntaxProvider = (ISqlSyntaxProvider)Activator.CreateInstance(provider);
-
-            ps.ImportContentTypes(xml.Elements().First());
+            packagingService.ImportContentTypes(xml.Elements().First());
 
             await Out.WriteLineFormattedAsync("Content Type has been imported");
         }
@@ -126,23 +106,7 @@ namespace Chauffeur.Deliverables
 
             var xml = new XDocument();
 
-            var rf = new RepositoryFactory(true);
-            var cs = new ContentService(rf);
-            var cts = new ContentTypeService(rf, cs, null);
-            var dts = new DataTypeService(rf);
-            var ps = new PackagingService(
-                cs,
-                cts,
-                null,
-                null,
-                dts,
-                null,
-                null,
-                rf,
-                null
-            );
-
-            xml.Add(ps.Export(contentType, false));
+            xml.Add(packagingService.Export(contentType, false));
 
             var fileName = DateTime.UtcNow.ToString("yyyyMMdd") + "-" + contentType.Alias + ".xml";
             xml.Save(Path.Combine(exportDirectory, fileName));
@@ -157,12 +121,11 @@ namespace Chauffeur.Deliverables
                 return null;
             }
 
-            var cts = CreateContentTypeService();
             IContentType contentType = null;
             var foundWith = "id";
             int id;
             if (int.TryParse(args[0], out id))
-                contentType = cts.GetContentType(id);
+                contentType = contentTypeService.GetContentType(id);
             else
             {
                 //Sigh, can't use the GetByAlias because at the moment there are internal dependencies I can't load
@@ -174,10 +137,10 @@ namespace Chauffeur.Deliverables
                    .From("cmsContentType")
                    .Where("alias = @0", new[] { args[0] })
                    ;
-                var uow = new PetaPocoUnitOfWorkProvider().GetUnitOfWork();
+                var uow = uowProvider.GetUnitOfWork();
                 var ids = uow.Database.Fetch<int>(sql);
                 if (ids.Any())
-                    contentType = cts.GetContentType(ids.First());
+                    contentType = contentTypeService.GetContentType(ids.First());
 
                 foundWith = "alias";
             }
@@ -197,7 +160,7 @@ namespace Chauffeur.Deliverables
             foreach (var propertyType in propertyTypes)
             {
                 var pi = propertyType.GetType().GetProperty("PropertyGroupId", BindingFlags.Instance | BindingFlags.NonPublic);
-                var uow = new PetaPocoUnitOfWorkProvider().GetUnitOfWork();
+                var uow = uowProvider.GetUnitOfWork();
                 var sql = new Sql()
                     .Select("PropertyTypeGroupId")
                     .From("CmsPropertyType")
@@ -243,9 +206,7 @@ namespace Chauffeur.Deliverables
 
         private async Task GetAll()
         {
-            var cts = CreateContentTypeService();
-
-            var types = cts.GetAllContentTypes();
+            var types = contentTypeService.GetAllContentTypes();
 
             if (!types.Any())
             {
@@ -256,25 +217,6 @@ namespace Chauffeur.Deliverables
             await Out.WriteLineAsync("\tId\tAlias\tName");
             foreach (var type in types)
                 await Out.WriteLineFormattedAsync("\t{0}\t{1}\t{2}", type.Id, type.Alias, type.Name);
-        }
-
-        private static ContentTypeService CreateContentTypeService()
-        {
-            var rf = new RepositoryFactory(true);
-            var cs = new ContentService(rf);
-            var ms = new MediaService(rf);
-            var cts = new ContentTypeService(rf, cs, ms);
-
-            var providerName = ConfigurationManager.ConnectionStrings["umbracoDbDSN"].ProviderName;
-
-            var provider = TypeFinder.FindClassesWithAttribute<SqlSyntaxProviderAttribute>()
-                .FirstOrDefault(p => p.GetCustomAttribute<SqlSyntaxProviderAttribute>(false).ProviderName == providerName);
-
-            if (provider == null)
-                throw new FileNotFoundException(string.Format("Unable to find SqlSyntaxProvider that is used for the provider type '{0}'", providerName));
-
-            SqlSyntaxContext.SqlSyntaxProvider = (ISqlSyntaxProvider)Activator.CreateInstance(provider);
-            return cts;
         }
 
         public async Task Directions()
