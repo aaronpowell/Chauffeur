@@ -4,11 +4,17 @@ using System.Linq;
 using System.Reflection;
 using Umbraco.Core;
 using Umbraco.Core.Persistence.Mappers;
-namespace Chauffeur.ApiWorkarounds
+
+namespace Chauffeur.DependencyBuilders
 {
-    internal static class MappingResolver
+    class MappingResolversBuilder : IBuildDependencies
     {
-        public static void SetupMappingResolver()
+        public void Build(ShittyIoC container)
+        {
+            SetupMappingResolver();
+        }
+
+        private static void SetupMappingResolver()
         {
             var umbracoCore = AppDomain.CurrentDomain.GetAssemblies().First(a => a.FullName.Contains("Umbraco.Core"));
 

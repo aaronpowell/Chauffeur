@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Chauffeur.ApiWorkarounds;
 using Chauffeur.Host;
-using Umbraco.Core;
 using Umbraco.Core.Models;
 using Umbraco.Core.Persistence;
-using Umbraco.Core.Persistence.SqlSyntax;
 using Umbraco.Core.Persistence.UnitOfWork;
 using Umbraco.Core.Services;
 using Task = System.Threading.Tasks.Task;
@@ -91,9 +87,6 @@ namespace Chauffeur.Deliverables
             }
 
             var xml = XDocument.Load(file);
-
-            MappingResolver.SetupMappingResolver();
-            ApplicationContextWorkaround.Create();
 
             packagingService.ImportContentTypes(xml.Elements().First());
 

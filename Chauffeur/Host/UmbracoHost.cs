@@ -41,6 +41,10 @@ namespace Chauffeur.Host
             Container.RegisterFrom<DatabaseUnitOfWorkProviderBuilder>();
             Container.RegisterFrom<DataTypeServiceBuilder>();
             Container.RegisterFrom<PackagingServiceBuilder>();
+            Container.RegisterFrom<DatabaseBuilder>();
+
+            Container.RegisterFrom<MappingResolversBuilder>();
+            Container.RegisterFrom<ApplicationContextBuilder>();
         }
 
         public async Task Run()
