@@ -31,5 +31,43 @@ namespace Chauffeur.Tests.Deliverables
 
             service.Received().GetAllContentTypes();
         }
+
+        [Test]
+        public async Task GetCommandWithIdReturnsItemFromUmbracoApi()
+        {
+            var service = Substitute.For<IContentTypeService>();
+            service.GetContentType(Arg.Any<int>()).Returns(Substitute.For<IContentType>());
+
+            var deliverable = new ContentTypeDeliverable(
+                null,
+                Substitute.For<TextWriter>(),
+                service,
+                null,
+                null
+            );
+
+            await deliverable.Run("", new[] { "get", "1" });
+
+            service.Received().GetContentType(Arg.Any<int>());
+        }
+
+        [Test]
+        public async Task GetCommandWithAliasReturnsItemFromUmbracoApi()
+        {
+            var service = Substitute.For<IContentTypeService>();
+            service.GetContentType(Arg.Any<string>()).Returns(Substitute.For<IContentType>());
+
+            var deliverable = new ContentTypeDeliverable(
+                null,
+                Substitute.For<TextWriter>(),
+                service,
+                null,
+                null
+            );
+
+            await deliverable.Run("", new[] { "get", "alias" });
+
+            service.Received().GetContentType(Arg.Any<string>());
+        }
     }
 }
