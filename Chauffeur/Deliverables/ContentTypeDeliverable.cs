@@ -128,20 +128,7 @@ namespace Chauffeur.Deliverables
                 contentType = contentTypeService.GetContentType(id);
             else
             {
-                //Sigh, can't use the GetByAlias because at the moment there are internal dependencies I can't load
-                //contentType = cts.GetContentType(args[0]);
-
-                //instead we'll find the ID ourselves from the DB
-                var sql = new Sql()
-                    .Select("NodeId")
-                   .From("cmsContentType")
-                   .Where("alias = @0", new[] { args[0] })
-                   ;
-                var uow = uowProvider.GetUnitOfWork();
-                var ids = uow.Database.Fetch<int>(sql);
-                if (ids.Any())
-                    contentType = contentTypeService.GetContentType(ids.First());
-
+                contentType = contentTypeService.GetContentType(args[0]);
                 foundWith = "alias";
             }
 
