@@ -8,9 +8,7 @@ namespace Chauffeur.DependencyBuilders
     {
         public void Build(ShittyIoC container)
         {
-            container.Register<IContentService>(() => 
-                new ContentService(container.Resolve<RepositoryFactory>())
-            );
+            container.Register<ContentService, IContentService>();
         }
     }
 }

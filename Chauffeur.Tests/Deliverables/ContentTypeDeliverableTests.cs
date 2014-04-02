@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Chauffeur.Deliverables;
 using NSubstitute;
 using NUnit.Framework;

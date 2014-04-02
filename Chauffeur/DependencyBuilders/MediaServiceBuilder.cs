@@ -6,9 +6,7 @@ namespace Chauffeur.DependencyBuilders
     {
         public void Build(ShittyIoC container)
         {
-            container.Register<IMediaService>(() => 
-                new MediaService(container.Resolve<RepositoryFactory>())
-            );
+            container.Register<MediaService, IMediaService>();
         }
     }
 }

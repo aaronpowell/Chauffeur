@@ -5,7 +5,7 @@ namespace Chauffeur.DependencyBuilders
     {
         public void Build(ShittyIoC container)
         {
-            container.Register<IDatabaseUnitOfWorkProvider>(() => new PetaPocoUnitOfWorkProvider());
+            container.Register<PetaPocoUnitOfWorkProvider, IDatabaseUnitOfWorkProvider>();
         }
     }
 }

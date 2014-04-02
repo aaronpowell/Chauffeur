@@ -7,11 +7,7 @@ namespace Chauffeur.DependencyBuilders
     {
         public void Build(ShittyIoC container)
         {
-            container.Register<IDataTypeService>(() => new DataTypeService(
-                    container.Resolve<IDatabaseUnitOfWorkProvider>(),
-                    container.Resolve<RepositoryFactory>()
-                )
-            );
+            container.Register<DataTypeService, IDataTypeService>();
         }
     }
 }

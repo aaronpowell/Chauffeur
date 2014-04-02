@@ -7,9 +7,7 @@ namespace Chauffeur.DependencyBuilders
     {
         public void Build(ShittyIoC container)
         {
-            container.Register<IChauffeurSettings>(
-                () => new ChauffeurSettings(container.Resolve<TextWriter>(), container.Resolve<IFileSystem>())
-            );
+            container.Register<ChauffeurSettings, IChauffeurSettings>();
         }
     }
 }

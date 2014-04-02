@@ -11,7 +11,7 @@ namespace Chauffeur.Host
         private readonly TextWriter writer;
         private readonly IFileSystem fileSystem;
 
-        internal ChauffeurSettings(TextWriter writer, IFileSystem fileSystem)
+        public ChauffeurSettings(TextWriter writer, IFileSystem fileSystem)
         {
             this.writer = writer;
             this.fileSystem = fileSystem;
