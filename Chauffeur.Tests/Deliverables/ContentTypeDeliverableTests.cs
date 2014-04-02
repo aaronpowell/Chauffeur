@@ -24,6 +24,8 @@ namespace Chauffeur.Tests.Deliverables
                 Substitute.ForPartsOf<TextWriter>(),
                 service,
                 null,
+                null,
+                null,
                 null
             );
 
@@ -43,6 +45,8 @@ namespace Chauffeur.Tests.Deliverables
                 Substitute.For<TextWriter>(),
                 service,
                 null,
+                null,
+                null,
                 null
             );
 
@@ -61,6 +65,8 @@ namespace Chauffeur.Tests.Deliverables
                 null,
                 Substitute.For<TextWriter>(),
                 service,
+                null,
+                null,
                 null,
                 null
             );

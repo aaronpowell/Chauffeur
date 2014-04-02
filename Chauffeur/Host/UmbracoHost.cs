@@ -20,15 +20,12 @@ namespace Chauffeur.Host
         private IEnumerable<Type> deliverableTypes;
 
         public static UmbracoHost Current { get; set; }
-        public ChauffeurSettings Settings { get; private set; }
         internal ShittyIoC Container { get; private set; }
 
         public UmbracoHost(TextReader reader, TextWriter writer)
         {
             this.reader = reader;
             this.writer = writer;
-
-            Settings = new ChauffeurSettings(writer);
 
             Container = new ShittyIoC();
             Container.Register<TextReader>(() => reader);
@@ -42,6 +39,8 @@ namespace Chauffeur.Host
             Container.RegisterFrom<DataTypeServiceBuilder>();
             Container.RegisterFrom<PackagingServiceBuilder>();
             Container.RegisterFrom<DatabaseBuilder>();
+            Container.RegisterFrom<ChauffeurSettingBuilder>();
+            Container.RegisterFrom<FileSystemBuilder>();
 
             Container.RegisterFrom<MappingResolversBuilder>();
             Container.RegisterFrom<ApplicationContextBuilder>();
