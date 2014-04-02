@@ -6,11 +6,7 @@ namespace Chauffeur.DependencyBuilders
     {
         public void Build(ShittyIoC container)
         {
-            container.Register<IContentTypeService>(() => new ContentTypeService(
-                container.Resolve<IContentService>(),
-                container.Resolve<IMediaService>()
-                )
-            );
+            container.Register<ContentTypeService, IContentTypeService>();
         }
     }
 }
