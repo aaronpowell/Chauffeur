@@ -11,21 +11,21 @@ using NUnit.Framework;
 namespace Chauffeur.Tests.Deliverables
 {
     [TestFixture]
-    public class DeliveryDeliverableTests
+    public class PackageDeliverableTests
     {
         [Test]
-        public async Task NoDeliveriesAbortsEarly()
+        public async Task NoPackagesAbortsEarly()
         {
             var writer = Substitute.ForPartsOf<TextWriter>();
-            var delivery = new DeliveryDeliverable(null, writer, null, null);
+            var package = new PackageDeliverable(null, writer, null, null);
 
-            await delivery.Run(null, new string[0]);
+            await package.Run(null, new string[0]);
 
             writer.Received(1).WriteLineAsync(Arg.Any<string>());
         }
 
         [Test]
-        public async Task NotFoundDeliveryAbortsEarly()
+        public async Task NotFoundPackageAbortsEarly()
         {
             var writer = new MockTextWriter();
             var settings = Substitute.For<IChauffeurSettings>();
@@ -34,9 +34,9 @@ namespace Chauffeur.Tests.Deliverables
                 x[0] = "";
                 return true;
             });
-            var delivery = new DeliveryDeliverable(null, writer, new MockFileSystem(), settings);
+            var package = new PackageDeliverable(null, writer, new MockFileSystem(), settings);
 
-            await delivery.Run(null, new[] { "Test" });
+            await package.Run(null, new[] { "Test" });
 
             Assert.That(writer.Messages.Count(), Is.EqualTo(1));
         }
