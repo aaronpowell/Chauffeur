@@ -2,22 +2,127 @@
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Xml.Linq;
 using Chauffeur.Deliverables;
 using Chauffeur.Host;
 using NSubstitute;
 using NUnit.Framework;
+using Umbraco.Core.Models;
+using Umbraco.Core.Services;
+using Task = System.Threading.Tasks.Task;
 
 namespace Chauffeur.Tests.Deliverables
 {
     [TestFixture]
     public class PackageDeliverableTests
     {
+        #region SampleDocumentTypesXml
+        private const string documentTypesXml = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no""?>
+<umbPackage>
+  <DocumentTypes>
+    <DocumentType>
+      <Info>
+        <Name>Demo</Name>
+        <Alias>Demo</Alias>
+        <Icon>.sprTreeFolder</Icon>
+        <Thumbnail>folder.png</Thumbnail>
+        <Description>
+        </Description>
+        <AllowAtRoot>False</AllowAtRoot>
+        <AllowedTemplates />
+        <DefaultTemplate>
+        </DefaultTemplate>
+      </Info>
+      <Structure />
+      <GenericProperties>
+        <GenericProperty>
+          <Name>Meta Data</Name>
+          <Alias>metaData</Alias>
+          <Type>Umbraco.Textbox</Type>
+          <Definition>0cc0eba1-9960-42c9-bf9b-60e150b429ae</Definition>
+          <Tab>
+          </Tab>
+          <Mandatory>False</Mandatory>
+          <Validation>
+          </Validation>
+          <Description><![CDATA[]]></Description>
+        </GenericProperty>
+        <GenericProperty>
+          <Name>Body Text</Name>
+          <Alias>bodyText</Alias>
+          <Type>Umbraco.TinyMCEv3</Type>
+          <Definition>ca90c950-0aff-4e72-b976-a30b1ac57dad</Definition>
+          <Tab>Content</Tab>
+          <Mandatory>False</Mandatory>
+          <Validation>
+          </Validation>
+          <Description><![CDATA[The body of a page]]></Description>
+        </GenericProperty>
+      </GenericProperties>
+      <Tabs>
+        <Tab>
+          <Id>12</Id>
+          <Caption>Content</Caption>
+          <SortOrder>0</SortOrder>
+        </Tab>
+      </Tabs>
+    </DocumentType>
+    <DocumentType>
+      <Info>
+        <Name>Demo 2</Name>
+        <Alias>Demo2</Alias>
+        <Icon>.sprTreeFolder</Icon>
+        <Thumbnail>folder.png</Thumbnail>
+        <Description>
+        </Description>
+        <AllowAtRoot>False</AllowAtRoot>
+        <AllowedTemplates />
+        <DefaultTemplate>
+        </DefaultTemplate>
+      </Info>
+      <Structure />
+      <GenericProperties>
+        <GenericProperty>
+          <Name>Meta Data</Name>
+          <Alias>metaData</Alias>
+          <Type>ec15c1e5-9d90-422a-aa52-4f7622c63bea</Type>
+          <Definition>0cc0eba1-9960-42c9-bf9b-60e150b429ae</Definition>
+          <Tab>
+          </Tab>
+          <Mandatory>False</Mandatory>
+          <Validation>
+          </Validation>
+          <Description><![CDATA[]]></Description>
+        </GenericProperty>
+        <GenericProperty>
+          <Name>Body Text</Name>
+          <Alias>bodyText</Alias>
+          <Type>5e9b75ae-face-41c8-b47e-5f4b0fd82f83</Type>
+          <Definition>ca90c950-0aff-4e72-b976-a30b1ac57dad</Definition>
+          <Tab>Content</Tab>
+          <Mandatory>False</Mandatory>
+          <Validation>
+          </Validation>
+          <Description><![CDATA[The body of a page]]></Description>
+        </GenericProperty>
+      </GenericProperties>
+      <Tabs>
+        <Tab>
+          <Id>14</Id>
+          <Caption>Content</Caption>
+          <SortOrder>0</SortOrder>
+        </Tab>
+      </Tabs>
+    </DocumentType>
+  </DocumentTypes>
+</umbPackage>";
+        #endregion
+
         [Test]
         public async Task NoPackagesAbortsEarly()
         {
             var writer = Substitute.ForPartsOf<TextWriter>();
-            var package = new PackageDeliverable(null, writer, null, null);
+            var package = new PackageDeliverable(null, writer, null, null, null);
 
             await package.Run(null, new string[0]);
 
@@ -30,34 +135,41 @@ namespace Chauffeur.Tests.Deliverables
             var writer = new MockTextWriter();
             var settings = Substitute.For<IChauffeurSettings>();
             string dir;
-            settings.TryGetChauffeurDirectory(out dir).Returns(x => {
+            settings.TryGetChauffeurDirectory(out dir).Returns(x =>
+            {
                 x[0] = "";
                 return true;
             });
-            var package = new PackageDeliverable(null, writer, new MockFileSystem(), settings);
+            var package = new PackageDeliverable(null, writer, new MockFileSystem(), settings, null);
 
             await package.Run(null, new[] { "Test" });
 
             Assert.That(writer.Messages.Count(), Is.EqualTo(1));
         }
 
-        private class MockTextWriter : TextWriter
+        [Test]
+        public async Task HavingDocumentTypesWillReadThemIn()
         {
-            private readonly List<string> messages;
-            public MockTextWriter()
+            var writer = new MockTextWriter();
+            var settings = Substitute.For<IChauffeurSettings>();
+            string dir;
+            settings.TryGetChauffeurDirectory(out dir).Returns(x =>
             {
-                messages = new List<string>();
-            }
-
-            public IEnumerable<string> Messages { get { return messages; } }
-
-            public override System.Text.Encoding Encoding { get { return System.Text.Encoding.Default; } }
-
-            public override async Task WriteLineAsync(string value)
+                x[0] = "";
+                return true;
+            });
+            var fs = new MockFileSystem(new Dictionary<string, MockFileData>
             {
-                messages.Add(value);
-                await Task.FromResult(value);
-            }
+                { "Text.xml", new MockFileData(documentTypesXml) }
+            });
+            var packagingService = Substitute.For<IPackagingService>();
+            packagingService.ImportContentTypes(Arg.Any<XElement>()).Returns(Enumerable.Empty<IContentType>());
+
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService);
+
+            await package.Run(null, new[] { "Text" });
+
+            packagingService.Received(2).ImportContentTypes(Arg.Any<XElement>());
         }
     }
 }

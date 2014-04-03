@@ -1,8 +1,11 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Chauffeur.Host;
+using Umbraco.Core.Services;
 
 namespace Chauffeur.Deliverables
 {
@@ -13,15 +16,18 @@ namespace Chauffeur.Deliverables
     {
         private readonly IFileSystem fileSystem;
         private readonly IChauffeurSettings settings;
+        private readonly IPackagingService packagingService;
         public PackageDeliverable(
             TextReader reader,
             TextWriter writer,
             IFileSystem fileSystem,
-            IChauffeurSettings settings)
+            IChauffeurSettings settings,
+            IPackagingService packagingService)
             : base(reader, writer)
         {
             this.fileSystem = fileSystem;
             this.settings = settings;
+            this.packagingService = packagingService;
         }
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
@@ -51,7 +57,27 @@ namespace Chauffeur.Deliverables
                 return;
             }
 
-            await Out.WriteLineAsync(@"¯\_(ツ)_/¯");
+            using (var stream = fileSystem.File.OpenRead(fileLocation))
+            {
+                var xml = XDocument.Load(stream);
+
+                var info = xml.Root.Element("Info");
+
+                var documentTypesElement = xml.Root.Element("DocumentTypes");
+
+                if (documentTypesElement != null)
+                    await UnpackDocumentTypes(documentTypesElement.Elements("DocumentType"));
+            }
+        }
+
+        private async Task UnpackDocumentTypes(IEnumerable<XElement> elements)
+        {
+            foreach (var element in elements)
+            {
+                var name = (string)element.Element("Info").Element("Name");
+                await Out.WriteLineFormattedAsync("Importing DocumentType '{0}'", name);
+                packagingService.ImportContentTypes(element);
+            }
         }
     }
 }

@@ -212,6 +212,7 @@
     <Compile Include="Deliverables\ContentTypeDeliverableTests.cs" />
     <Compile Include="Deliverables\PackageDeliverableTests.cs" />
     <Compile Include="Deliverables\UnknownDeliverableTests.cs" />
+    <Compile Include="MockTextWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
