@@ -8,7 +8,7 @@ namespace Chauffeur.DependencyBuilders
         public void Build(ShittyIoC container)
         {
             container.Register<DatabaseFactory, IDatabaseFactory>();
-            container.Register<DatabaseContext, DatabaseContext>();
+            container.Register<DatabaseContext>(() => new DatabaseContext(container.Resolve<IDatabaseFactory>()));
         }
 
         private class DatabaseFactory : IDatabaseFactory
