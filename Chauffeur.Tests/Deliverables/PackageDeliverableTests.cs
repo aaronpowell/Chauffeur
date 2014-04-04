@@ -118,6 +118,20 @@ namespace Chauffeur.Tests.Deliverables
 </umbPackage>";
         #endregion
 
+        #region Sample DataType
+        private const string dataTypesXml = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no""?>
+<umbPackage>
+  <DataTypes>
+    <DataType Name='Date Picker with time' Id='Umbraco.DateTime' Definition='e4d66c0f-b935-4200-81f0-025f7256b89a' DatabaseType='Date'>
+      <PreValues />
+    </DataType>
+    <DataType Name='Date Picker' Id='Umbraco.Date' Definition='5046194e-4237-453c-a547-15db3a07c4e1' DatabaseType='Date'>
+      <PreValues />
+    </DataType>
+  </DataTypes>
+</umbPackage>";
+        #endregion
+
         [Test]
         public async Task NoPackagesAbortsEarly()
         {
@@ -170,6 +184,31 @@ namespace Chauffeur.Tests.Deliverables
             await package.Run(null, new[] { "Text" });
 
             packagingService.Received(2).ImportContentTypes(Arg.Any<XElement>());
+        }
+
+        [Test]
+        public async Task HavingDataTypesWillReadThemIn()
+        {
+            var writer = new MockTextWriter();
+            var settings = Substitute.For<IChauffeurSettings>();
+            string dir;
+            settings.TryGetChauffeurDirectory(out dir).Returns(x =>
+            {
+                x[0] = "";
+                return true;
+            });
+            var fs = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { "Text.xml", new MockFileData(dataTypesXml) }
+            });
+            var packagingService = Substitute.For<IPackagingService>();
+            packagingService.ImportDataTypeDefinitions(Arg.Any<XElement>()).Returns(Enumerable.Empty<IDataTypeDefinition>());
+
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService);
+
+            await package.Run(null, new[] { "Text" });
+
+            packagingService.Received(2).ImportDataTypeDefinitions(Arg.Any<XElement>());
         }
     }
 }

@@ -66,8 +66,11 @@ namespace Chauffeur.Deliverables
                 if (info != null)
                     await PrintInfo(info);
 
-                var documentTypesElement = xml.Root.Element("DocumentTypes");
+                var dataTypesElement = xml.Root.Element("DataTypes");
+                if (dataTypesElement != null)
+                    await UnpackDataTypes(dataTypesElement.Elements("DataType"));
 
+                var documentTypesElement = xml.Root.Element("DocumentTypes");
                 if (documentTypesElement != null)
                     await UnpackDocumentTypes(documentTypesElement.Elements("DocumentType"));
             }
@@ -84,6 +87,16 @@ namespace Chauffeur.Deliverables
             var version = (string)pkg.Element("version");
 
             await Out.WriteLineFormattedAsync("Installing package {0} v{1}", name, version);
+        }
+
+        private async Task UnpackDataTypes(IEnumerable<XElement> elements)
+        {
+            foreach (var element in elements)
+            {
+                var name = (string)element.Attribute("Name");
+                await Out.WriteLineFormattedAsync("Importing DataType '{0}'", name);
+                packagingService.ImportDataTypeDefinitions(element);
+            }
         }
 
         private async Task UnpackDocumentTypes(IEnumerable<XElement> elements)
