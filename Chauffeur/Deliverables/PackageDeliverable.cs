@@ -61,13 +61,29 @@ namespace Chauffeur.Deliverables
             {
                 var xml = XDocument.Load(stream);
 
-                var info = xml.Root.Element("Info");
+                var info = xml.Root.Element("info");
+
+                if (info != null)
+                    await PrintInfo(info);
 
                 var documentTypesElement = xml.Root.Element("DocumentTypes");
 
                 if (documentTypesElement != null)
                     await UnpackDocumentTypes(documentTypesElement.Elements("DocumentType"));
             }
+        }
+
+        private async Task PrintInfo(XElement info)
+        {
+            var pkg = info.Element("package");
+
+            if (pkg != null)
+                return;
+
+            var name = (string)pkg.Element("name");
+            var version = (string)pkg.Element("version");
+
+            await Out.WriteLineFormattedAsync("Installing package {0} v{1}", name, version);
         }
 
         private async Task UnpackDocumentTypes(IEnumerable<XElement> elements)
