@@ -95,7 +95,7 @@ namespace Chauffeur.Deliverables
             {
                 var name = (string)element.Attribute("Name");
                 await Out.WriteLineFormattedAsync("Importing DataType '{0}'", name);
-                packagingService.ImportDataTypeDefinitions(element);
+                packagingService.ImportDataTypeDefinitions(new XElement("DataTypes", element));
             }
         }
 
