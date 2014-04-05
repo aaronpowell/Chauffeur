@@ -132,6 +132,23 @@ namespace Chauffeur.Tests.Deliverables
 </umbPackage>";
         #endregion
 
+        #region Sample Templates XML
+        private const string templatesXml = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no""?>
+<umbPackage>
+  <Templates>
+    <Template>
+      <Name>AtoZPage</Name>
+      <Alias>AtoZPage</Alias>
+      <Master>SystemPages</Master>
+      <Design><![CDATA[<!doctype html>
+<html>
+    <body>Template</body>
+</html>]]></Design>
+    </Template>
+  </Templates>
+</umbPackage>";
+        #endregion
+
         [Test]
         public async Task NoPackagesAbortsEarly()
         {
@@ -209,6 +226,31 @@ namespace Chauffeur.Tests.Deliverables
             await package.Run(null, new[] { "Text" });
 
             packagingService.Received(2).ImportDataTypeDefinitions(Arg.Any<XElement>());
+        }
+
+        [Test]
+        public async Task HavingTemplatesWillReadThemin()
+        {
+            var writer = new MockTextWriter();
+            var settings = Substitute.For<IChauffeurSettings>();
+            string dir;
+            settings.TryGetChauffeurDirectory(out dir).Returns(x =>
+            {
+                x[0] = "";
+                return true;
+            });
+            var fs = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { "Text.xml", new MockFileData(templatesXml) }
+            });
+            var packagingService = Substitute.For<IPackagingService>();
+            packagingService.ImportTemplates(Arg.Any<XElement>()).Returns(Enumerable.Empty<ITemplate>());
+
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService);
+
+            await package.Run(null, new[] { "Text" });
+
+            packagingService.Received(1).ImportTemplates(Arg.Any<XElement>());
         }
     }
 }
