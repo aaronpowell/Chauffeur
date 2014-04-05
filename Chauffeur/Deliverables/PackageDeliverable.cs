@@ -66,13 +66,17 @@ namespace Chauffeur.Deliverables
                 if (info != null)
                     await PrintInfo(info);
 
-                var dataTypesElement = xml.Root.Element("DataTypes");
-                if (dataTypesElement != null)
-                    await UnpackDataTypes(dataTypesElement.Elements("DataType"));
+                var element = xml.Root.Element("DataTypes");
+                if (element != null)
+                    await UnpackDataTypes(element.Elements("DataType"));
 
-                var documentTypesElement = xml.Root.Element("DocumentTypes");
-                if (documentTypesElement != null)
-                    await UnpackDocumentTypes(documentTypesElement.Elements("DocumentType"));
+                element = xml.Root.Element("Templates");
+                if (element != null)
+                    await UnpackTemplates(element.Elements("Template"));
+
+                element = xml.Root.Element("DocumentTypes");
+                if (element != null)
+                    await UnpackDocumentTypes(element.Elements("DocumentType"));
             }
         }
 
@@ -96,6 +100,16 @@ namespace Chauffeur.Deliverables
                 var name = (string)element.Attribute("Name");
                 await Out.WriteLineFormattedAsync("Importing DataType '{0}'", name);
                 packagingService.ImportDataTypeDefinitions(new XElement("DataTypes", element));
+            }
+        }
+
+        private async Task UnpackTemplates(IEnumerable<XElement> elements)
+        {
+            foreach (var element in elements)
+            {
+                var name = (string)element.Element("Name");
+                await Out.WriteLineFormattedAsync("Importing Template '{0}'", name);
+                packagingService.ImportTemplates(element);
             }
         }
 
