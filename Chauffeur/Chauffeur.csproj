@@ -203,16 +203,12 @@
     <Compile Include="Deliverables\PackageDeliverable.cs" />
     <Compile Include="DependencyBuilders\ApplicationContextBuilder.cs" />
     <Compile Include="DependencyBuilders\ChauffeurSettingBuilder.cs" />
-    <Compile Include="DependencyBuilders\ContentServiceBuilder.cs" />
-    <Compile Include="DependencyBuilders\ContentTypeServiceBuilder.cs" />
     <Compile Include="DependencyBuilders\DatabaseBuilder.cs" />
     <Compile Include="DependencyBuilders\DatabaseUnitOfWorkProviderBuilder.cs" />
-    <Compile Include="DependencyBuilders\DataTypeServiceBuilder.cs" />
     <Compile Include="DependencyBuilders\FileSystemBuilder.cs" />
     <Compile Include="DependencyBuilders\MappingResolversBuilder.cs" />
-    <Compile Include="DependencyBuilders\MediaServiceBuilder.cs" />
-    <Compile Include="DependencyBuilders\PackagingServiceBuilder.cs" />
     <Compile Include="DependencyBuilders\RepositoryFactoryBuilder.cs" />
+    <Compile Include="DependencyBuilders\ServicesBuilder.cs" />
     <Compile Include="DependencyBuilders\SqlSyntaxProviderBuilder.cs" />
     <Compile Include="Host\ChauffeurSettings.cs" />
     <Compile Include="Deliverables\ContentTypeDeliverable.cs" />
