@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -20,19 +21,25 @@ namespace Chauffeur.Deliverables
         private readonly IContentTypeService contentTypeService;
         private readonly IDatabaseUnitOfWorkProvider uowProvider;
         private readonly IPackagingService packagingService;
+        private readonly IFileSystem fileSystem;
+        private readonly IChauffeurSettings settings;
 
         public ContentTypeDeliverable(
             TextReader reader,
             TextWriter writer,
             IContentTypeService contentTypeService,
             IDatabaseUnitOfWorkProvider uowProvider,
-            IPackagingService packagingService
+            IPackagingService packagingService,
+            IFileSystem fileSystem,
+            IChauffeurSettings settings
             )
             : base(reader, writer)
         {
             this.contentTypeService = contentTypeService;
             this.uowProvider = uowProvider;
             this.packagingService = packagingService;
+            this.fileSystem = fileSystem;
+            this.settings = settings;
         }
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
@@ -76,11 +83,11 @@ namespace Chauffeur.Deliverables
             var deliveryName = args[0].Trim();
 
             string directory;
-            if (!UmbracoHost.Current.Settings.TryGetChauffeurDirectory(out directory))
+            if (!settings.TryGetChauffeurDirectory(out directory))
                 return;
 
-            var file = Path.Combine(directory, deliveryName + ".xml");
-            if (!System.IO.File.Exists(file))
+            var file = fileSystem.Path.Combine(directory, deliveryName + ".xml");
+            if (!fileSystem.File.Exists(file))
             {
                 await Out.WriteLineFormattedAsync("Unable to located the import script '{0}'", deliveryName);
                 return;
@@ -101,7 +108,7 @@ namespace Chauffeur.Deliverables
                 return;
 
             string exportDirectory;
-            if (!UmbracoHost.Current.Settings.TryGetChauffeurDirectory(out exportDirectory))
+            if (!settings.TryGetChauffeurDirectory(out exportDirectory))
                 return;
 
             var xml = new XDocument();
@@ -109,7 +116,7 @@ namespace Chauffeur.Deliverables
             xml.Add(packagingService.Export(contentType, false));
 
             var fileName = DateTime.UtcNow.ToString("yyyyMMdd") + "-" + contentType.Alias + ".xml";
-            xml.Save(Path.Combine(exportDirectory, fileName));
+            xml.Save(fileSystem.Path.Combine(exportDirectory, fileName));
             await Out.WriteLineFormattedAsync("Content Type has been exported with file name '{0}'", fileName);
         }
 
@@ -128,20 +135,7 @@ namespace Chauffeur.Deliverables
                 contentType = contentTypeService.GetContentType(id);
             else
             {
-                //Sigh, can't use the GetByAlias because at the moment there are internal dependencies I can't load
-                //contentType = cts.GetContentType(args[0]);
-
-                //instead we'll find the ID ourselves from the DB
-                var sql = new Sql()
-                    .Select("NodeId")
-                   .From("cmsContentType")
-                   .Where("alias = @0", new[] { args[0] })
-                   ;
-                var uow = uowProvider.GetUnitOfWork();
-                var ids = uow.Database.Fetch<int>(sql);
-                if (ids.Any())
-                    contentType = contentTypeService.GetContentType(ids.First());
-
+                contentType = contentTypeService.GetContentType(args[0]);
                 foundWith = "alias";
             }
 

@@ -23,3 +23,5 @@ App_Data
 media
 readme.html
 *.nupkg
+Chauffeur.Demo/Views/
+Chauffeur.Demo/masterpages/

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Chauffeur.Deliverables;
 using Chauffeur.DependencyBuilders;
 using Umbraco.Core;
+using Umbraco.Core.Logging;
 
 namespace Chauffeur.Host
 {
@@ -20,7 +21,6 @@ namespace Chauffeur.Host
         private IEnumerable<Type> deliverableTypes;
 
         public static UmbracoHost Current { get; set; }
-        public ChauffeurSettings Settings { get; private set; }
         internal ShittyIoC Container { get; private set; }
 
         public UmbracoHost(TextReader reader, TextWriter writer)
@@ -28,20 +28,16 @@ namespace Chauffeur.Host
             this.reader = reader;
             this.writer = writer;
 
-            Settings = new ChauffeurSettings(writer);
-
             Container = new ShittyIoC();
             Container.Register<TextReader>(() => reader);
             Container.Register<TextWriter>(() => writer);
             Container.RegisterFrom<RepositoryFactoryBuilder>();
-            Container.RegisterFrom<MediaServiceBuilder>();
-            Container.RegisterFrom<ContentTypeServiceBuilder>();
-            Container.RegisterFrom<ContentServiceBuilder>();
             Container.RegisterFrom<SqlSyntaxProviderBuilder>();
             Container.RegisterFrom<DatabaseUnitOfWorkProviderBuilder>();
-            Container.RegisterFrom<DataTypeServiceBuilder>();
-            Container.RegisterFrom<PackagingServiceBuilder>();
             Container.RegisterFrom<DatabaseBuilder>();
+            Container.RegisterFrom<ChauffeurSettingBuilder>();
+            Container.RegisterFrom<FileSystemBuilder>();
+            Container.RegisterFrom<ServicesBuilder>();
 
             Container.RegisterFrom<MappingResolversBuilder>();
             Container.RegisterFrom<ApplicationContextBuilder>();
@@ -89,6 +85,7 @@ namespace Chauffeur.Host
             catch (Exception ex)
             {
                 writer.WriteLine("Error running the current deliverable: " + ex.Message);
+                LogHelper.Error<UmbracoHost>("Error running the current deliverable", ex);
                 return DeliverableResponse.Continue;
             }
         }

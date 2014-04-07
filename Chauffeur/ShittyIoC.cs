@@ -20,6 +20,11 @@ namespace Chauffeur
                 RegisterDeliverable(deliverable);
         }
 
+        public void Register<T, TAs>()
+        {
+            Register<TAs>(() => Resolve(typeof(T)));
+        }
+
         public void Register<T>(Func<object> factory)
         {
             instanceDependencyMap.Add(typeof(T), factory);
