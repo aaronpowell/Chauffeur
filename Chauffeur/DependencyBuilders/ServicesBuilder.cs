@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Chauffeur.Services;
 using Umbraco.Core.Persistence;
 using Umbraco.Core.Persistence.UnitOfWork;
 using Umbraco.Core.PropertyEditors;
@@ -20,12 +21,13 @@ namespace Chauffeur.DependencyBuilders
             container.Register<DataTypeService, IDataTypeService>();
             container.Register<MediaService, IMediaService>();
             container.Register<FileService, IFileService>();
+            container.Register<MacroService, IMacroService>();
 
-            container.Register<IPackagingService>(() => new PackagingService(
+            container.Register<PackagingService>(() => new PackagingService(
                     container.Resolve<IContentService>(),
                     container.Resolve<IContentTypeService>(),
                     container.Resolve<IMediaService>(),
-                    null,
+                    container.Resolve<IMacroService>(),
                     container.Resolve<IDataTypeService>(),
                     container.Resolve<IFileService>(),
                     null,
@@ -33,6 +35,8 @@ namespace Chauffeur.DependencyBuilders
                     container.Resolve<IDatabaseUnitOfWorkProvider>()
                 )
             );
+
+            container.Register<OverridingPackagingService, IPackagingService>();
 
             var type = typeof(LegacyPropertyEditorIdToAliasConverter);
             var method = type.GetMethod("CreateMappingsForCoreEditors", BindingFlags.Static | BindingFlags.NonPublic);

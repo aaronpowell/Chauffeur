@@ -221,6 +221,7 @@
     <Compile Include="IFileSystemExtensions.cs" />
     <Compile Include="IProvideDirections.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\OverridingPackagingService.cs" />
     <Compile Include="ShittyIoC.cs" />
     <Compile Include="TextWriterExtensions.cs" />
   </ItemGroup>

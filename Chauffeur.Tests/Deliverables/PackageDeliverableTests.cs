@@ -149,6 +149,28 @@ namespace Chauffeur.Tests.Deliverables
 </umbPackage>";
         #endregion
 
+        #region Sample Macros XML
+        private const string macrosXml = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no""?>
+<umbPackage>
+  <Macros>
+    <macro>
+      <name>Render Venue Map</name>
+      <alias>RenderVenueMap</alias>
+      <scriptType>
+      </scriptType>
+      <scriptAssembly>
+      </scriptAssembly>
+      <xslt>
+      </xslt>
+      <useInEditor>False</useInEditor>
+      <refreshRate>0</refreshRate>
+      <scriptingFile>~/Views/MacroPartials/RenderVenueMap.cshtml</scriptingFile>
+      <properties />
+    </macro>
+  </Macros>
+</umbPackage>";
+        #endregion
+
         [Test]
         public async Task NoPackagesAbortsEarly()
         {
@@ -229,7 +251,7 @@ namespace Chauffeur.Tests.Deliverables
         }
 
         [Test]
-        public async Task HavingTemplatesWillReadThemin()
+        public async Task HavingTemplatesWillReadThemIn()
         {
             var writer = new MockTextWriter();
             var settings = Substitute.For<IChauffeurSettings>();
@@ -251,6 +273,31 @@ namespace Chauffeur.Tests.Deliverables
             await package.Run(null, new[] { "Text" });
 
             packagingService.Received(1).ImportTemplates(Arg.Any<XElement>());
+        }
+
+        [Test]
+        public async Task HavingMacrosWillReadThemIn()
+        {
+            var writer = new MockTextWriter();
+            var settings = Substitute.For<IChauffeurSettings>();
+            string dir;
+            settings.TryGetChauffeurDirectory(out dir).Returns(x =>
+            {
+                x[0] = "";
+                return true;
+            });
+            var fs = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { "Text.xml", new MockFileData(macrosXml) }
+            });
+            var packagingService = Substitute.For<IPackagingService>();
+            packagingService.ImportMacros(Arg.Any<XElement>()).Returns(Enumerable.Empty<IMacro>());
+
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService);
+
+            await package.Run(null, new[] { "Text" });
+
+            packagingService.Received(1).ImportMacros(Arg.Any<XElement>());
         }
     }
 }

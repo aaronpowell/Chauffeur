@@ -74,6 +74,10 @@ namespace Chauffeur.Deliverables
                 if (element != null)
                     await UnpackTemplates(element.Elements("Template"));
 
+                element = xml.Root.Element("Macros");
+                if (element != null)
+                    await UnpackMacros(element.Elements("macro"));
+
                 element = xml.Root.Element("DocumentTypes");
                 if (element != null)
                     await UnpackDocumentTypes(element.Elements("DocumentType"));
@@ -110,6 +114,16 @@ namespace Chauffeur.Deliverables
                 var name = (string)element.Element("Name");
                 await Out.WriteLineFormattedAsync("Importing Template '{0}'", name);
                 packagingService.ImportTemplates(element);
+            }
+        }
+
+        private async Task UnpackMacros(IEnumerable<XElement> elements)
+        {
+            foreach (var element in elements)
+            {
+                var name = (string)element.Element("name");
+                await Out.WriteLineFormattedAsync("Importing Macro '{0}'", name);
+                packagingService.ImportMacros(element);
             }
         }
 
