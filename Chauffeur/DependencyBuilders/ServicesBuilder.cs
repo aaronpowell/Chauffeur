@@ -23,18 +23,7 @@ namespace Chauffeur.DependencyBuilders
             container.Register<FileService, IFileService>();
             container.Register<MacroService, IMacroService>();
 
-            container.Register<PackagingService>(() => new PackagingService(
-                    container.Resolve<IContentService>(),
-                    container.Resolve<IContentTypeService>(),
-                    container.Resolve<IMediaService>(),
-                    container.Resolve<IMacroService>(),
-                    container.Resolve<IDataTypeService>(),
-                    container.Resolve<IFileService>(),
-                    null,
-                    container.Resolve<RepositoryFactory>(),
-                    container.Resolve<IDatabaseUnitOfWorkProvider>()
-                )
-            );
+            container.Register<PackagingService>();
 
             container.Register<OverridingPackagingService, IPackagingService>();
 

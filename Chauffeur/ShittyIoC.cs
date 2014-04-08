@@ -30,9 +30,9 @@ namespace Chauffeur
             instanceDependencyMap.Add(typeof(T), factory);
         }
 
-        public void Register<T>() where T : class, new()
+        public void Register<T>() where T : class
         {
-            Register<T>(() => new T());
+            instanceDependencyMap.Add(typeof(T), null);
         }
 
         public void RegisterFrom<T>()
@@ -77,6 +77,9 @@ namespace Chauffeur
             var resolvedTypeFactory = LookUpDependency(type);
             if (resolvedTypeFactory != null)
                 return resolvedTypeFactory();
+
+            if (type.IsInterface)
+                return null;
 
             var resolvedType = type;
             var constructor = resolvedType.GetConstructors().First();

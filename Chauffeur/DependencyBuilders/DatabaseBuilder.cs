@@ -9,7 +9,7 @@ namespace Chauffeur.DependencyBuilders
         public void Build(ShittyIoC container)
         {
             container.Register<DatabaseFactory, IDatabaseFactory>();
-            container.Register<DatabaseContext>(() => new DatabaseContext(container.Resolve<IDatabaseFactory>()));
+            container.Register<DatabaseContext>();
             container.Register<UmbracoDatabase>(() =>
             {
                 var connectionString = container.Resolve<IChauffeurSettings>().ConnectionString;
