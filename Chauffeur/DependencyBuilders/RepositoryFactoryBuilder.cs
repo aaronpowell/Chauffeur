@@ -5,7 +5,7 @@ namespace Chauffeur.DependencyBuilders
     {
         public void Build(ShittyIoC container)
         {
-            container.Register<RepositoryFactory>();
+            container.Register<RepositoryFactory>(() => new RepositoryFactory(true));
         }
     }
 }

@@ -82,7 +82,12 @@ namespace Chauffeur
                 return null;
 
             var resolvedType = type;
-            var constructor = resolvedType.GetConstructors().First();
+            var constructor = resolvedType
+                .GetConstructors()
+                .OrderBy(x => x.GetParameters().Count())
+                .Where(ctor => !ctor.GetParameters().Any(pt => pt.ParameterType == typeof(string)))
+                .Where(ctor => !ctor.GetParameters().Any(pt => pt.ParameterType == typeof(bool)))
+                .LastOrDefault();
             var parameters = constructor.GetParameters();
 
             if (!parameters.Any())

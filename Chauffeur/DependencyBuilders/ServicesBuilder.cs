@@ -8,6 +8,7 @@ using Chauffeur.Services;
 using Umbraco.Core.Persistence;
 using Umbraco.Core.Persistence.UnitOfWork;
 using Umbraco.Core.PropertyEditors;
+using Umbraco.Core.Publishing;
 using Umbraco.Core.Services;
 
 namespace Chauffeur.DependencyBuilders
@@ -22,6 +23,8 @@ namespace Chauffeur.DependencyBuilders
             container.Register<MediaService, IMediaService>();
             container.Register<FileService, IFileService>();
             container.Register<MacroService, IMacroService>();
+            
+            container.Register<PublishingStrategy, IPublishingStrategy>();
 
             container.Register<PackagingService>();
 
