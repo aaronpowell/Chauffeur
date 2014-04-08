@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.IO;
 using System.IO.Abstractions;
 using System.Reflection;
@@ -34,6 +35,14 @@ namespace Chauffeur.Host
                 }
             }
             return true;
+        }
+
+        public ConnectionStringSettings ConnectionString
+        {
+            get
+            {
+                return ConfigurationManager.ConnectionStrings["umbracoDbDSN"];
+            }
         }
     }
 }

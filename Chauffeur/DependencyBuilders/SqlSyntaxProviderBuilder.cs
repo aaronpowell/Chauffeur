@@ -19,7 +19,6 @@ namespace Chauffeur.DependencyBuilders
                 throw new FileNotFoundException(string.Format("Unable to find SqlSyntaxProvider that is used for the provider type '{0}'", providerName));
 
             SqlSyntaxContext.SqlSyntaxProvider = (ISqlSyntaxProvider)Activator.CreateInstance(provider);
-
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Umbraco.Core;
+﻿using Chauffeur.Host;
+using Umbraco.Core;
 using Umbraco.Core.Persistence;
 
 namespace Chauffeur.DependencyBuilders
@@ -9,23 +10,28 @@ namespace Chauffeur.DependencyBuilders
         {
             container.Register<DatabaseFactory, IDatabaseFactory>();
             container.Register<DatabaseContext>(() => new DatabaseContext(container.Resolve<IDatabaseFactory>()));
+            container.Register<UmbracoDatabase>(() =>
+            {
+                var connectionString = container.Resolve<IChauffeurSettings>().ConnectionString;
+                return new UmbracoDatabase(connectionString.ConnectionString, connectionString.ProviderName);
+            });
         }
 
         private class DatabaseFactory : IDatabaseFactory
         {
-            private readonly UmbracoDatabase _umbracoDatabase;
-            public DatabaseFactory()
+            private readonly UmbracoDatabase umbracoDatabase;
+            public DatabaseFactory(UmbracoDatabase umbracoDatabase)
             {
-                _umbracoDatabase = new UmbracoDatabase("umbracoDbDSN");
+                this.umbracoDatabase = umbracoDatabase;
             }
             public UmbracoDatabase CreateDatabase()
             {
-                return _umbracoDatabase;
+                return umbracoDatabase;
             }
 
             public void Dispose()
             {
-                _umbracoDatabase.Dispose();
+                umbracoDatabase.Dispose();
             }
         }
     }

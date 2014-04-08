@@ -200,6 +200,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Deliverables\InstallDeliverable.cs" />
     <Compile Include="Deliverables\PackageDeliverable.cs" />
     <Compile Include="DependencyBuilders\ApplicationContextBuilder.cs" />
     <Compile Include="DependencyBuilders\ChauffeurSettingBuilder.cs" />
