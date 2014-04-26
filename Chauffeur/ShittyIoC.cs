@@ -6,11 +6,48 @@ using Umbraco.Core;
 
 namespace Chauffeur
 {
+    internal class ShittyRegistration
+    {
+        public ResolutionType ResolutionType { get; set; }
+        public Func<object> Factory { get; set; }
+        public Type Type { get; set; }
+
+        public Action<object> AfterCreation { get; set; }
+    }
+
+    internal enum ResolutionType
+    {
+        Factory,
+        Reflection
+    }
+
+    internal class ShittyRegistrationBuilder
+    {
+        private readonly ShittyRegistration registration;
+        private readonly ShittyIoC container;
+        public ShittyRegistrationBuilder(ShittyRegistration registration, ShittyIoC container)
+        {
+            this.registration = registration;
+            this.container = container;
+        }
+
+        public ShittyRegistrationBuilder WhenCreated(Action<object> action)
+        {
+            registration.AfterCreation = action;
+
+            return this;
+        }
+
+        public ShittyRegistrationBuilder As<T>() where T : class
+        {
+            container.Register<T>(registration);
+            return this;
+        }
+    }
+
     internal class ShittyIoC
     {
-        private readonly Dictionary<Type, Func<object>> instanceDependencyMap = new Dictionary<Type, Func<object>>();
-        private readonly Dictionary<string, Type> deliverablesByName = new Dictionary<string, Type>();
-        private readonly Dictionary<string, Type> deliverablesByAlias = new Dictionary<string, Type>();
+        private readonly Dictionary<object, ShittyRegistration> instanceDependencyMap = new Dictionary<object, ShittyRegistration>();
 
         public ShittyIoC()
         {
@@ -20,19 +57,37 @@ namespace Chauffeur
                 RegisterDeliverable(deliverable);
         }
 
-        public void Register<T, TAs>()
+        public ShittyRegistrationBuilder Register<T, TAs>()
         {
-            Register<TAs>(() => Resolve(typeof(T)));
+            var reg = new ShittyRegistration
+            {
+                Type = typeof(T),
+                ResolutionType = ResolutionType.Reflection
+            };
+
+            instanceDependencyMap.Add(typeof(TAs), reg);
+
+            return new ShittyRegistrationBuilder(reg, this);
         }
 
-        public void Register<T>(Func<object> factory)
+        public ShittyRegistrationBuilder Register<T>(Func<T> factory)
+            where T : class
         {
-            instanceDependencyMap.Add(typeof(T), factory);
+            var reg = new ShittyRegistration
+            {
+                Type = typeof(T),
+                ResolutionType = ResolutionType.Factory,
+                Factory = (Func<object>)factory
+            };
+
+            instanceDependencyMap.Add(typeof(T), reg);
+
+            return new ShittyRegistrationBuilder(reg, this);
         }
 
-        public void Register<T>() where T : class
+        public ShittyRegistrationBuilder Register<T>() where T : class
         {
-            instanceDependencyMap.Add(typeof(T), null);
+            return Register<T, T>();
         }
 
         public void RegisterFrom<T>()
@@ -43,28 +98,34 @@ namespace Chauffeur
 
         private void RegisterDeliverable(Type deliverable)
         {
+            var registration = new ShittyRegistration
+            {
+                Type = deliverable,
+                ResolutionType = ResolutionType.Reflection
+            };
+
             var name = deliverable.GetCustomAttribute<DeliverableNameAttribute>();
-            deliverablesByName.Add(name.Name, deliverable);
+            instanceDependencyMap.Add(name.Name, registration);
 
             var aliases = deliverable.GetCustomAttributes<DeliverableAliasAttribute>();
             foreach (var alias in aliases)
-                deliverablesByAlias.Add(alias.Alias, deliverable);
+                instanceDependencyMap.Add(alias.Alias, registration);
         }
 
         public Deliverable ResolveDeliverableByName(string command)
         {
-            var deliverableType = deliverablesByName.ContainsKey(command) ?
-                deliverablesByName[command] :
-                deliverablesByAlias.ContainsKey(command) ?
-                    deliverablesByAlias[command] :
-                    deliverablesByName["unknown"];
+            var deliverableType = instanceDependencyMap.ContainsKey(command) ?
+                instanceDependencyMap[command] :
+                instanceDependencyMap.ContainsKey(command) ?
+                    instanceDependencyMap[command] :
+                    instanceDependencyMap["unknown"];
 
             return (Deliverable)Resolve(deliverableType);
         }
 
         public IEnumerable<Deliverable> ResolveAllDeliverables()
         {
-            return deliverablesByName.Select(x => x.Value).Select(Resolve).OfType<Deliverable>();
+            return instanceDependencyMap.Select(x => x.Value).Distinct().Select(Resolve).OfType<Deliverable>();
         }
 
         internal T Resolve<T>()
@@ -74,14 +135,22 @@ namespace Chauffeur
 
         private object Resolve(Type type)
         {
-            var resolvedTypeFactory = LookUpDependency(type);
-            if (resolvedTypeFactory != null)
-                return resolvedTypeFactory();
+            var registration = LookUpDependency(type);
+            return Resolve(registration);
+        }
 
-            if (type.IsInterface)
+        private object Resolve(ShittyRegistration registration)
+        {
+            if (registration == null)
                 return null;
 
-            var resolvedType = type;
+            if (registration.ResolutionType == ResolutionType.Factory)
+                return registration.Factory();
+
+            if (registration.Type.IsInterface)
+                return null;
+
+            var resolvedType = registration.Type;
             var constructor = resolvedType
                 .GetConstructors()
                 .OrderBy(x => x.GetParameters().Count())
@@ -90,19 +159,26 @@ namespace Chauffeur
                 .LastOrDefault();
             var parameters = constructor.GetParameters();
 
+            object instance;
+
             if (!parameters.Any())
             {
-                return Activator.CreateInstance(resolvedType);
+                instance = Activator.CreateInstance(resolvedType);
             }
             else
             {
-                return constructor.Invoke(
+                instance = constructor.Invoke(
                     ResolveParameters(parameters).ToArray()
                 );
             }
+
+            if (registration.AfterCreation != null)
+                registration.AfterCreation(instance);
+
+            return instance;
         }
 
-        private Func<object> LookUpDependency(Type type)
+        private ShittyRegistration LookUpDependency(Type type)
         {
             if (instanceDependencyMap.ContainsKey(type))
                 return instanceDependencyMap[type];
@@ -114,6 +190,11 @@ namespace Chauffeur
             return parameters
                 .Select(p => Resolve(p.ParameterType))
                 .ToList();
+        }
+
+        internal void Register<T>(ShittyRegistration registration)
+        {
+            instanceDependencyMap.Add(typeof(T), registration);
         }
     }
 

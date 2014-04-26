@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
+using System.Web.Security;
 using Chauffeur.Services;
-using Umbraco.Core.Persistence;
-using Umbraco.Core.Persistence.UnitOfWork;
+using Umbraco.Core.Models;
+using Umbraco.Core.Models.Membership;
 using Umbraco.Core.PropertyEditors;
 using Umbraco.Core.Publishing;
+using Umbraco.Core.Security;
 using Umbraco.Core.Services;
+using Umbraco.Web.Security.Providers;
 
 namespace Chauffeur.DependencyBuilders
 {
@@ -23,7 +21,10 @@ namespace Chauffeur.DependencyBuilders
             container.Register<MediaService, IMediaService>();
             container.Register<FileService, IFileService>();
             container.Register<MacroService, IMacroService>();
-            
+            container.Register<MemberGroupService, IMemberGroupService>();
+            container.Register<MemberService, IMembershipMemberService<IMember>>().As<IMemberService>();
+            container.Register<UserService, IMembershipMemberService<IUser>>().As<IUserService>();
+
             container.Register<PublishingStrategy, IPublishingStrategy>();
 
             container.Register<PackagingService>();
@@ -34,6 +35,8 @@ namespace Chauffeur.DependencyBuilders
             var method = type.GetMethod("CreateMappingsForCoreEditors", BindingFlags.Static | BindingFlags.NonPublic);
             if (method != null)
                 method.Invoke(null, null);
+
+            container.Register<UmbracoMembershipProviderBase>(() => Membership.Providers["UsersMembershipProvider"] as UmbracoMembershipProviderBase);
         }
     }
 }
