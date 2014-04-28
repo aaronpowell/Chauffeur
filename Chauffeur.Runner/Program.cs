@@ -38,6 +38,9 @@ namespace Chauffeur.Runner
                         //Console.WriteLine("Failed to load {0}", assembly.FullName);
                     }
                 }
+
+                domain.SetData("DataDirectory", Path.Combine(path, "..", "App_Data"));
+
                 var thisAssembly = new FileInfo(Assembly.GetExecutingAssembly().Location);
                 domain.ExecuteAssembly(thisAssembly.Name, args);
             }
