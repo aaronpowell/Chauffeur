@@ -86,6 +86,20 @@ namespace Chauffeur.Host
             {
                 writer.WriteLine("Error running the current deliverable: " + ex.Message);
                 LogHelper.Error<UmbracoHost>("Error running the current deliverable", ex);
+
+                if (ex is TypeLoadException)
+                {
+                    var tlex = (TypeLoadException)ex;
+
+                    if (tlex.TypeName == "Umbraco.Web.Security.Providers.MembersMembershipProvider")
+                    {
+                        writer.WriteLine("The problem is likely caused by what was identified in U4-4781. Don't worry though it's an easy fix. You need to change your web.config and explicitly specify the assembly name of the Membership & User providers.");
+                        writer.WriteLine("Make sure the type looks like:");
+                        writer.WriteLine("\tUmbraco.Web.Security.Providers.UsersMembershipProvider, Umbraco");
+                        writer.WriteLine("So Chauffeur will know it's coming from Umbraco.dll and not System.Web.dll");
+                    }
+                }
+
                 return DeliverableResponse.Continue;
             }
         }
