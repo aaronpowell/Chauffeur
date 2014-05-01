@@ -1,21 +1,20 @@
 param($Publish)
 
-$msbuild = "${env:ProgramFiles(x86)}\MSBuild\12.0\Bin\msbuild.exe"
+$toolsDir = "tools"
+$nuget = "$toolsDir\nuget.exe"
 
-. $msbuild Chauffeur.sln /p:Configuration=Release /t:"Clean;Build"
-
-rm *.nupkg
-
-cd Chauffeur
-nuget pack -OutputDirectory ../ -Prop Configuration=Release
-nuget pack -OutputDirectory ../ -Prop Configuration=Release -symbols
-
-cd ../Chauffeur.Runner
-nuget pack -OutputDirectory ../ -Prop Configuration=Release
-nuget pack -OutputDirectory ../ -Prop Configuration=Release -symbols
-
-cd ..
-
-if ($Publish) {
-    gci *.nupkg | %{ nuget push $_.FullName }
+if (!(Test-Path $toolsDir)) {
+    New-Item $toolsDir -ItemType "Directory"
 }
+
+if (!(Test-Path $nuget)) {
+    "NuGet not installed, installing"
+
+    $wc = New-Object System.Net.WebClient
+    $wc.DownloadFile("http://nuget.org/nuget.exe", "$pwd\$nuget")
+}
+
+. $nuget "Install" "FAKE" "-OutputDirectory" "tools" "-ExcludeVersion"
+. $nuget "Install" "nunit.runners" "-OutputDirectory" "tools" "-ExcludeVersion"
+
+. "$toolsDir\FAKE\tools\Fake.exe" "build.fsx"

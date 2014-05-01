@@ -25,3 +25,5 @@ readme.html
 *.nupkg
 Chauffeur.Demo/Views/
 Chauffeur.Demo/masterpages/
+tools
+packaging

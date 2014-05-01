@@ -2,14 +2,15 @@
 <package >
   <metadata>
     <id>Chauffeur</id>
-    <version>$version$</version>
-    <authors>$author$</authors>
-    <owners>aaron.powell</owners>
+    <version>@build.number@</version>
+    <authors>@authors@</authors>
+    <owners>@authors@</owners>
+    <summary>@summary@</summary>
     <licenseUrl>https://github.com/aaronpowell/Chauffeur/blob/master/License.md</licenseUrl>
     <projectUrl>https://github.com/aaronpowell/Chauffeur/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>$description$</description>
-    <releaseNotes>Initial release of the main core of Chauffeur</releaseNotes>
+    <description>@description@</description>
+    <releaseNotes>@releaseNotes@</releaseNotes>
     <copyright>Copyright 2014</copyright>
     <tags>umbraco deployment</tags>
     <dependencies>
