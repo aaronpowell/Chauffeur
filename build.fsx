@@ -27,13 +27,15 @@ let chauffeurDescription = chauffeurSummary
 let chauffeurRunnerSummary = "Chauffeur Runner is a CLI for executing Chauffeur deliverables against an Umbraco instance."
 let chauffeurRunnerDescription = chauffeurRunnerSummary
 
-let version = "0.2.4"
+let releaseNotes = 
+    ReadFile "ReleaseNotes.md"
+    |> ReleaseNotesHelper.parseReleaseNotes
 
 Target "AssemblyInfo" (fun _ ->
     CreateCSharpAssemblyInfo "SolutionInfo.cs"
       [ Attribute.Product projectName
-        Attribute.Version version
-        Attribute.FileVersion version
+        Attribute.Version releaseNotes.AssemblyVersion
+        Attribute.FileVersion releaseNotes.AssemblyVersion
         Attribute.ComVisible false ]
 )
 
@@ -70,8 +72,8 @@ Target "CreateChauffeurPackage" (fun _ ->
             OutputPath = packagingRoot
             Summary = chauffeurSummary
             WorkingDir = packagingDir
-            Version = version
-            ReleaseNotes = "TODO"
+            Version = releaseNotes.AssemblyVersion
+            ReleaseNotes = toLines releaseNotes.Notes
             AccessKey = getBuildParamOrDefault "nugetkey" ""
             Publish = hasBuildParam "nugetkey" }) "Chauffeur/Chauffeur.nuspec"
 )
@@ -92,8 +94,8 @@ Target "CreateRunnerPackage" (fun _ ->
             OutputPath = packagingRoot
             Summary = chauffeurRunnerSummary
             WorkingDir = packagingRunnerDir
-            Version = version
-            ReleaseNotes = "TODO"
+            Version = releaseNotes.AssemblyVersion
+            ReleaseNotes = toLines releaseNotes.Notes
             AccessKey = getBuildParamOrDefault "nugetkey" ""
             Publish = hasBuildParam "nugetkey" }) "Chauffeur.Runner/Chauffeur.Runner.nuspec"
 )
