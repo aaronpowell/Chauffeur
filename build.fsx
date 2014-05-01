@@ -96,6 +96,8 @@ Target "CreateRunnerPackage" (fun _ ->
             WorkingDir = packagingRunnerDir
             Version = releaseNotes.AssemblyVersion
             ReleaseNotes = toLines releaseNotes.Notes
+            Dependencies =
+                ["Chauffeur", NormalizeVersion releaseNotes.AssemblyVersion]
             AccessKey = getBuildParamOrDefault "nugetkey" ""
             Publish = hasBuildParam "nugetkey" }) "Chauffeur.Runner/Chauffeur.Runner.nuspec"
 )
