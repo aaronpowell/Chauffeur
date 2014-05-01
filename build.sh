@@ -1,6 +1,9 @@
 #!/usr/bin/env sh
 
-wget -O tools/nuget.exe http://nuget.org/nuget.exe
+mkdir tools
+cd tools
+wget http://nuget.org/nuget.exe
+cd ..
 
 mono --runtime=v4.0 tools/NuGet/nuget.exe install FAKE -OutputDirectory tools -ExcludeVersion
 mono --runtime=v4.0 tools/NuGet/nuget.exe install nunit.runner -OutputDirectory tools -ExcludeVersion 
