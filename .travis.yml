@@ -1,7 +1,7 @@
 language: c
  
 install:
-  - sudo add-apt-repository ppa:directhex/monoxide && sudo apt-get update
+  - sudo add-apt-repository ppa:directhex/monoxide -y && sudo apt-get update
   - sudo apt-get install mono-devel mono-gmcs
 
 script:
