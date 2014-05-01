@@ -1,9 +1,12 @@
 language: c
  
+env:
+  matrix:
+    - MONO_VERSION="3.2.5"
+
 install:
-  - sudo add-apt-repository ppa:directhex/monoxide -y && sudo apt-get update
-  - sudo apt-get install mono-devel mono-gmcs
-  - mozroots --import --sync
+  - wget "http://download.xamarin.com/MonoFrameworkMDK/Macx86/MonoFramework-MDK-${MONO_VERSION}.macos10.xamarin.x86.pkg"
+  - sudo installer -pkg "MonoFramework-MDK-${MONO_VERSION}.macos10.xamarin.x86.pkg" -target /
 
 script:
-    - "./build.sh"
+    - ./build.sh
