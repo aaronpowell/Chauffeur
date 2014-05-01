@@ -3,8 +3,6 @@
 
 open Fake
 
-RestorePackages()
-
 let authors = ["Aaron Powell"]
 
 let chauffeurDir = "./Chauffeur/bin/"
