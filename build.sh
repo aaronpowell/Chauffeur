@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env sh
 
 wget tools/nuget.exe http://nuget.org/nuget.exe
 
