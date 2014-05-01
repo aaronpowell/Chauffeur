@@ -3,6 +3,7 @@ language: c
 install:
   - sudo add-apt-repository ppa:directhex/monoxide -y && sudo apt-get update
   - sudo apt-get install mono-devel mono-gmcs
+  - mozroots --import --sync
 
 script:
     - "./build.sh"
