@@ -42,6 +42,18 @@ Target "Clean" (fun _ ->
     CleanDirs [chauffeurDir; chauffeurRunnerDir]
 )
 
+Target "RestoreChauffeurPackages" (fun _ ->
+    RestorePackage (fun p -> p) "./Chauffeur/packages.config"
+)
+
+Target "RestoreChauffeurDemoPackages" (fun _ ->
+    RestorePackage (fun p -> p) "./Chauffeur.Demo/packages.config"
+)
+
+Target "RestoreChauffeurTestsPackages" (fun _ ->
+    RestorePackage (fun p -> p) "./Chauffeur.Tests/packages.config"
+)
+
 Target "BuildApp" (fun _ ->
     MSBuild null "Build" ["Configuration", buildMode] ["Chauffeur.sln"]
     |> Log "AppBuild-Output: "
@@ -67,7 +79,7 @@ Target "CreateChauffeurPackage" (fun _ ->
         {p with
             Authors = authors
             Project = projectName
-            Description = chauffeurDescription                               
+            Description = chauffeurDescription
             OutputPath = packagingRoot
             Summary = chauffeurSummary
             WorkingDir = packagingDir
@@ -89,7 +101,7 @@ Target "CreateRunnerPackage" (fun _ ->
         {p with
             Authors = authors
             Project = projectName
-            Description = chauffeurRunnerDescription                               
+            Description = chauffeurRunnerDescription
             OutputPath = packagingRoot
             Summary = chauffeurRunnerSummary
             WorkingDir = packagingRunnerDir
@@ -102,6 +114,9 @@ Target "CreateRunnerPackage" (fun _ ->
 )
 
 "Clean"
+    ==> "RestoreChauffeurPackages"
+    =?> ("RestoreChauffeurDemoPackages", buildMode <> "Release")
+    ==> "RestoreChauffeurTestsPackages"
     ==> "BuildApp"
     ==> "UnitTests"
     ==> "CreateChauffeurPackage"
