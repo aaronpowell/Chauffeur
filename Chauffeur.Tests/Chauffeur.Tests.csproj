@@ -231,6 +231,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Deliverables\ChangeAliasDeliverableTests.cs" />
     <Compile Include="Deliverables\ContentTypeDeliverableTests.cs" />
     <Compile Include="Deliverables\InstallDeliverableTests.cs" />
     <Compile Include="Deliverables\PackageDeliverableTests.cs" />
