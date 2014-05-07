@@ -1,3 +1,6 @@
+## New in 0.2.5 (Unreleased)
+* Fixing #15
+
 ### New in 0.2.4 (Released 28/04/2014)
 * Fixing issue with SQL CE when the sdf doesn't exist
 
