@@ -65,8 +65,12 @@ namespace Chauffeur.Deliverables
                     if (!fileSystem.File.Exists(location))
                     {
                         await Out.WriteLineAsync("The SqlCE database specified in the connection string doesn't appear to exist.");
-                        await Out.WriteAsync("Create it? (Y/n) ");
-                        var response = await In.ReadLineAsync();
+                        var response = args.Length > 0 ? args[0] : null;
+                        if (string.IsNullOrEmpty(response))
+                        {
+                            await Out.WriteAsync("Create it? (Y/n) ");
+                            response = await In.ReadLineAsync();
+                        }
 
                         if (string.IsNullOrEmpty(response) || response.Equals("Y", StringComparison.InvariantCultureIgnoreCase))
                         {
