@@ -68,7 +68,7 @@ namespace Chauffeur.Deliverables
         public string Name { get; set; }
 
         [Column("ExecutionDate")]
-        public DateTimeOffset ExecutionDate { get; set; }
+        public DateTime ExecutionDate { get; set; }
 
         [Column("SignedFor")]
         public bool SignedFor { get; set; }
