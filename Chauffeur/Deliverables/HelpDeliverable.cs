@@ -13,9 +13,12 @@ namespace Chauffeur.Deliverables
     [DeliverableAlias("?")]
     public class HelpDeliverable : Deliverable, IProvideDirections
     {
-        public HelpDeliverable(TextReader reader, TextWriter writer)
+        private readonly IChauffeurHost host;
+
+        public HelpDeliverable(TextReader reader, TextWriter writer, IChauffeurHost host)
             : base(reader, writer)
         {
+            this.host = host;
         }
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)

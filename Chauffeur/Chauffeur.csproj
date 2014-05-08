@@ -248,6 +248,7 @@
     <Compile Include="Deliverables\QuitDeliverable.cs" />
     <Compile Include="Deliverables\UnknownDeliverable.cs" />
     <Compile Include="Host\IChauffeurSettings.cs" />
+    <Compile Include="Host\IChauffeurHost.cs" />
     <Compile Include="Host\UmbracoHost.cs" />
     <Compile Include="IFileSystemExtensions.cs" />
     <Compile Include="IProvideDirections.cs" />

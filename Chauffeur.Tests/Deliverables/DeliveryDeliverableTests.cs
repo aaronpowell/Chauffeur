@@ -26,7 +26,7 @@ namespace Chauffeur.Tests.Deliverables
             var conn = Substitute.For<IDbConnection>();
             var db = new UmbracoDatabase(conn);
 
-            var deliverable = new DeliveryDeliverable(null, new MockTextWriter(), db);
+            var deliverable = new DeliveryDeliverable(null, new MockTextWriter(), db, null, null, null);
 
             await deliverable.Run(null, null);
 

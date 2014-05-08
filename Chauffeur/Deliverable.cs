@@ -56,6 +56,7 @@ namespace Chauffeur
     public enum DeliverableResponse
     {
         Shutdown,
-        Continue
+        Continue,
+        FinsihedWithError
     }
 }
