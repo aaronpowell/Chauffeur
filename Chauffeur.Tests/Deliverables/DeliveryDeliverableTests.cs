@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Chauffeur.Deliverables;
+using Chauffeur.Host;
 using NSubstitute;
 using NUnit.Framework;
 using Umbraco.Core.Persistence;
@@ -26,7 +27,9 @@ namespace Chauffeur.Tests.Deliverables
             var conn = Substitute.For<IDbConnection>();
             var db = new UmbracoDatabase(conn);
 
-            var deliverable = new DeliveryDeliverable(null, new MockTextWriter(), db, null, null, null);
+            var settings = Substitute.For<IChauffeurSettings>();
+
+            var deliverable = new DeliveryDeliverable(null, new MockTextWriter(), db, settings, null, null);
 
             await deliverable.Run(null, null);
 
