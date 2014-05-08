@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Common;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -40,10 +41,19 @@ namespace Chauffeur.Deliverables
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
         {
-            if (!database.TableExist(TableName))
+            try
             {
-                if (!await SetupDatabase())
-                    return DeliverableResponse.Continue;
+                if (!database.TableExist(TableName))
+                {
+                    if (!await SetupDatabase())
+                        return DeliverableResponse.Continue;
+                }
+            }
+            catch (DbException)
+            {
+                Out.WriteLine("There was an error checking for the database Chauffeur Delivery tracking table, most likely your connection string is invalid or your database doesn't exist.");
+                Out.WriteLine("At present a Chauffeur Delivery is not able to run the `install` deliverable, please run that manually");
+                return DeliverableResponse.FinsihedWithError;
             }
 
             string directory;
