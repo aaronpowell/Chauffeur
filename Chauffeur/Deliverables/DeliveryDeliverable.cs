@@ -98,7 +98,7 @@ namespace Chauffeur.Deliverables
                     continue;
                 }
 
-                var instructions = fileSystem.File.ReadAllLines(file.FullName);
+                var instructions = fileSystem.File.ReadAllLines(file.FullName).Where(x => !string.IsNullOrEmpty(x));
 
                 var tracking = new ChauffeurDeliveryTable
                 {
