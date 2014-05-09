@@ -114,7 +114,6 @@ namespace Chauffeur.Tests.Deliverables
         }
 
         [Test]
-        [NUnit.Framework.Ignore]
         public async Task FoundDeliveryPreviouslyRun_WillBeSkipped()
         {
             var provider = Substitute.For<ISqlSyntaxProvider>();
@@ -134,8 +133,15 @@ namespace Chauffeur.Tests.Deliverables
             reader.Read().Returns(true, false);
             reader.GetBoolean(Arg.Any<int>()).Returns(true);
             reader.GetInt32(Arg.Any<int>()).Returns(1);
+            reader.GetString(Arg.Any<int>()).Returns(string.Empty);
+            reader.GetDateTime(Arg.Any<int>()).Returns(DateTime.Now);
+            reader.GetValue(Arg.Any<int>()).Returns(DateTime.Now);
+            reader.FieldCount.Returns(5); //the number of properties on the table
+            reader.GetName(Arg.Any<int>()).Returns("Id", "Name", "ExecutionDate", "SignedFor", "Hash");
+            reader.GetFieldType(Arg.Any<int>()).Returns(typeof(int), typeof(string), typeof(DateTime), typeof(bool), typeof(string));
             var cmd = Substitute.For<IDbCommand>();
             cmd.ExecuteReader().Returns(reader);
+            cmd.ExecuteScalar().Returns(1);
             var conn = Substitute.For<IDbConnection>();
             conn.CreateCommand().Returns(cmd);
             var db = new UmbracoDatabase(conn);
@@ -155,7 +161,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run(null, null);
 
-            host.Received(1).Run(Arg.Any<string[]>());
+            host.Received(0).Run(Arg.Any<string[]>());
         }
     }
 }
