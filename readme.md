@@ -1,6 +1,6 @@
 # Chauffeur
 
-Welcome to Chauffeur, a tool to help you deliver changes to an Umbraco instance.
+Welcome to Chauffeur, deliverying changes to your Umbraco environment in style.
 
 ## Who is Chauffeur?
 
