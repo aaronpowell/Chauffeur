@@ -46,14 +46,14 @@ namespace Chauffeur.Deliverables
                 if (!database.TableExist(TableName))
                 {
                     if (!await SetupDatabase())
-                        return DeliverableResponse.Continue;
+                        return DeliverableResponse.FinishedWithError;
                 }
             }
             catch (DbException)
             {
                 Out.WriteLine("There was an error checking for the database Chauffeur Delivery tracking table, most likely your connection string is invalid or your database doesn't exist.");
                 Out.WriteLine("At present a Chauffeur Delivery is not able to run the `install` deliverable, please run that manually");
-                return DeliverableResponse.FinsihedWithError;
+                return DeliverableResponse.FinishedWithError;
             }
 
             string directory;

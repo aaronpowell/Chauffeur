@@ -104,7 +104,7 @@ namespace Chauffeur.Host
                     }
                 }
 
-                return DeliverableResponse.FinsihedWithError;
+                return DeliverableResponse.FinishedWithError;
             }
         }
 

@@ -57,6 +57,6 @@ namespace Chauffeur
     {
         Shutdown,
         Continue,
-        FinsihedWithError
+        FinishedWithError
     }
 }
