@@ -15,7 +15,7 @@ namespace Chauffeur.Deliverables
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
         {
-            await Out.WriteLineFormattedAsync("Unknown command '{0}' entered, check `help` for available commands", string.Join(" ", args));
+            await Out.WriteLineFormattedAsync("Unknown command '{0}' entered, check `help` for available commands", string.Join(" ", new[] { command }.Concat(args)));
             return await base.Run(command, args);
         }
     }
