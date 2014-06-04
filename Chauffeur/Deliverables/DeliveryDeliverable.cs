@@ -41,6 +41,7 @@ namespace Chauffeur.Deliverables
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
         {
+            var dbNotReady = false;
             try
             {
                 if (!database.TableExist(TableName))
@@ -52,8 +53,8 @@ namespace Chauffeur.Deliverables
             catch (DbException)
             {
                 Out.WriteLine("There was an error checking for the database Chauffeur Delivery tracking table, most likely your connection string is invalid or your database doesn't exist.");
-                Out.WriteLine("At present a Chauffeur Delivery is not able to run the `install` deliverable, please run that manually");
-                return DeliverableResponse.FinishedWithError;
+                Out.WriteLine("Chauffeur will attempt to run the first delivery, expecting it to call `install`.");
+                dbNotReady = true;
             }
 
             string directory;
@@ -73,6 +74,32 @@ namespace Chauffeur.Deliverables
                 return DeliverableResponse.Continue;
             }
 
+            if (dbNotReady)
+            {
+                try
+                {
+                    var delivery = allDeliveries.First();
+                    var file = fileSystem.FileInfo.FromFileName(delivery);
+
+                    var tracking = await Deliver(file);
+
+                    if (!tracking.SignedFor)
+                        return DeliverableResponse.FinishedWithError;
+
+                    if (!await SetupDatabase())
+                        return DeliverableResponse.FinishedWithError;
+
+                    database.Save(tracking);
+
+                    allDeliveries = allDeliveries.Skip(1).ToArray();
+                }
+                catch (DbException)
+                {
+                    Out.WriteLine("Ok, I tried. Chauffeur had a database error, either a missing connection string or the DB couldn't be setup.");
+                    return DeliverableResponse.FinishedWithError;
+                }
+            }
+
             await ProcessDeliveries(allDeliveries);
 
             return DeliverableResponse.Continue;
@@ -84,43 +111,47 @@ namespace Chauffeur.Deliverables
             {
                 var file = fileSystem.FileInfo.FromFileName(delivery);
 
-                var name = file.Name;
-
                 var sql = new Sql()
                     .From<ChauffeurDeliveryTable>()
-                    .Where<ChauffeurDeliveryTable>(t => t.Name == name);
+                    .Where<ChauffeurDeliveryTable>(t => t.Name == file.Name);
 
                 var entry = database.Fetch<ChauffeurDeliveryTable>(sql).FirstOrDefault();
 
                 if (entry != null && entry.SignedFor)
                 {
-                    await Out.WriteLineFormattedAsync("'{0}' is already signed for, skipping it.", name);
+                    await Out.WriteLineFormattedAsync("'{0}' is already signed for, skipping it.", file.Name);
                     continue;
                 }
 
-                var instructions = fileSystem.File.ReadAllLines(file.FullName).Where(x => !string.IsNullOrEmpty(x));
-
-                var tracking = new ChauffeurDeliveryTable
-                {
-                    Name = name,
-                    ExecutionDate = DateTime.Now,
-                    Hash = HashDelivery(file),
-                    SignedFor = true
-                };
-                foreach (var instruction in instructions)
-                {
-                    var result = await host.Run(new[] { instruction });
-
-                    if (result != DeliverableResponse.Continue)
-                    {
-                        tracking.SignedFor = false;
-                        break;
-                    }
-                }
+                var tracking = await Deliver(file);
                 database.Save(tracking);
                 if (!tracking.SignedFor)
                     break;
             }
+        }
+
+        private async Task<ChauffeurDeliveryTable> Deliver(FileInfoBase file)
+        {
+            var instructions = fileSystem.File.ReadAllLines(file.FullName).Where(x => !string.IsNullOrEmpty(x));
+
+            var tracking = new ChauffeurDeliveryTable
+            {
+                Name = file.Name,
+                ExecutionDate = DateTime.Now,
+                Hash = HashDelivery(file),
+                SignedFor = true
+            };
+            foreach (var instruction in instructions)
+            {
+                var result = await host.Run(new[] { instruction });
+
+                if (result != DeliverableResponse.Continue)
+                {
+                    tracking.SignedFor = false;
+                    break;
+                }
+            }
+            return tracking;
         }
 
         private async Task<bool> SetupDatabase()

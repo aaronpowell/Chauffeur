@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text;
@@ -162,6 +163,49 @@ namespace Chauffeur.Tests.Deliverables
             await deliverable.Run(null, null);
 
             host.Received(0).Run(Arg.Any<string[]>());
+        }
+
+        [Test]
+        public async Task DatabaseError_WillStillAttemptFirstDeliverableThenCreateTableAgain()
+        {
+            var ex =Substitute.For<DbException>();
+
+            var provider = Substitute.For<ISqlSyntaxProvider>();
+            provider.Format(Arg.Any<ICollection<ForeignKeyDefinition>>()).Returns(new List<string>());
+            provider.Format(Arg.Any<ICollection<IndexDefinition>>()).Returns(new List<string>());
+            provider.DoesTableExist(Arg.Any<Database>(), Arg.Any<string>()).Returns(_ => { throw ex; }, _ => true);
+
+            SqlSyntaxContext.SqlSyntaxProvider = provider;
+
+            var conn = Substitute.For<IDbConnection>();
+            var cmd = Substitute.For<IDbCommand>();
+            cmd.ExecuteScalar().Returns(1);
+            conn.CreateCommand().Returns(cmd);
+            var db = new UmbracoDatabase(conn);
+
+            var settings = Substitute.For<IChauffeurSettings>();
+            string s;
+            settings.TryGetChauffeurDirectory(out s).Returns(x =>
+            {
+                x[0] = @"c:\foo";
+                return true;
+            });
+
+            var writer = new MockTextWriter();
+
+            var fs = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                {@"c:\foo\bar.delivery", new MockFileData("install")}
+            });
+
+            var host = Substitute.For<IChauffeurHost>();
+            host.Run(Arg.Any<string[]>()).Returns(Task.FromResult(DeliverableResponse.Continue));
+
+            var deliverable = new DeliveryDeliverable(null, writer, db, settings, fs, host);
+
+            await deliverable.Run(null, null);
+
+            cmd.Received().CommandText = Arg.Any<string>();
         }
     }
 }
