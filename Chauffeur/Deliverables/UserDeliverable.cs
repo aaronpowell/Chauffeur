@@ -6,7 +6,8 @@ using Umbraco.Core.Security;
 namespace Chauffeur.Deliverables
 {
     [DeliverableName("user")]
-    public sealed class UserDeliverable : Deliverable
+    [DeliverableAlias("u")]
+    public sealed class UserDeliverable : Deliverable, IProvideDirections
     {
         private readonly UmbracoMembershipProviderBase membershipProvider;
 
@@ -75,6 +76,15 @@ namespace Chauffeur.Deliverables
             {
                 await Out.WriteLineFormattedAsync("Unable to update the password for user '{0}'. Ensure the old password is correct.");
             }
+        }
+
+        public async Task Directions()
+        {
+            await Out.WriteLineAsync("A series of operations that can be run against an Umbraco User.");
+            await Out.WriteLineAsync();
+
+            await Out.WriteLineAsync("change-password <user id> <old password> <new password>");
+            await Out.WriteLineAsync("\tChanges the password for a given user. This will also hash it if hashing is turned on in the web.config");
         }
     }
 }

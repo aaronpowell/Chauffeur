@@ -13,7 +13,7 @@ using Umbraco.Core.Logging;
 
 namespace Chauffeur.Host
 {
-    public sealed class UmbracoHost
+    public sealed class UmbracoHost : IChauffeurHost
     {
         private readonly TextReader reader;
         private readonly TextWriter writer;
@@ -41,9 +41,11 @@ namespace Chauffeur.Host
 
             Container.RegisterFrom<MappingResolversBuilder>();
             Container.RegisterFrom<ApplicationContextBuilder>();
+
+            Container.Register<IChauffeurHost>(() => this);
         }
 
-        public async Task Run()
+        public async Task<DeliverableResponse> Run()
         {
             await writer.WriteLineAsync("Welcome to Chauffeur, your Umbraco console.");
             var fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
@@ -54,17 +56,19 @@ namespace Chauffeur.Host
 
             var result = DeliverableResponse.Continue;
 
-            while (result == DeliverableResponse.Continue)
+            while (result != DeliverableResponse.Shutdown)
             {
                 var command = await Prompt();
 
                 result = await Process(command);
             }
+
+            return result;
         }
 
-        public async Task Run(string[] args)
+        public async Task<DeliverableResponse> Run(string[] args)
         {
-            await Process(string.Join(" ", args));
+            return await Process(string.Join(" ", args));
         }
 
         private async Task<DeliverableResponse> Process(string command)
@@ -100,7 +104,7 @@ namespace Chauffeur.Host
                     }
                 }
 
-                return DeliverableResponse.Continue;
+                return DeliverableResponse.FinishedWithError;
             }
         }
 

@@ -228,6 +228,7 @@
     <Compile Include="..\SolutionInfo.cs">
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
+    <Compile Include="Deliverables\DeliveryDeliverable.cs" />
     <Compile Include="Deliverables\InstallDeliverable.cs" />
     <Compile Include="Deliverables\PackageDeliverable.cs" />
     <Compile Include="Deliverables\UserDeliverable.cs" />
@@ -247,6 +248,7 @@
     <Compile Include="Deliverables\QuitDeliverable.cs" />
     <Compile Include="Deliverables\UnknownDeliverable.cs" />
     <Compile Include="Host\IChauffeurSettings.cs" />
+    <Compile Include="Host\IChauffeurHost.cs" />
     <Compile Include="Host\UmbracoHost.cs" />
     <Compile Include="IFileSystemExtensions.cs" />
     <Compile Include="IProvideDirections.cs" />
