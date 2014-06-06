@@ -1,4 +1,4 @@
-## New in 0.3.0 (Unreleased)
+## New in 0.3.0-alpha (Unreleased)
 * New feature, `delivery`
  * Gives you the ability to create a script that contains multiple Deliverable's to run
 * Fixing #15

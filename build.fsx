@@ -15,8 +15,6 @@ let buildMode = getBuildParamOrDefault "buildMode" "Release"
 
 let isAppVeyorBuild = environVar "APPVEYOR" <> null
 
-Target "Default" DoNothing
-
 open Fake.AssemblyInfoFile
 
 let projectName = "Chauffeur"
@@ -29,6 +27,14 @@ let chauffeurRunnerDescription = chauffeurRunnerSummary
 let releaseNotes = 
     ReadFile "ReleaseNotes.md"
     |> ReleaseNotesHelper.parseReleaseNotes
+
+let prv = match releaseNotes.SemVer.PreRelease with
+    | Some pr -> sprintf "-%s%s" pr.Name (if environVar "APPVEYOR_BUILD_VERSION" <> null then environVar "APPVEYOR_BUILD_VERSION" else "")
+    | None -> ""
+
+let nugetVersion = sprintf "%d.%d.%d%s" releaseNotes.SemVer.Major releaseNotes.SemVer.Minor releaseNotes.SemVer.Patch prv
+
+Target "Default" DoNothing
 
 Target "AssemblyInfo" (fun _ ->
     CreateCSharpAssemblyInfo "SolutionInfo.cs"
@@ -83,7 +89,7 @@ Target "CreateChauffeurPackage" (fun _ ->
             OutputPath = packagingRoot
             Summary = chauffeurSummary
             WorkingDir = packagingDir
-            Version = releaseNotes.AssemblyVersion
+            Version = nugetVersion
             ReleaseNotes = toLines releaseNotes.Notes
             SymbolPackage = NugetSymbolPackage.Nuspec
             AccessKey = getBuildParamOrDefault "nugetkey" ""
@@ -106,7 +112,7 @@ Target "CreateRunnerPackage" (fun _ ->
             OutputPath = packagingRoot
             Summary = chauffeurRunnerSummary
             WorkingDir = packagingRunnerDir
-            Version = releaseNotes.AssemblyVersion
+            Version = nugetVersion
             ReleaseNotes = toLines releaseNotes.Notes
             SymbolPackage = NugetSymbolPackage.Nuspec
             Dependencies =
