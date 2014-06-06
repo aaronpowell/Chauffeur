@@ -1,2 +1,2 @@
 build_script:
-    .\build.ps1
+    - ps: build.ps1
