@@ -13,9 +13,9 @@ let packagingRunnerDir = packagingRoot @@ "chauffeur.runner"
 
 let buildMode = getBuildParamOrDefault "buildMode" "Release"
 
-Target "Default" (fun _ ->
-    trace "Hello world!"
-)
+let isAppVeyorBuild = environVar "APPVEYOR" <> null
+
+Target "Default" DoNothing
 
 open Fake.AssemblyInfoFile
 
@@ -113,7 +113,12 @@ Target "CreateRunnerPackage" (fun _ ->
             Publish = hasBuildParam "nugetkey" }) "Chauffeur.Runner/Chauffeur.Runner.nuspec"
 )
 
+Target "BuildVersion" (fun _ ->
+    Shell.Exec("appveyor", sprintf "UpdateBuild -Version \"%s\"" releaseNotes.AssemblyVersion) |> ignore
+)
+
 "Clean"
+    =?> ("BuildVersion", isAppVeyorBuild)
     ==> "RestoreChauffeurPackages"
     =?> ("RestoreChauffeurDemoPackages", buildMode <> "Release")
     ==> "RestoreChauffeurTestsPackages"

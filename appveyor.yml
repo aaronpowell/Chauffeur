@@ -1,2 +1,5 @@
+test: off
 build_script:
     - ps: .\build.ps1
+artifacts:
+  - path: packaging\*.nupkg
