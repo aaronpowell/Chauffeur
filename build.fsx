@@ -29,7 +29,7 @@ let releaseNotes =
     |> ReleaseNotesHelper.parseReleaseNotes
 
 let prv = match releaseNotes.SemVer.PreRelease with
-    | Some pr -> sprintf "-%s%s" pr.Name (if environVar "APPVEYOR_BUILD_VERSION" <> null then environVar "APPVEYOR_BUILD_VERSION" else "")
+    | Some pr -> sprintf "-%s%s" pr.Name (if environVar "APPVEYOR_BUILD_NUMBER" <> null then environVar "APPVEYOR_BUILD_NUMBER" else "")
     | None -> ""
 
 let nugetVersion = sprintf "%d.%d.%d%s" releaseNotes.SemVer.Major releaseNotes.SemVer.Minor releaseNotes.SemVer.Patch prv
