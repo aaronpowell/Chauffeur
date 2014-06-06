@@ -1,5 +1,3 @@
-param($Publish)
-
 $toolsDir = "tools"
 $nuget = "$toolsDir\nuget.exe"
 
