@@ -4,11 +4,11 @@ build_script:
 artifacts:
     - path: packaging\*.nupkg
 deploy:
-    - provider: NuGet
+    provider: NuGet
     api_key:
         secure: jIk7hDIpgOtyTG6FPxA3s55xN1pxaiJIBTeJrGlV664POb4pGAVdr90zFLt3jmDy
     artifact: /.*\.nupkg/
-    - provider: NuGet
+    provider: NuGet
     server: http://nuget.gw.symbolsource.org/Public/NuGet
     api_key:
         secure: jIk7hDIpgOtyTG6FPxA3s55xN1pxaiJIBTeJrGlV664POb4pGAVdr90zFLt3jmDy
