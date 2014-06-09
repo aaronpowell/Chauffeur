@@ -26,7 +26,7 @@ let chauffeurRunnerDescription = chauffeurRunnerSummary
 
 let releaseNotes = 
     ReadFile "ReleaseNotes.md"
-    |> ReleaseNotesHelper.parseReleaseNotes
+        |> ReleaseNotesHelper.parseReleaseNotes
 
 let prv = match releaseNotes.SemVer.PreRelease with
     | Some pr -> sprintf "-%s%s" pr.Name (if environVar "APPVEYOR_BUILD_NUMBER" <> null then environVar "APPVEYOR_BUILD_NUMBER" else "")
