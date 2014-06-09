@@ -116,13 +116,13 @@ Target "CreateRunnerPackage" (fun _ ->
             ReleaseNotes = toLines releaseNotes.Notes
             SymbolPackage = NugetSymbolPackage.Nuspec
             Dependencies =
-                ["Chauffeur", NormalizeVersion releaseNotes.AssemblyVersion]
+                ["Chauffeur", NormalizeVersion nugetVersion]
             AccessKey = getBuildParamOrDefault "nugetkey" ""
             Publish = hasBuildParam "nugetkey" }) "Chauffeur.Runner/Chauffeur.Runner.nuspec"
 )
 
 Target "BuildVersion" (fun _ ->
-    Shell.Exec("appveyor", sprintf "UpdateBuild -Version \"%s\"" releaseNotes.AssemblyVersion) |> ignore
+    Shell.Exec("appveyor", sprintf "UpdateBuild -Version \"%s\"" nugetVersion) |> ignore
 )
 
 "Clean"
