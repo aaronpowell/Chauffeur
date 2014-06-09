@@ -1,4 +1,4 @@
-## New in 0.3.1-alpha (Unreleased)
+## New in 0.3.1 (Released 09/06/2014)
 * Fixing versioning
 
 ## New in 0.3.0 (Released)
