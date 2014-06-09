@@ -1,3 +1,4 @@
+version: 0.3.2.{build}
 test: off
 build_script:
     - ps: .\build.ps1
@@ -8,3 +9,8 @@ deploy:
     api_key:
         secure: jIk7hDIpgOtyTG6FPxA3s55xN1pxaiJIBTeJrGlV664POb4pGAVdr90zFLt3jmDy
     artifact: /.*\.nupkg/
+environment:
+    nuget_key:
+        secure: jIk7hDIpgOtyTG6FPxA3s55xN1pxaiJIBTeJrGlV664POb4pGAVdr90zFLt3jmDy
+after_deploy:
+    - ps: .\postDeploy.ps1
