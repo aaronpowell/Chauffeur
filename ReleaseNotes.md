@@ -1,7 +1,11 @@
-## New in 0.3.0-alpha (Unreleased)
+## New in 0.3.1-alpha (Unreleased)
+* Fixing versioning
+
+## New in 0.3.0 (Released)
 * New feature, `delivery`
  * Gives you the ability to create a script that contains multiple Deliverable's to run
 * Fixing #15
+* Adding `Change Alias` deliverable
 
 ### New in 0.2.4 (Released 28/04/2014)
 * Fixing issue with SQL CE when the sdf doesn't exist
