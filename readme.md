@@ -131,6 +131,14 @@ Exports a specific ContentType which is then output to Chauffeur's directory.
 
 Imports a ContentType from the specified file, you don't need to provide the `.xml` extension it is assumed.
 
+### Change Alias
+
+_Aliases: ca_
+
+    umbraco> change-alias <type> <old> <new>
+
+A deliverable which will change the alias of a particular Umbraco "type", such as a Document Type. This is useful as there's no way from the Umbraco packager to do an alias change.
+
 # FAQ
 
 * Why do I see all this extra text when I run `content-type` commands?
