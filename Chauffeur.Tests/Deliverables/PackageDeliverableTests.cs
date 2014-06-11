@@ -17,7 +17,7 @@ namespace Chauffeur.Tests.Deliverables
     public class PackageDeliverableTests
     {
         #region SampleDocumentTypesXml
-        private const string documentTypesXml = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no""?>
+        private const string multipleDocumentTypesXml = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no""?>
 <umbPackage>
   <DocumentTypes>
     <DocumentType>
@@ -116,6 +116,88 @@ namespace Chauffeur.Tests.Deliverables
     </DocumentType>
   </DocumentTypes>
 </umbPackage>";
+
+        private const string singleDocumentTypeXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<DocumentType>
+  <Info>
+    <Name>Content</Name>
+    <Alias>Content</Alias>
+    <Icon>icon-folders</Icon>
+    <Thumbnail>folder.png</Thumbnail>
+    <Description>Place holder for all Content related document types</Description>
+    <AllowAtRoot>False</AllowAtRoot>
+    <Master>RootDocType</Master>
+    <AllowedTemplates />
+    <DefaultTemplate></DefaultTemplate>
+  </Info>
+  <Structure />
+  <GenericProperties>
+    <GenericProperty>
+      <Name>Foo name</Name>
+      <Alias>fooName</Alias>
+      <Type>Umbraco.Textbox</Type>
+      <Definition>0cc0eba1-9960-42c9-bf9b-60e150b429ae</Definition>
+      <Tab></Tab>
+      <Mandatory>False</Mandatory>
+      <Validation></Validation>
+      <Description><![CDATA[]]></Description>
+    </GenericProperty>
+    <GenericProperty>
+      <Name>Title</Name>
+      <Alias>title</Alias>
+      <Type>Umbraco.Textbox</Type>
+      <Definition>0cc0eba1-9960-42c9-bf9b-60e150b429ae</Definition>
+      <Tab>Content</Tab>
+      <Mandatory>False</Mandatory>
+      <Validation></Validation>
+      <Description><![CDATA[Title of the page]]></Description>
+    </GenericProperty>
+    <GenericProperty>
+      <Name>Content</Name>
+      <Alias>bodyText</Alias>
+      <Type>Umbraco.TinyMCEv3</Type>
+      <Definition>ca90c950-0aff-4e72-b976-a30b1ac57dad</Definition>
+      <Tab>Content</Tab>
+      <Mandatory>False</Mandatory>
+      <Validation></Validation>
+      <Description><![CDATA[Content of the page]]></Description>
+    </GenericProperty>
+    <GenericProperty>
+      <Name>Subject</Name>
+      <Alias>metaSubject</Alias>
+      <Type>Umbraco.Textbox</Type>
+      <Definition>0cc0eba1-9960-42c9-bf9b-60e150b429ae</Definition>
+      <Tab>Metadata</Tab>
+      <Mandatory>False</Mandatory>
+      <Validation></Validation>
+      <Description><![CDATA[]]></Description>
+    </GenericProperty>
+    <GenericProperty>
+      <Name>Robots</Name>
+      <Alias>metaRobots</Alias>
+      <Type>Umbraco.Textbox</Type>
+      <Definition>0cc0eba1-9960-42c9-bf9b-60e150b429ae</Definition>
+      <Tab>Metadata</Tab>
+      <Mandatory>False</Mandatory>
+      <Validation></Validation>
+      <Description><![CDATA[]]></Description>
+    </GenericProperty>
+  </GenericProperties>
+  <Tabs>
+    <Tab>
+      <Id>12</Id>
+      <Caption>Content</Caption>
+    </Tab>
+    <Tab>
+      <Id>13</Id>
+      <Caption>Page Info</Caption>
+    </Tab>
+    <Tab>
+      <Id>14</Id>
+      <Caption>Metadata</Caption>
+    </Tab>
+  </Tabs>
+</DocumentType>";
         #endregion
 
         #region Sample DataType
@@ -201,7 +283,7 @@ namespace Chauffeur.Tests.Deliverables
         }
 
         [Test]
-        public async Task HavingDocumentTypesWillReadThemIn()
+        public async Task HavingMultipleDocumentTypesWillReadThemIn()
         {
             var writer = new MockTextWriter();
             var settings = Substitute.For<IChauffeurSettings>();
@@ -213,7 +295,7 @@ namespace Chauffeur.Tests.Deliverables
             });
             var fs = new MockFileSystem(new Dictionary<string, MockFileData>
             {
-                { "Text.xml", new MockFileData(documentTypesXml) }
+                { "Text.xml", new MockFileData(multipleDocumentTypesXml) }
             });
             var packagingService = Substitute.For<IPackagingService>();
             packagingService.ImportContentTypes(Arg.Any<XElement>()).Returns(Enumerable.Empty<IContentType>());
@@ -223,6 +305,31 @@ namespace Chauffeur.Tests.Deliverables
             await package.Run(null, new[] { "Text" });
 
             packagingService.Received(2).ImportContentTypes(Arg.Any<XElement>());
+        }
+
+        [Test]
+        public async Task HavingSingleDocumentTypeWillReadItIn()
+        {
+            var writer = new MockTextWriter();
+            var settings = Substitute.For<IChauffeurSettings>();
+            string dir;
+            settings.TryGetChauffeurDirectory(out dir).Returns(x =>
+            {
+                x[0] = "";
+                return true;
+            });
+            var fs = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { "Text.xml", new MockFileData(singleDocumentTypeXml) }
+            });
+            var packagingService = Substitute.For<IPackagingService>();
+            packagingService.ImportContentTypes(Arg.Any<XElement>()).Returns(Enumerable.Empty<IContentType>());
+
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService);
+
+            await package.Run(null, new[] { "Text" });
+
+            packagingService.Received(1).ImportContentTypes(Arg.Any<XElement>());
         }
 
         [Test]
