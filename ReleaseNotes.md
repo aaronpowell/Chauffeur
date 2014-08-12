@@ -1,5 +1,6 @@
 ## New in 0.3.2-alpha (Unreleased)
 * Getting NuGet publishing working so you don't need the CI environment
+* Supporting single exported Document Type (#21)
 
 ## New in 0.3.1 (Released 09/06/2014)
 * Fixing versioning

@@ -81,6 +81,8 @@ namespace Chauffeur.Deliverables
                 element = xml.Root.Element("DocumentTypes");
                 if (element != null)
                     await UnpackDocumentTypes(element.Elements("DocumentType"));
+                else if (xml.Root.Name == "DocumentType")
+                    await UnpackDocumentTypes(new[] { xml.Root });
             }
         }
 
