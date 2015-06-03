@@ -14,7 +14,7 @@
     <copyright>Copyright 2014</copyright>
     <tags>umbraco deployment</tags>
     <dependencies>
-      <dependency id="UmbracoCms.Core" version="7.0.4" />
+      <dependency id="UmbracoCms.Core" version="7.2.5" />
       <dependency id="System.IO.Abstractions" version="1.4.0.83" />
     </dependencies>
   </metadata>
