@@ -43,6 +43,18 @@ namespace Chauffeur.Host
             Container.RegisterFrom<ApplicationContextBuilder>();
 
             Container.Register<IChauffeurHost>(() => this);
+            FreezeResolution();
+        }
+
+        private static void FreezeResolution()
+        {
+            var resolutionType = typeof(CoreBootManager).Assembly.GetTypes().FirstOrDefault(t => t.Name == "Resolution");
+
+            if (resolutionType != null)
+            {
+                var freezeMethod = resolutionType.GetMethod("Freeze", BindingFlags.Public | BindingFlags.Static);
+                freezeMethod.Invoke(null, null);
+            }
         }
 
         public async Task<DeliverableResponse> Run()
