@@ -21,7 +21,7 @@ namespace Chauffeur
         Reflection
     }
 
-    internal class ShittyRegistrationBuilder
+    internal class ShittyRegistrationBuilder : IRegistrationBuilder
     {
         private readonly ShittyRegistration registration;
         private readonly ShittyIoC container;
@@ -31,21 +31,21 @@ namespace Chauffeur
             this.container = container;
         }
 
-        public ShittyRegistrationBuilder WhenCreated(Action<object> action)
+        public IRegistrationBuilder WhenCreated(Action<object> action)
         {
             registration.AfterCreation = action;
 
             return this;
         }
 
-        public ShittyRegistrationBuilder As<T>() where T : class
+        public IRegistrationBuilder As<T>() where T : class
         {
             container.Register<T>(registration);
             return this;
         }
     }
 
-    internal class ShittyIoC
+    internal class ShittyIoC : IContainer
     {
         private readonly Dictionary<object, ShittyRegistration> instanceDependencyMap = new Dictionary<object, ShittyRegistration>();
 
@@ -57,7 +57,7 @@ namespace Chauffeur
                 RegisterDeliverable(deliverable);
         }
 
-        public ShittyRegistrationBuilder Register<T, TAs>()
+        public IRegistrationBuilder Register<T, TAs>()
         {
             var reg = new ShittyRegistration
             {
@@ -70,7 +70,23 @@ namespace Chauffeur
             return new ShittyRegistrationBuilder(reg, this);
         }
 
-        public ShittyRegistrationBuilder Register<T>(Func<T> factory)
+        public IRegistrationBuilder Register<T>() where T : class
+        {
+            return Register<T, T>();
+        }
+
+        public void RegisterFrom<T>()
+            where T : IBuildDependencies, new()
+        {
+            new T().Build(this);
+        }
+
+        internal void RegisterFrom(Type builder)
+        {
+            ((IBuildDependencies)Activator.CreateInstance(builder)).Build(this);
+        }
+
+        public IRegistrationBuilder Register<T>(Func<T> factory)
             where T : class
         {
             var reg = new ShittyRegistration
@@ -83,17 +99,6 @@ namespace Chauffeur
             instanceDependencyMap.Add(typeof(T), reg);
 
             return new ShittyRegistrationBuilder(reg, this);
-        }
-
-        public ShittyRegistrationBuilder Register<T>() where T : class
-        {
-            return Register<T, T>();
-        }
-
-        public void RegisterFrom<T>()
-            where T : IBuildDependencies, new()
-        {
-            new T().Build(this);
         }
 
         private void RegisterDeliverable(Type deliverable)
@@ -128,12 +133,12 @@ namespace Chauffeur
             return instanceDependencyMap.Select(x => x.Value).Distinct().Select(Resolve).OfType<Deliverable>();
         }
 
-        internal T Resolve<T>()
+        public T Resolve<T>()
         {
             return (T)Resolve(typeof(T));
         }
 
-        private object Resolve(Type type)
+        public object Resolve(Type type)
         {
             var registration = LookUpDependency(type);
             return Resolve(registration);
@@ -198,8 +203,8 @@ namespace Chauffeur
         }
     }
 
-    internal interface IBuildDependencies
+    public interface IBuildDependencies
     {
-        void Build(ShittyIoC container);
+        void Build(IContainer container);
     }
 }

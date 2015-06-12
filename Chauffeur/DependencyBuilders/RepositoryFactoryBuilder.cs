@@ -3,9 +3,9 @@ namespace Chauffeur.DependencyBuilders
 {
     class RepositoryFactoryBuilder : IBuildDependencies
     {
-        public void Build(ShittyIoC container)
+        public void Build(IContainer container)
         {
-            container.Register<RepositoryFactory>(() => new RepositoryFactory(true));
+            container.Register(() => new RepositoryFactory(true));
         }
     }
 }

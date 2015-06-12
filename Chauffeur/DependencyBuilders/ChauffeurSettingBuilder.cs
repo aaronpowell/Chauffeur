@@ -1,11 +1,10 @@
-﻿using System.IO;
-using System.IO.Abstractions;
-using Chauffeur.Host;
+﻿using Chauffeur.Host;
+
 namespace Chauffeur.DependencyBuilders
 {
     class ChauffeurSettingBuilder : IBuildDependencies
     {
-        public void Build(ShittyIoC container)
+        public void Build(IContainer container)
         {
             container.Register<ChauffeurSettings, IChauffeurSettings>();
         }

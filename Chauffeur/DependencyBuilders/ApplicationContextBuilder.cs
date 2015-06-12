@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Umbraco.Core;
 using Umbraco.Core.Services;
 
@@ -11,9 +8,9 @@ namespace Chauffeur.DependencyBuilders
 {
     class ApplicationContextBuilder : IBuildDependencies
     {
-        public void Build(ShittyIoC container)
+        public void Build(IContainer container)
         {
-            container.Register<CacheHelper>(CacheHelper.CreateDisabledCacheHelper);
+            container.Register(CacheHelper.CreateDisabledCacheHelper);
             container.Register<ServiceContext>().WhenCreated(o =>
             {
                 var ctx = (ServiceContext)o;
