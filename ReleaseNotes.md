@@ -1,3 +1,6 @@
+## New in 0.4.0 (Unreleased)
+* Exposing IoC container pipeline and dependency builder to allow user to register their own dependencies
+
 ## New in 0.3.2 (Release 12/06/2014)
 * Getting NuGet publishing working so you don't need the CI environment
 * Supporting single exported Document Type (#21)
