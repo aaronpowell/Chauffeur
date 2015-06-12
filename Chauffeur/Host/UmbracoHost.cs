@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Chauffeur.Deliverables;
 using Chauffeur.DependencyBuilders;
 using Umbraco.Core;
 using Umbraco.Core.Logging;
@@ -29,8 +28,8 @@ namespace Chauffeur.Host
             this.writer = writer;
 
             Container = new ShittyIoC();
-            Container.Register<TextReader>(() => reader);
-            Container.Register<TextWriter>(() => writer);
+            Container.Register(() => reader);
+            Container.Register(() => writer);
             Container.RegisterFrom<RepositoryFactoryBuilder>();
             Container.RegisterFrom<SqlSyntaxProviderBuilder>();
             Container.RegisterFrom<DatabaseUnitOfWorkProviderBuilder>();
