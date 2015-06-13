@@ -9,7 +9,7 @@ namespace Chauffeur.DependencyBuilders
 {
     class MappingResolversBuilder : IBuildDependencies
     {
-        public void Build(ShittyIoC container)
+        public void Build(IContainer container)
         {
             SetupMappingResolver();
         }

@@ -42,6 +42,15 @@ namespace Chauffeur.Host
             Container.RegisterFrom<ApplicationContextBuilder>();
 
             Container.Register<IChauffeurHost>(() => this);
+
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var builders = assemblies.SelectMany(a => a.GetExportedTypes())
+                .Where(t => t.IsClass)
+                .Where(t => typeof(IBuildDependencies).IsAssignableFrom(t));
+
+            foreach (var builder in builders)
+                Container.RegisterFrom(builder);
+
             FreezeResolution();
         }
 

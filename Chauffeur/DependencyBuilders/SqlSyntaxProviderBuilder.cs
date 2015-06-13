@@ -1,15 +1,16 @@
-﻿using System.Configuration;
-using System.Linq;
+﻿using System;
+using System.Configuration;
+using System.Data.SqlServerCe;
 using System.IO;
+using System.Linq;
 using Umbraco.Core;
 using Umbraco.Core.Persistence.SqlSyntax;
-using System;
-using System.Data.SqlServerCe;
+
 namespace Chauffeur.DependencyBuilders
 {
     class SqlSyntaxProviderBuilder : IBuildDependencies
     {
-        public void Build(ShittyIoC container)
+        public void Build(IContainer container)
         {
             var providerName = ConfigurationManager.ConnectionStrings["umbracoDbDSN"].ProviderName;
 
@@ -42,5 +43,4 @@ namespace Chauffeur.DependencyBuilders
             engine.CreateDatabase();
         }
     }
-
 }

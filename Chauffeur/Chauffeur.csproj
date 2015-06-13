@@ -248,8 +248,10 @@
     <Compile Include="Host\IChauffeurSettings.cs" />
     <Compile Include="Host\IChauffeurHost.cs" />
     <Compile Include="Host\UmbracoHost.cs" />
+    <Compile Include="IContainer.cs" />
     <Compile Include="IFileSystemExtensions.cs" />
     <Compile Include="IProvideDirections.cs" />
+    <Compile Include="IRegistrationBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\OverridingPackagingService.cs" />
     <Compile Include="ShittyIoC.cs" />

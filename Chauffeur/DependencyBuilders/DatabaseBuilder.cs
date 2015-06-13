@@ -6,11 +6,11 @@ namespace Chauffeur.DependencyBuilders
 {
     class DatabaseBuilder : IBuildDependencies
     {
-        public void Build(ShittyIoC container)
+        public void Build(IContainer container)
         {
             container.Register<DatabaseFactory, IDatabaseFactory>();
             container.Register<DatabaseContext>();
-            container.Register<UmbracoDatabase>(() =>
+            container.Register(() =>
             {
                 var connectionString = container.Resolve<IChauffeurSettings>().ConnectionString;
                 return new UmbracoDatabase(connectionString.ConnectionString, connectionString.ProviderName);

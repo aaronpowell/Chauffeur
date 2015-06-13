@@ -7,13 +7,12 @@ using Umbraco.Core.PropertyEditors;
 using Umbraco.Core.Publishing;
 using Umbraco.Core.Security;
 using Umbraco.Core.Services;
-using Umbraco.Web.Security.Providers;
 
 namespace Chauffeur.DependencyBuilders
 {
     class ServicesBuilder : IBuildDependencies
     {
-        public void Build(ShittyIoC container)
+        public void Build(IContainer container)
         {
             container.Register<ContentService, IContentService>();
             container.Register<ContentTypeService, IContentTypeService>();
@@ -36,7 +35,7 @@ namespace Chauffeur.DependencyBuilders
             if (method != null)
                 method.Invoke(null, null);
 
-            container.Register<UmbracoMembershipProviderBase>(() => Membership.Providers["UsersMembershipProvider"] as UmbracoMembershipProviderBase);
+            container.Register(() => Membership.Providers["UsersMembershipProvider"] as UmbracoMembershipProviderBase);
         }
     }
 }
