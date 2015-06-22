@@ -1,4 +1,4 @@
-## New in 0.4.0 (Unreleased)
+## New in 0.4.0 (Released 12/06/2015)
 * Exposing IoC container pipeline and dependency builder to allow user to register their own dependencies
 
 ## New in 0.3.2 (Release 12/06/2014)
