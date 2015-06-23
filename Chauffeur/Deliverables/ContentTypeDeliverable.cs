@@ -184,7 +184,7 @@ namespace Chauffeur.Deliverables
             );
 
             await Out.WriteLineAsync("\tProperty Types");
-            await Out.WriteLineAsync("\tId\tName\tAlias\tMandatory\tData Type Id");
+            await Out.WriteLineAsync("\tId\tName\tAlias\tMandatory\tProperty Editor Alias");
             foreach (var propertyType in contentType.PropertyTypes)
             {
                 await Out.WriteLineFormattedAsync(
@@ -193,7 +193,7 @@ namespace Chauffeur.Deliverables
                     propertyType.Alias,
                     propertyType.Name,
                     propertyType.Mandatory,
-                    propertyType.DataTypeId
+                    propertyType.PropertyEditorAlias
                 );
             }
         }

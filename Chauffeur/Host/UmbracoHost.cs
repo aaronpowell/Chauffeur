@@ -17,8 +17,6 @@ namespace Chauffeur.Host
         private readonly TextReader reader;
         private readonly TextWriter writer;
 
-        private IEnumerable<Type> deliverableTypes;
-
         public static UmbracoHost Current { get; set; }
         internal ShittyIoC Container { get; private set; }
 

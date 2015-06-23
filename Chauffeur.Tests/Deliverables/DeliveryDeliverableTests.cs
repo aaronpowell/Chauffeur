@@ -4,7 +4,6 @@ using System.Data;
 using System.Data.Common;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Chauffeur.Deliverables;
 using Chauffeur.Host;
@@ -111,7 +110,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run(null, null);
 
-            host.Received(1).Run(Arg.Any<string[]>());
+            host.Received(1).Run(Arg.Any<string[]>()).IgnoreAwaitForNSubstituteAssertion();
         }
 
         [Test]
@@ -162,7 +161,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run(null, null);
 
-            host.Received(0).Run(Arg.Any<string[]>());
+            host.Received(0).Run(Arg.Any<string[]>()).IgnoreAwaitForNSubstituteAssertion();
         }
 
         [Test]

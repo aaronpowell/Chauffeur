@@ -261,7 +261,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await package.Run(null, new string[0]);
 
-            writer.Received(1).WriteLineAsync(Arg.Any<string>());
+            writer.Received(1).WriteLineAsync(Arg.Any<string>()).IgnoreAwaitForNSubstituteAssertion();
         }
 
         [Test]

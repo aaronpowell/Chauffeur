@@ -40,8 +40,6 @@ namespace Chauffeur.Deliverables
                     await Out.WriteLineFormattedAsync("The user operation '{0}' is not supported", operation);
                     return DeliverableResponse.Continue;
             }
-
-            return await base.Run(command, args);
         }
 
         private async Task ChangePassword(string[] args)
