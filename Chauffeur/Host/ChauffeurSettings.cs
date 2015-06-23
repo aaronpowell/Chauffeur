@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Configuration;
 using System.IO;
-using System.IO.Abstractions;
 using System.Reflection;
-using System.Threading.Tasks;
+using Umbraco.Core.IO;
+using IFileSystem = System.IO.Abstractions.IFileSystem;
 
 namespace Chauffeur.Host
 {
@@ -20,7 +20,13 @@ namespace Chauffeur.Host
 
         public bool TryGetChauffeurDirectory(out string exportDirectory)
         {
-            exportDirectory = fileSystem.Path.Combine(new FileInfo(Assembly.GetExecutingAssembly().Location).Directory.FullName, "..", "App_Data", "Chauffeur");
+            exportDirectory = string.Empty;
+
+            string rootFolder;
+            if (!TryGetSiteRootDirectory(out rootFolder))
+                return false;
+
+            exportDirectory = fileSystem.Path.Combine(rootFolder, "App_Data", "Chauffeur");
 
             if (!fileSystem.Directory.Exists(exportDirectory))
             {
@@ -35,6 +41,26 @@ namespace Chauffeur.Host
                 }
             }
             return true;
+        }
+
+        public bool TryGetSiteRootDirectory(out string siteRootDirectory)
+        {
+            siteRootDirectory = fileSystem.Path.Combine(new FileInfo(Assembly.GetExecutingAssembly().Location).Directory.FullName, "..");
+
+            return fileSystem.Directory.Exists(siteRootDirectory);
+        }
+
+        public bool TryGetUmbracoDirectory(out string umbracoDirectory)
+        {
+            umbracoDirectory = string.Empty;
+
+            string rootFolder;
+            if (!TryGetSiteRootDirectory(out rootFolder))
+                return false;
+
+            umbracoDirectory = fileSystem.Path.Combine(rootFolder, SystemDirectories.Umbraco.Replace("~/", string.Empty));
+
+            return fileSystem.Directory.Exists(umbracoDirectory);
         }
 
         public ConnectionStringSettings ConnectionString
