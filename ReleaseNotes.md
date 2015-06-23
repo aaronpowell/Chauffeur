@@ -1,3 +1,6 @@
+## New in 0.5.1 (Release 23/06/2015)
+* Removed C# 6 usage as AppVoyer doesn't support it
+
 ## New in 0.5.0 (Released 23/06/2015)
 * Adding some more folders to the settings interface
 * Adding new deliverable to show the settings

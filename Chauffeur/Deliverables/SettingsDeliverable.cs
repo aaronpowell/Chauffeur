@@ -19,21 +19,21 @@ namespace Chauffeur.Deliverables
             string path;
 
             if (settings.TryGetSiteRootDirectory(out path))
-                await Out.WriteLineAsync($"Site root directory: ${path}");
+                await Out.WriteLineFormattedAsync("Site root directory: {0}", path);
             else
                 await Out.WriteLineAsync("Unable to locate the site root directory");
 
             if (settings.TryGetUmbracoDirectory(out path))
-                await Out.WriteLineAsync($"Umbraco directory: ${path}");
+                await Out.WriteLineFormattedAsync("Umbraco directory: {0}", path);
             else
                 await Out.WriteLineAsync("Unable to locate the Umbraco directory");
 
             if (settings.TryGetChauffeurDirectory(out path))
-                await Out.WriteLineAsync($"Chauffeur directory: ${path}");
+                await Out.WriteLineFormattedAsync("Chauffeur directory: {0}", path);
             else
                 await Out.WriteLineAsync("Unable to locate the Chauffeur directory");
 
-            await Out.WriteLineAsync($"Connection string: ${settings.ConnectionString}");
+            await Out.WriteLineFormattedAsync("Connection string: {0}", settings.ConnectionString);
 
             return DeliverableResponse.Continue;
         }
