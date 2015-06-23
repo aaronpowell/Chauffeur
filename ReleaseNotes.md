@@ -1,3 +1,7 @@
+## New in 0.5.0 (Released 23/06/2015)
+* Adding some more folders to the settings interface
+* Adding new deliverable to show the settings
+
 ## New in 0.4.0 (Released 12/06/2015)
 * Exposing IoC container pipeline and dependency builder to allow user to register their own dependencies
 
