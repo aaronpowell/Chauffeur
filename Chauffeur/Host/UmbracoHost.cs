@@ -28,23 +28,20 @@ namespace Chauffeur.Host
             Container = new ShittyIoC();
             Container.Register(() => reader);
             Container.Register(() => writer);
-            Container.RegisterFrom<RepositoryFactoryBuilder>();
-            Container.RegisterFrom<SqlSyntaxProviderBuilder>();
-            Container.RegisterFrom<DatabaseUnitOfWorkProviderBuilder>();
-            Container.RegisterFrom<DatabaseBuilder>();
-            Container.RegisterFrom<ChauffeurSettingBuilder>();
-            Container.RegisterFrom<FileSystemBuilder>();
-            Container.RegisterFrom<ServicesBuilder>();
-
-            Container.RegisterFrom<MappingResolversBuilder>();
-            Container.RegisterFrom<ApplicationContextBuilder>();
-
             Container.Register<IChauffeurHost>(() => this);
 
+            Container.RegisterFrom<BootManagerBuilder>();
+            Container.RegisterFrom<ChauffeurSettingBuilder>();
+            Container.RegisterFrom<FileSystemBuilder>();
+            Container.RegisterFrom< SqlSyntaxProviderBuilder>();
+
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            var builders = assemblies.SelectMany(a => a.GetExportedTypes())
+            var builders = assemblies
+                .Where(asm => !asm.IsDynamic)
+                .SelectMany(a => a.GetExportedTypes())
                 .Where(t => t.IsClass)
-                .Where(t => typeof(IBuildDependencies).IsAssignableFrom(t));
+                .Where(t => typeof(IBuildDependencies).IsAssignableFrom(t))
+                .ToArray();
 
             foreach (var builder in builders)
                 Container.RegisterFrom(builder);

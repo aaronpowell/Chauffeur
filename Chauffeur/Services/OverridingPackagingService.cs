@@ -18,7 +18,7 @@ namespace Chauffeur.Services
         private readonly IPackagingService realPackagingService;
         private readonly IMacroService macroService;
 
-        public OverridingPackagingService(PackagingService realPackagingService, IMacroService macroService)
+        public OverridingPackagingService(IPackagingService realPackagingService, IMacroService macroService)
         {
             this.realPackagingService = realPackagingService;
             this.macroService = macroService;
