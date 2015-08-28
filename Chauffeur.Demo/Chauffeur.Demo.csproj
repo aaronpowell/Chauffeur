@@ -233,6 +233,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="App_Data\chauffeur\CWS_Package.xml" />
     <Content Include="config\grid.editors.config.js" />
     <Content Include="default.aspx" />
     <Content Include="packages.config" />
@@ -263,6 +264,8 @@
     <Content Include="config\ClientDependency.config" />
     <Content Include="config\BaseRestExtensions.config" />
     <Content Include="config\404handlers.config" />
+    <Content Include="App_Data\chauffeur\001-Setup.delivery" />
+    <Content Include="App_Data\chauffeur\002-Setup_CWS.delivery" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
