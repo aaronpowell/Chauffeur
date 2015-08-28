@@ -29,7 +29,7 @@ namespace Chauffeur.Tests.Deliverables
             SqlSyntaxContext.SqlSyntaxProvider = provider;
 
             var conn = Substitute.For<IDbConnection>();
-            var db = new UmbracoDatabase(conn);
+            var db = new Database(conn);
 
             var settings = Substitute.For<IChauffeurSettings>();
 
@@ -57,7 +57,7 @@ namespace Chauffeur.Tests.Deliverables
             });
 
             var conn = Substitute.For<IDbConnection>();
-            var db = new UmbracoDatabase(conn);
+            var db = new Database(conn);
 
             var writer = new MockTextWriter();
 
@@ -93,7 +93,7 @@ namespace Chauffeur.Tests.Deliverables
             cmd.ExecuteScalar().Returns(1);
             var conn = Substitute.For<IDbConnection>();
             conn.CreateCommand().Returns(cmd);
-            var db = new UmbracoDatabase(conn);
+            var db = new Database(conn);
 
             var writer = new MockTextWriter();
 
@@ -144,7 +144,7 @@ namespace Chauffeur.Tests.Deliverables
             cmd.ExecuteScalar().Returns(1);
             var conn = Substitute.For<IDbConnection>();
             conn.CreateCommand().Returns(cmd);
-            var db = new UmbracoDatabase(conn);
+            var db = new Database(conn);
 
             var writer = new MockTextWriter();
 
@@ -180,7 +180,7 @@ namespace Chauffeur.Tests.Deliverables
             var cmd = Substitute.For<IDbCommand>();
             cmd.ExecuteScalar().Returns(1);
             conn.CreateCommand().Returns(cmd);
-            var db = new UmbracoDatabase(conn);
+            var db = new Database(conn);
 
             var settings = Substitute.For<IChauffeurSettings>();
             string s;

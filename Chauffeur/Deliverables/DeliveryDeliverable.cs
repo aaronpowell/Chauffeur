@@ -16,7 +16,7 @@ namespace Chauffeur.Deliverables
     [DeliverableAlias("d")]
     public sealed class DeliveryDeliverable : Deliverable
     {
-        private readonly UmbracoDatabase database;
+        private readonly Database database;
         private readonly IChauffeurSettings settings;
         private readonly IFileSystem fileSystem;
         private readonly IChauffeurHost host;
@@ -26,7 +26,7 @@ namespace Chauffeur.Deliverables
         public DeliveryDeliverable(
             TextReader reader,
             TextWriter writer,
-            UmbracoDatabase database,
+            Database database,
             IChauffeurSettings settings,
             IFileSystem fileSystem,
             IChauffeurHost host

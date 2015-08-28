@@ -1,5 +1,6 @@
 ﻿using Chauffeur.Services;
 using Umbraco.Core;
+using Umbraco.Core.Persistence;
 using Umbraco.Core.Services;
 
 namespace Chauffeur.DependencyBuilders
@@ -14,6 +15,7 @@ namespace Chauffeur.DependencyBuilders
             var context = ApplicationContext.Current;
 
             container.Register(() => context.DatabaseContext);
+            container.Register(() => context.DatabaseContext.Database).As<Database>();
 
             var services = context.Services;
             container.Register(() => services.ContentService);

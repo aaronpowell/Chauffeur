@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlServerCe;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Chauffeur.DependencyBuilders;
 using Chauffeur.Host;

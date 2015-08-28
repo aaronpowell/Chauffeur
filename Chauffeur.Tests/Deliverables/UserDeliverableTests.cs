@@ -7,7 +7,9 @@ using System.Web.Security;
 using Chauffeur.Deliverables;
 using NSubstitute;
 using NUnit.Framework;
+using Umbraco.Core.Models.Membership;
 using Umbraco.Core.Security;
+using Umbraco.Core.Services;
 
 namespace Chauffeur.Tests.Deliverables
 {
@@ -37,46 +39,34 @@ namespace Chauffeur.Tests.Deliverables
         }
 
         [Test]
-        public async Task NonNumericalUserIdWillCauseAnError()
-        {
-            var writer = new MockTextWriter();
-            var deliverable = new UserDeliverable(null, writer, null);
-
-            await deliverable.Run("user", new[] { "change-password", "a", "a", "a" });
-
-            Assert.That(writer.Messages.Count(), Is.EqualTo(1));
-        }
-
-        [Test]
         public async Task UserIdNotMatchingAnyWillCauseAnError()
         {
             var writer = new MockTextWriter();
-            var provider = Substitute.For<UmbracoMembershipProviderBase>();
-            provider.GetUser(Arg.Any<int>(), false).Returns((MembershipUser)null);
+            var userService = Substitute.For<IUserService>();
+            userService.GetByUsername(Arg.Any<string>()).Returns((IUser)null);
 
-            var deliverable = new UserDeliverable(null, writer, provider);
+            var deliverable = new UserDeliverable(null, writer, userService);
 
-            await deliverable.Run("user", new[] { "change-password", "0", "a", "a" });
+            await deliverable.Run("user", new[] { "change-password", "0", "a" });
 
             Assert.That(writer.Messages.Count(), Is.EqualTo(1));
-            provider.Received(1).GetUser(Arg.Any<int>(), false);
+            userService.Received(1).GetByUsername(Arg.Any<string>());
         }
 
         [Test]
         public async Task ValidUserWillHaveTheirPasswordUpdated()
         {
             var writer = new MockTextWriter();
-            var provider = Substitute.For<UmbracoMembershipProviderBase>();
-            var user = Substitute.For<MembershipUser>();
-            user.ChangePassword("a", "ab").Returns(true);
-            provider.GetUser(Arg.Any<int>(), false).Returns(user);
+            var userService = Substitute.For<IUserService>();
+            var user = Substitute.For<IUser>();
+            userService.GetByUsername(Arg.Any<string>()).Returns(user);
 
-            var deliverable = new UserDeliverable(null, writer, provider);
+            var deliverable = new UserDeliverable(null, writer, userService);
 
-            await deliverable.Run("user", new[] { "change-password", "0", "a", "ab" });
+            await deliverable.Run("user", new[] { "change-password", "0", "ab" });
 
             Assert.That(writer.Messages.Count(), Is.EqualTo(1));
-            user.Received(1).ChangePassword("a", "ab");
+            userService.Received(1).SavePassword(user, "ab");
         }
     }
 }

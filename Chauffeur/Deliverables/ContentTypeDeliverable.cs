@@ -19,7 +19,7 @@ namespace Chauffeur.Deliverables
     public sealed class ContentTypeDeliverable : Deliverable, IProvideDirections
     {
         private readonly IContentTypeService contentTypeService;
-        private readonly IDatabaseUnitOfWorkProvider uowProvider;
+        private readonly Database database;
         private readonly IPackagingService packagingService;
         private readonly IFileSystem fileSystem;
         private readonly IChauffeurSettings settings;
@@ -28,7 +28,7 @@ namespace Chauffeur.Deliverables
             TextReader reader,
             TextWriter writer,
             IContentTypeService contentTypeService,
-            IDatabaseUnitOfWorkProvider uowProvider,
+            Database database,
             IPackagingService packagingService,
             IFileSystem fileSystem,
             IChauffeurSettings settings
@@ -36,7 +36,7 @@ namespace Chauffeur.Deliverables
             : base(reader, writer)
         {
             this.contentTypeService = contentTypeService;
-            this.uowProvider = uowProvider;
+            this.database = database;
             this.packagingService = packagingService;
             this.fileSystem = fileSystem;
             this.settings = settings;
@@ -154,13 +154,12 @@ namespace Chauffeur.Deliverables
             foreach (var propertyType in propertyTypes)
             {
                 var pi = propertyType.GetType().GetProperty("PropertyGroupId", BindingFlags.Instance | BindingFlags.NonPublic);
-                var uow = uowProvider.GetUnitOfWork();
                 var sql = new Sql()
                     .Select("PropertyTypeGroupId")
                     .From("CmsPropertyType")
                     .Where("Id = @0", new[] { propertyType.Id });
 
-                var groupId = uow.Database.Fetch<int?>(sql).FirstOrDefault();
+                var groupId = database.Fetch<int?>(sql).FirstOrDefault();
                 if (groupId != null && groupId.HasValue)
                     pi.SetValue(propertyType, new Lazy<int>(() => groupId.Value));
                 else

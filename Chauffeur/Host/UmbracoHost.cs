@@ -103,7 +103,7 @@ namespace Chauffeur.Host
             }
             catch (Exception ex)
             {
-                writer.WriteLine("Error running the current deliverable: " + ex.Message);
+                writer.WriteLine("Error running the current deliverable '" + what + "': " + ex.Message);
                 LogHelper.Error<UmbracoHost>("Error running the current deliverable", ex);
 
                 if (ex is TypeLoadException)
