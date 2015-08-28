@@ -216,7 +216,19 @@ namespace Chauffeur.Deliverables
         {
             await Out.WriteLineAsync("content-type");
             await Out.WriteLineAsync("\tPerform operations against Umbraco Content Types");
-            await Out.WriteLineAsync("");
+            await Out.WriteLineAsync("Available Operations:");
+
+            await Out.WriteLineAsync("\tget-all");
+            await Out.WriteLineAsync("\t\tDisplay a list of all Content Types");
+
+            await Out.WriteLineAsync("\tget <id or alias>");
+            await Out.WriteLineAsync("\t\tDisplays the properties of the specified Content Type");
+
+            await Out.WriteLineAsync("\texport <id or alias>");
+            await Out.WriteLineAsync("\t\tExports the specified Content Type to the Chauffeur folder");
+
+            await Out.WriteLineAsync("\timport <filename>");
+            await Out.WriteLineAsync("\t\tImport a Content Type from the specified file in the Chauffeur folder");
         }
     }
 }
