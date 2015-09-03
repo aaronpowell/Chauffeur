@@ -24,7 +24,7 @@ let chauffeurDescription = chauffeurSummary
 let chauffeurRunnerSummary = "Chauffeur Runner is a CLI for executing Chauffeur deliverables against an Umbraco instance."
 let chauffeurRunnerDescription = chauffeurRunnerSummary
 
-let releaseNotes = 
+let releaseNotes =
     ReadFile "ReleaseNotes.md"
         |> ReleaseNotesHelper.parseReleaseNotes
 
@@ -67,8 +67,8 @@ Target "BuildApp" (fun _ ->
 
 Target "UnitTests" (fun _ ->
     !! (sprintf "./Chauffeur.Tests/bin/%s/**/Chauffeur.Tests*.dll" buildMode)
-    |> NUnitParallel (fun p -> 
-            {p with 
+    |> NUnitParallel (fun p ->
+            {p with
                 DisableShadowCopy = true;
                 OutputFile = (sprintf "./Chauffeur.Tests/bin/%s/TestResults.xml" buildMode) })
 )
@@ -81,7 +81,7 @@ Target "CreateChauffeurPackage" (fun _ ->
     CopyFiles packagingDir ["LICENSE.md"; "README.md"]
 
 
-    NuGet (fun p -> 
+    NuGet (fun p ->
         {p with
             Authors = authors
             Project = projectName
@@ -106,7 +106,7 @@ Target "CreateRunnerPackage" (fun _ ->
     CopyFiles packagingDir ["LICENSE.md"; "README.md"]
 
 
-    NuGet (fun p -> 
+    NuGet (fun p ->
         {p with
             Authors = authors
             Project = projectName
