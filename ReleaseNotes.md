@@ -1,3 +1,6 @@
+## New in 0.6.2 (Released 04/09/2015)
+* Fixing bug #30 where structure isn't imported
+
 ## New in 0.6.1 (Released 03/09/2015)
 * Fixing bug #29
 

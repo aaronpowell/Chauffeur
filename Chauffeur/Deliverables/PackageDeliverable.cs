@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Chauffeur.Host;
+using Umbraco.Core.Models;
 using Umbraco.Core.Services;
+using Task = System.Threading.Tasks.Task;
 
 namespace Chauffeur.Deliverables
 {
@@ -17,17 +20,21 @@ namespace Chauffeur.Deliverables
         private readonly IFileSystem fileSystem;
         private readonly IChauffeurSettings settings;
         private readonly IPackagingService packagingService;
+        private readonly IContentTypeService contentTypeService;
+
         public PackageDeliverable(
             TextReader reader,
             TextWriter writer,
             IFileSystem fileSystem,
             IChauffeurSettings settings,
-            IPackagingService packagingService)
+            IPackagingService packagingService,
+            IContentTypeService contentTypeService)
             : base(reader, writer)
         {
             this.fileSystem = fileSystem;
             this.settings = settings;
             this.packagingService = packagingService;
+            this.contentTypeService = contentTypeService;
         }
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
@@ -80,9 +87,41 @@ namespace Chauffeur.Deliverables
 
                 element = xml.Root.Element("DocumentTypes");
                 if (element != null)
-                    await UnpackDocumentTypes(element.Elements("DocumentType"));
+                {
+                    var docTypes = element.Elements("DocumentType");
+                    var importedDocTypes = await UnpackDocumentTypes(docTypes);
+                    await UpdateDocumentTypesStructure(docTypes, importedDocTypes);
+                }
                 else if (xml.Root.Name == "DocumentType")
-                    await UnpackDocumentTypes(new[] { xml.Root });
+                {
+                    var importedDocTypes = await UnpackDocumentTypes(new[] { xml.Root });
+                    await UpdateDocumentTypesStructure(new[] { xml.Root }, importedDocTypes);
+                }
+            }
+        }
+
+        private async Task UpdateDocumentTypesStructure(IEnumerable<XElement> docTypes, IEnumerable<IContentType> importedDocumentTypes)
+        {
+            var allDocumentTypes = contentTypeService.GetAllContentTypes();
+
+            foreach (var docType in docTypes)
+            {
+                var allowedChildren = docType.Element("Structure").Elements("DocumentType");
+                if (!allowedChildren.Any())
+                    continue;
+
+                var current = importedDocumentTypes.First(x => x.Alias == docType.Element("Alias").Value);
+                var currentAllowed = current.AllowedContentTypes.ToList();
+                foreach (var allowedChild in allowedChildren)
+                {
+                    var allowedChildAlias = allowedChild.Element("Alias").Value;
+                    var dt = allDocumentTypes.FirstOrDefault(x => x.Alias == allowedChildAlias);
+                    await Out.WriteLineFormattedAsync("Adding '{0}' as a child of '{1}'", dt.Alias, current.Alias);
+                    if (dt != null)
+                        currentAllowed.Add(new ContentTypeSort(new Lazy<int>(() => dt.Id), currentAllowed.Count + 1, allowedChildAlias));
+                }
+                current.AllowedContentTypes = currentAllowed;
+                contentTypeService.Save(current);
             }
         }
 
@@ -129,14 +168,17 @@ namespace Chauffeur.Deliverables
             }
         }
 
-        private async Task UnpackDocumentTypes(IEnumerable<XElement> elements)
+        private async Task<IEnumerable<IContentType>> UnpackDocumentTypes(IEnumerable<XElement> elements)
         {
+            var docTypes = new List<IContentType>();
             foreach (var element in elements)
             {
                 var name = (string)element.Element("Info").Element("Name");
                 await Out.WriteLineFormattedAsync("Importing DocumentType '{0}'", name);
-                packagingService.ImportContentTypes(element);
+                docTypes.AddRange(packagingService.ImportContentTypes(element));
             }
+
+            return docTypes;
         }
     }
 }
