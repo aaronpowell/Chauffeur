@@ -1,10 +1,10 @@
-## New in 0.6.0-beta1 (Unrelease)
+## New in 0.6.0 (Released 03/09/2015)
 * Rewrite of dependency loading to use a custom `BootManager`
 * Refactored some of the deliverable dependencies
 * Updated doco on the `content-type` deliverable
 * Refactored the `user change-password` to not require the existing password and to use the username for lookup, not id
 
-## New in 0.5.1 (Release 23/06/2015)
+## New in 0.5.1 (Released 23/06/2015)
 * Removed C# 6 usage as AppVoyer doesn't support it
 * Turned on warnings as errors
 
