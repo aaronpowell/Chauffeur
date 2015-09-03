@@ -42,7 +42,7 @@ namespace Chauffeur.Runner
                 domain.SetData("DataDirectory", Path.Combine(path, "..", "App_Data"));
 
                 var thisAssembly = new FileInfo(Assembly.GetExecutingAssembly().Location);
-                domain.ExecuteAssembly(thisAssembly.Name, args);
+                domain.ExecuteAssembly(thisAssembly.FullName, args);
             }
             else
             {
