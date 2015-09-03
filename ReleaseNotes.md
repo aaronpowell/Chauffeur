@@ -1,3 +1,6 @@
+## New in 0.6.1 (Released 03/09/2015)
+* Fixing bug #29
+
 ## New in 0.6.0 (Released 03/09/2015)
 * Rewrite of dependency loading to use a custom `BootManager`
 * Refactored some of the deliverable dependencies
