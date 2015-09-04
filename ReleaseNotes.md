@@ -1,3 +1,6 @@
+## New in 0.6.3 (Released 04/09/2015)
+* Fixing what burnt me by not writing tests around the last fix. Still no tests, but we'll get there
+
 ## New in 0.6.2 (Released 04/09/2015)
 * Fixing bug #30 where structure isn't imported
 

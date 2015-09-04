@@ -110,15 +110,16 @@ namespace Chauffeur.Deliverables
                 if (!allowedChildren.Any())
                     continue;
 
-                var current = importedDocumentTypes.First(x => x.Alias == docType.Element("Alias").Value);
+                var current = importedDocumentTypes.First(x => x.Alias == docType.Element("Info").Element("Alias").Value);
                 var currentAllowed = current.AllowedContentTypes.ToList();
                 foreach (var allowedChild in allowedChildren)
                 {
-                    var allowedChildAlias = allowedChild.Element("Alias").Value;
-                    var dt = allDocumentTypes.FirstOrDefault(x => x.Alias == allowedChildAlias);
-                    await Out.WriteLineFormattedAsync("Adding '{0}' as a child of '{1}'", dt.Alias, current.Alias);
-                    if (dt != null)
-                        currentAllowed.Add(new ContentTypeSort(new Lazy<int>(() => dt.Id), currentAllowed.Count + 1, allowedChildAlias));
+                    var dt = allDocumentTypes.FirstOrDefault(x => x.Alias == (string)allowedChild);
+                    if (dt != null && !currentAllowed.Any(x => x.Alias == dt.Alias))
+                    {
+                        await Out.WriteLineFormattedAsync("Adding '{0}' as a child of '{1}'", dt.Alias, current.Alias);
+                        currentAllowed.Add(new ContentTypeSort(new Lazy<int>(() => dt.Id), currentAllowed.Count + 1, (string)allowedChild));
+                    }
                 }
                 current.AllowedContentTypes = currentAllowed;
                 contentTypeService.Save(current);
