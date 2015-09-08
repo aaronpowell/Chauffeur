@@ -48,7 +48,7 @@ namespace Chauffeur.Deliverables
             if (args.Length != 2)
             {
                 await Out.WriteLineAsync("The expected parameters for 'change-password' were not supplied.");
-                await Out.WriteLineAsync("Format expected: change-password <User Id> <old password> <new password>");
+                await Out.WriteLineAsync("Format expected: change-password <username> <new password>");
                 return;
             }
 
