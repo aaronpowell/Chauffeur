@@ -1,3 +1,6 @@
+## New in 0.6.4 (Released 08/09/2015)
+* Merging PR #32. Thanks @dinc5150
+
 ## New in 0.6.3 (Released 04/09/2015)
 * Fixing what burnt me by not writing tests around the last fix. Still no tests, but we'll get there
 
