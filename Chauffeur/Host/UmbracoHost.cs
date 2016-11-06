@@ -12,7 +12,7 @@ using Umbraco.Core.Logging;
 
 namespace Chauffeur.Host
 {
-    public sealed class UmbracoHost : IChauffeurHost
+    public sealed class UmbracoHost : IChauffeurHost, IDisposable
     {
         private readonly TextReader reader;
         private readonly TextWriter writer;
@@ -127,6 +127,11 @@ namespace Chauffeur.Host
         {
             await writer.WriteAsync("umbraco> ");
             return await reader.ReadLineAsync();
+        }
+
+        public void Dispose()
+        {
+            ((IDisposable)ApplicationContext.Current).Dispose();
         }
     }
 }

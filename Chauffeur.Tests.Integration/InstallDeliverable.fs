@@ -14,7 +14,7 @@
 
         use writer = new MockTextWriter()
         use reader = new MockTextReader(["Y"])
-        let host = UmbracoHost(reader, writer)
+        use host = new UmbracoHost(reader, writer)
 
         async {
             do! writer.WriteLineAsync dbFolder |> Async.AwaitTask

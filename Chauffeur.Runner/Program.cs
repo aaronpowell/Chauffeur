@@ -46,12 +46,14 @@ namespace Chauffeur.Runner
             }
             else
             {
-                var host = new UmbracoHost(Console.In, Console.Out);
-                UmbracoHost.Current = host;
-                if (args.Any())
-                    host.Run(args).Wait();
-                else
-                    host.Run().Wait();
+                using (var host = new UmbracoHost(Console.In, Console.Out))
+                {
+                    UmbracoHost.Current = host;
+                    if (args.Any())
+                        host.Run(args).Wait();
+                    else
+                        host.Run().Wait();
+                }
             }
         }
     }
