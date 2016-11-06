@@ -3,8 +3,8 @@ open System
 open System.IO
 open System.Reflection
 
-let cwd = FileInfo(Assembly.GetExecutingAssembly().Location).Directory.FullName
-let dbFolder = "databases"
+let private cwd = FileInfo(Assembly.GetExecutingAssembly().Location).Directory.FullName
+let private dbFolder = "databases"
 
 let setDataDirectory() =
     let now = DateTimeOffset.Now

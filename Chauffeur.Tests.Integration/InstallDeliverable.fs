@@ -14,7 +14,7 @@ type ``Install Deliverable Tests``(fixture : BasicHostCollectionFixture) =
     member x.``Installation should result in a continuation when successful``() = 
         fixture.TextReader.AddCommand "Y"
         async { 
-            do! fixture.TextWriter.WriteLineAsync dbFolder |> Async.AwaitTask
+            do! fixture.TextWriter.WriteLineAsync fixture.DatabaseLocation |> Async.AwaitTask
             let! response = fixture.Host.Run([| "install" |]) |> Async.AwaitTask
             response |> should equal DeliverableResponse.Continue
         }
@@ -24,7 +24,7 @@ type ``Install Deliverable Tests``(fixture : BasicHostCollectionFixture) =
     member x.``Installation should create a bunch of umbraco tables``() = 
         fixture.TextReader.AddCommand "Y"
         async { 
-            do! fixture.TextWriter.WriteLineAsync dbFolder |> Async.AwaitTask
+            do! fixture.TextWriter.WriteLineAsync fixture.DatabaseLocation |> Async.AwaitTask
             let! response = fixture.Host.Run([| "install" |]) |> Async.AwaitTask
             let connStrings = System.Configuration.ConfigurationManager.ConnectionStrings
             use connection = new SqlCeConnection(connStrings.["umbracoDbDSN"].ConnectionString)
