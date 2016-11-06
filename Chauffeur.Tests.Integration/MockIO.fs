@@ -15,10 +15,13 @@ type MockTextWriter() =
         messages <- value :: messages
         Task.FromResult value :> System.Threading.Tasks.Task
 
-type MockTextReader(commands) =
+type MockTextReader() =
     inherit TextReader()
 
-    let mutable remainingCommands = commands
+    let mutable remainingCommands = List.empty<string>
+
+    member x.AddCommand command =
+        remainingCommands <- command :: remainingCommands
 
     override x.ReadLineAsync() =
         let command = List.head remainingCommands

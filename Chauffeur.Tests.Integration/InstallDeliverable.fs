@@ -8,32 +8,45 @@
 
     open TestHelpers
 
-    [<Fact>]
-    let ``Installation should result in a continuation when successful``() =
+    let setup() =
         let dbFolder = setDataDirectory()
 
-        use writer = new MockTextWriter()
-        use reader = new MockTextReader(["Y"])
-        use host = new UmbracoHost(reader, writer)
+        let writer = new MockTextWriter()
+        let reader = new MockTextReader()
+        let host = new UmbracoHost(reader, writer)
+
+        (dbFolder, host, writer, reader)
+
+    [<Fact>]
+    let ``Installation should result in a continuation when successful``() =
+        let dbFolder, host, writer, reader = setup()
+
+        reader.AddCommand "Y"
 
         async {
             do! writer.WriteLineAsync dbFolder |> Async.AwaitTask
             let! response = host.Run([|"install"|]) |> Async.AwaitTask
+
+            writer.Dispose()
+            reader.Dispose()
+            host.Dispose()
 
             response |> should equal DeliverableResponse.Continue
         } |> Async.RunSynchronously
 
     [<Fact>]
     let ``Installation should create a bunch of umbraco tables``() =
-        let dbFolder = setDataDirectory()
+        let dbFolder, host, writer, reader = setup()
 
-        use writer = new MockTextWriter()
-        use reader = new MockTextReader(["Y"])
-        use host = new UmbracoHost(reader, writer)
+        reader.AddCommand "Y"
 
         async {
             do! writer.WriteLineAsync dbFolder |> Async.AwaitTask
             let! response = host.Run([|"install"|]) |> Async.AwaitTask
+
+            writer.Dispose()
+            reader.Dispose()
+            host.Dispose()
 
             let connStrings = System.Configuration.ConfigurationManager.ConnectionStrings
 
