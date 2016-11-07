@@ -10,6 +10,9 @@ type MockTextWriter() =
 
     member x.Messages = messages
 
+    override x.Flush() =
+        messages <- List.empty<string>
+
     override x.Encoding = System.Text.Encoding.Default
 
     override x.WriteLineAsync value =

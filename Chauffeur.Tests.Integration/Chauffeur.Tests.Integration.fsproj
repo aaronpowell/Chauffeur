@@ -105,6 +105,7 @@
     <Compile Include="MockIO.fs" />
     <Compile Include="TestHelpers.fs" />
     <Compile Include="InstallDeliverable.fs" />
+    <Compile Include="DocumentTypeSetup.fs" />
     <Content Include="packages.config" />
     <Content Include="app.config" />
   </ItemGroup>
