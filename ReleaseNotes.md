@@ -1,4 +1,4 @@
-## New in 0.7.0 (Unreleased)
+## New in 0.7.0 (Released 06/11/2016)
 * Updated to Umbraco 7.5.4
 
 ## New in 0.6.4 (Released 08/09/2015)
