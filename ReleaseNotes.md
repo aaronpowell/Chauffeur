@@ -1,3 +1,6 @@
+## New in 0.7.0 (Unreleased)
+* Updated to Umbraco 7.5.4
+
 ## New in 0.6.4 (Released 08/09/2015)
 * Merging PR #32. Thanks @dinc5150
 
