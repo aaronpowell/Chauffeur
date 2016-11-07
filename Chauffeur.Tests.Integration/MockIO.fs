@@ -8,6 +8,8 @@ type MockTextWriter() =
 
     let mutable messages = List.empty<string>
 
+    member x.Messages = messages
+
     override x.Encoding = System.Text.Encoding.Default
 
     override x.WriteLineAsync value =
