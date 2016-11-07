@@ -28,3 +28,5 @@ Chauffeur.Demo/masterpages/
 tools
 packaging
 .vs
+.testresults
+.fake

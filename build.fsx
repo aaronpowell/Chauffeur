@@ -1,7 +1,8 @@
-#I @"tools/FAKE/tools/"
-#r @"FakeLib.dll"
+#r @"tools/FAKE.Core/tools/FakeLib.dll"
 
 open Fake
+open Fake.Testing.XUnit2
+open Fake.AssemblyInfoFile
 
 let authors = ["Aaron Powell"]
 
@@ -10,12 +11,11 @@ let chauffeurRunnerDir = "./Chauffeur.Runner/bin/"
 let packagingRoot = "./packaging/"
 let packagingDir = packagingRoot @@ "chauffeur"
 let packagingRunnerDir = packagingRoot @@ "chauffeur.runner"
+let testDir = "./.testresults"
 
 let buildMode = getBuildParamOrDefault "buildMode" "Release"
 
 let isAppVeyorBuild = environVar "APPVEYOR" <> null
-
-open Fake.AssemblyInfoFile
 
 let projectName = "Chauffeur"
 let chauffeurSummary = "Chauffeur is a tool for helping with delivering changes to an Umbraco instance."
@@ -29,8 +29,8 @@ let releaseNotes =
         |> ReleaseNotesHelper.parseReleaseNotes
 
 let prv = match releaseNotes.SemVer.PreRelease with
-    | Some pr -> sprintf "-%s%s" pr.Name (if environVar "APPVEYOR_BUILD_NUMBER" <> null then environVar "APPVEYOR_BUILD_NUMBER" else "")
-    | None -> ""
+            | Some pr -> sprintf "-%s%s" pr.Name (if environVar "APPVEYOR_BUILD_NUMBER" <> null then environVar "APPVEYOR_BUILD_NUMBER" else "")
+            | None -> ""
 
 let nugetVersion = sprintf "%d.%d.%d%s" releaseNotes.SemVer.Major releaseNotes.SemVer.Minor releaseNotes.SemVer.Patch prv
 
@@ -45,7 +45,7 @@ Target "AssemblyInfo" (fun _ ->
 )
 
 Target "Clean" (fun _ ->
-    CleanDirs [chauffeurDir; chauffeurRunnerDir]
+    CleanDirs [chauffeurDir; chauffeurRunnerDir; testDir]
 )
 
 Target "RestoreChauffeurPackages" (fun _ ->
@@ -66,11 +66,8 @@ Target "BuildApp" (fun _ ->
 )
 
 Target "UnitTests" (fun _ ->
-    !! (sprintf "./Chauffeur.Tests/bin/%s/**/Chauffeur.Tests*.dll" buildMode)
-    |> NUnitParallel (fun p ->
-            {p with
-                DisableShadowCopy = true;
-                OutputFile = (sprintf "./Chauffeur.Tests/bin/%s/TestResults.xml" buildMode) })
+    !! (sprintf "./Chauffeur.Tests*/bin/%s/**/Chauffeur.Tests*.dll" buildMode)
+    |> xUnit2 (fun p -> { p with HtmlOutputPath = Some (testDir @@ "xunit.html") })
 )
 
 Target "CreateChauffeurPackage" (fun _ ->

@@ -1,12 +1,15 @@
 ﻿module TestHelpers
+
 open System
 open System.IO
 open System.Reflection
+open Chauffeur.Tests.Integration
+open Chauffeur.Host
 
 let private cwd = FileInfo(Assembly.GetExecutingAssembly().Location).Directory.FullName
 let private dbFolder = "databases"
 
-let setDataDirectory() =
+let private setDataDirectory() =
     let now = DateTimeOffset.Now
     let ticks = now.Ticks.ToString()
 
@@ -65,3 +68,22 @@ let knownTables =
     "umbracoUser2NodeNotify";
     "umbracoUser2NodePermission";
     "umbracoUserType"]
+
+[<AbstractClass>]
+type UmbracoHostTestBase() = 
+    let dbFolder = setDataDirectory()
+
+    let writer = new MockTextWriter()
+    let reader = new MockTextReader()
+    let host = new UmbracoHost(reader, writer)
+
+    member x.DatabaseLocation = dbFolder
+    member x.Host = host
+    member x.TextReader = reader
+    member x.TextWriter = writer
+
+    interface IDisposable with
+        member x.Dispose() =
+            writer.Dispose()
+            reader.Dispose()
+            host.Dispose()
