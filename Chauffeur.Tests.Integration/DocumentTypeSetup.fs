@@ -14,7 +14,7 @@ type ``Importing document types``() =
 
     let doctypeName = "blog-post"
 
-    member private x.ImportDocType = async {
+    member private x.ImportDocType() = async {
         let run = x.Host.Run
         do! x.TextWriter.WriteLineAsync x.DatabaseLocation |> Async.AwaitTask
         let! installResponse = run [| "install" |] |> Async.AwaitTask
@@ -25,7 +25,7 @@ type ``Importing document types``() =
     member x.``Will log an error if you don't have the import file on disk``() =
         x.TextReader.AddCommand "Y"
         async {
-            let! contentTypeImportResponse = x.ImportDocType
+            let! contentTypeImportResponse = x.ImportDocType()
             let messages = x.TextWriter.Messages
             List.head messages |> should equal (sprintf"Unable to located the import script '%s'" doctypeName)
         }
@@ -96,7 +96,7 @@ type ``Importing document types``() =
                             sprintf "%s.xml" doctypeName |]
         File.WriteAllText(filePath, packageXml)
         async {
-            let! contentTypeImportResponse = x.ImportDocType
+            let! contentTypeImportResponse = x.ImportDocType()
             x.TextWriter.Flush()
             let! contentTypeInfoResponse = run [| "ct"; "get"; "BlogPost" |] |> Async.AwaitTask
             let messages = x.TextWriter.Messages
