@@ -7,11 +7,12 @@ open Xunit
 open FsUnit.Xunit
 open TestHelpers
 
+let connStrings = System.Configuration.ConfigurationManager.ConnectionStrings
+
 [<CollectionAttribute("Basic host")>]
-type ``Install Deliverable Tests``(fixture : BasicHostCollectionFixture) = 
-    
+type ``Successfully setup the database``(fixture : BasicHostCollectionFixture) =
     [<Fact>]
-    member x.``Installation should result in a continuation when successful``() = 
+    member x.``Results in a Continue response``() =
         fixture.TextReader.AddCommand "Y"
         async { 
             do! fixture.TextWriter.WriteLineAsync fixture.DatabaseLocation |> Async.AwaitTask
@@ -21,20 +22,32 @@ type ``Install Deliverable Tests``(fixture : BasicHostCollectionFixture) =
         |> Async.RunSynchronously
     
     [<Fact>]
-    member x.``Installation should create a bunch of umbraco tables``() = 
+    member x.``Creates known tables``() =
         fixture.TextReader.AddCommand "Y"
         async { 
             do! fixture.TextWriter.WriteLineAsync fixture.DatabaseLocation |> Async.AwaitTask
             let! response = fixture.Host.Run([| "install" |]) |> Async.AwaitTask
-            let connStrings = System.Configuration.ConfigurationManager.ConnectionStrings
             use connection = new SqlCeConnection(connStrings.["umbracoDbDSN"].ConnectionString)
             let cmd = 
-                new SqlCeCommand("select table_name from information_schema.tables where TABLE_TYPE <> 'VIEW'", 
+                new SqlCeCommand("select table_name from information_schema.tables where TABLE_TYPE <> 'VIEW'",
                                  connection)
             connection.Open()
             let reader = cmd.ExecuteReader()
             while reader.Read() do
                 let tableName = reader.GetString 0
                 List.contains tableName knownTables |> should equal true
+        }
+        |> Async.RunSynchronously
+
+[<CollectionAttribute("Basic host")>]
+type ``Unsuccessfully setup the database``(fixture : BasicHostCollectionFixture) =
+    [<Fact>]
+    member x.``Won't create the database when you say not to``() = 
+        fixture.TextReader.AddCommand "N"
+        async { 
+            do! fixture.TextWriter.WriteLineAsync fixture.DatabaseLocation |> Async.AwaitTask
+            let! response = fixture.Host.Run([| "install" |]) |> Async.AwaitTask
+            use connection = new SqlCeConnection(connStrings.["umbracoDbDSN"].ConnectionString)
+            connection.Open |> should throw typeof<SqlCeException>
         }
         |> Async.RunSynchronously
