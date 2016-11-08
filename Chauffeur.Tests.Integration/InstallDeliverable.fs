@@ -17,7 +17,7 @@ type ``Successfully setup the database``() =
     [<Fact>]
     member x.``Results in a Continue response``() =
         x.TextReader.AddCommand "Y"
-        async { 
+        async {
             do! x.TextWriter.WriteLineAsync x.DatabaseLocation |> Async.AwaitTask
             let! response = x.Host.Run([| "install" |]) |> Async.AwaitTask
             response |> should equal DeliverableResponse.Continue
@@ -27,11 +27,11 @@ type ``Successfully setup the database``() =
     [<Fact>]
     member x.``Creates known tables``() =
         x.TextReader.AddCommand "Y"
-        async { 
+        async {
             do! x.TextWriter.WriteLineAsync x.DatabaseLocation |> Async.AwaitTask
             let! response = x.Host.Run([| "install" |]) |> Async.AwaitTask
             use connection = new SqlCeConnection(connStrings.["umbracoDbDSN"].ConnectionString)
-            let cmd = 
+            let cmd =
                 new SqlCeCommand("select table_name from information_schema.tables where TABLE_TYPE <> 'VIEW'",
                                  connection)
             connection.Open()
@@ -46,9 +46,9 @@ type ``Unsuccessfully setup the database``() =
     inherit UmbracoHostTestBase()
 
     [<Fact>]
-    member x.``Won't create the database when you say not to``() = 
+    member x.``Won't create the database when you say not to``() =
         x.TextReader.AddCommand "N"
-        async { 
+        async {
             do! x.TextWriter.WriteLineAsync x.DatabaseLocation |> Async.AwaitTask
             let! response = x.Host.Run([| "install" |]) |> Async.AwaitTask
             use connection = new SqlCeConnection(connStrings.["umbracoDbDSN"].ConnectionString)
