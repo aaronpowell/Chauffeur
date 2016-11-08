@@ -11,15 +11,21 @@ open System
 
 type ``Importing document types``() =
     inherit UmbracoHostTestBase()
-
     let doctypeName = "blog-post"
 
-    member private x.ImportDocType() = async {
-        let run = x.Host.Run
-        do! x.TextWriter.WriteLineAsync x.DatabaseLocation |> Async.AwaitTask
-        let! installResponse = run [| "install" |] |> Async.AwaitTask
-        return! run [| "ct"; "import"; doctypeName |] |> Async.AwaitTask
-    }
+    member private x.ImportDocType() =
+        async {
+            let run = x.Host.Run
+            do! x.DatabaseLocation
+                |> x.TextWriter.WriteLineAsync
+                |> Async.AwaitTask
+            let! response = [| "install" |]
+                            |> run
+                            |> Async.AwaitTask
+            return! [| "ct"; "import"; doctypeName |]
+                    |> run
+                    |> Async.AwaitTask
+        }
 
     [<Fact>]
     member x.``Will log an error if you don't have the import file on disk``() =
@@ -27,7 +33,7 @@ type ``Importing document types``() =
         async {
             let! contentTypeImportResponse = x.ImportDocType()
             let messages = x.TextWriter.Messages
-            List.head messages |> should equal (sprintf"Unable to located the import script '%s'" doctypeName)
+            List.head messages |> should equal (sprintf "Unable to located the import script '%s'" doctypeName)
         }
         |> Async.RunSynchronously
 
@@ -98,7 +104,9 @@ type ``Importing document types``() =
         async {
             let! contentTypeImportResponse = x.ImportDocType()
             x.TextWriter.Flush()
-            let! contentTypeInfoResponse = run [| "ct"; "get"; "BlogPost" |] |> Async.AwaitTask
+            let! contentTypeInfoResponse = [| "ct"; "get"; "BlogPost" |]
+                                           |> run
+                                           |> Async.AwaitTask
             let messages = x.TextWriter.Messages
             messages |> should haveLength 6
             let infoRow =
