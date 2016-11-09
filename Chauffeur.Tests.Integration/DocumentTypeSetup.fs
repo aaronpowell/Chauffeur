@@ -95,10 +95,9 @@ type ``Importing document types``() =
     </Tab>
   </Tabs>
 </DocumentType>"
-        let chauffeurFolder = Path.Combine [| x.DatabaseLocation; "Chauffeur" |]
-        Directory.CreateDirectory chauffeurFolder |> ignore
+        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
         let filePath =
-            Path.Combine [| chauffeurFolder
+            Path.Combine [| chauffeurFolder.FullName
                             sprintf "%s.xml" doctypeName |]
         File.WriteAllText(filePath, packageXml)
         async {

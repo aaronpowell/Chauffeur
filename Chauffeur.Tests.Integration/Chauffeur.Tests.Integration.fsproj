@@ -106,6 +106,7 @@
     <Compile Include="TestHelpers.fs" />
     <Compile Include="InstallDeliverable.fs" />
     <Compile Include="DocumentTypeSetup.fs" />
+    <Compile Include="RunningDeliverables.fs" />
     <Content Include="packages.config" />
     <Content Include="app.config" />
   </ItemGroup>

@@ -70,7 +70,7 @@ let knownTables =
     "umbracoUserType"]
 
 [<AbstractClass>]
-type UmbracoHostTestBase() = 
+type UmbracoHostTestBase() =
     let dbFolder = setDataDirectory()
 
     let writer = new MockTextWriter()
@@ -87,3 +87,7 @@ type UmbracoHostTestBase() =
             writer.Dispose()
             reader.Dispose()
             host.Dispose()
+
+let getChauffeurFolder databaseLocation =
+        let chauffeurFolder = Path.Combine [| databaseLocation; "Chauffeur" |]
+        Directory.CreateDirectory chauffeurFolder
