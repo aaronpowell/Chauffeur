@@ -14,7 +14,7 @@ let setupDelivery deliverableName steps dbLocation =
 
 let connStrings = System.Configuration.ConfigurationManager.ConnectionStrings
 
-let getTrackedDeliveries() =
+let trackedDeliveries =
     async {
         use connection = new SqlCeConnection(connStrings.["umbracoDbDSN"].ConnectionString)
         let cmd = new SqlCeCommand("select * from Chauffeur_Delivery", connection)
@@ -47,7 +47,7 @@ type ``Working with a fresh install``() =
             let! response = [| "delivery" |]
                             |> x.Host.Run
                             |> Async.AwaitTask
-            let! dbSet = getTrackedDeliveries()
+            let! dbSet = trackedDeliveries
             let rows = dbSet.Tables.["Chauffeur_Delivery"].Rows
             rows.Count |> should equal 1
             let row = rows.[0]
@@ -67,7 +67,7 @@ type ``Working with a fresh install``() =
                              |> x.Host.Run
                              |> Async.AwaitTask
             response2 |> should equal DeliverableResponse.Continue
-            let! dbSet = getTrackedDeliveries()
+            let! dbSet = trackedDeliveries
             let rows = dbSet.Tables.["Chauffeur_Delivery"].Rows
             rows.Count |> should equal 1
         }
@@ -109,7 +109,7 @@ type ``Multiple deliveries``() =
             let! response = [| "delivery" |]
                             |> x.Host.Run
                             |> Async.AwaitTask
-            let! dbSet = getTrackedDeliveries()
+            let! dbSet = trackedDeliveries
             let rows = dbSet.Tables.["Chauffeur_Delivery"].Rows
             rows.Count |> should equal 2
             let asserter deliveryName (row : DataRow) =
