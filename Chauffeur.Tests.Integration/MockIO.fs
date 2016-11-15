@@ -6,12 +6,12 @@ open System.Threading.Tasks
 type MockTextWriter() =
     inherit TextWriter()
 
-    let mutable messages = List.empty<string>
+    let mutable messages = []
 
     member x.Messages = messages
 
     override x.Flush() =
-        messages <- List.empty<string>
+        messages <- []
 
     override x.Encoding = System.Text.Encoding.Default
 
@@ -23,12 +23,15 @@ type MockTextWriter() =
 type MockTextReader() =
     inherit TextReader()
 
-    let mutable remainingCommands = List.empty<string>
+    let mutable remainingCommands = []
 
     member x.AddCommand command =
-        remainingCommands <- command :: remainingCommands
+        remainingCommands <- remainingCommands @ [command]
 
     override x.ReadLineAsync() =
-        let command = List.head remainingCommands
-        remainingCommands <- List.skip 1 remainingCommands
-        Task.FromResult command
+        match remainingCommands with
+        | [] -> failwith "No commands"
+        | head::tail ->
+            remainingCommands <- tail
+            head
+        |> Task.FromResult
