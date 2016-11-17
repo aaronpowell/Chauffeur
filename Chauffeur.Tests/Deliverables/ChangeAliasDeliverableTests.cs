@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Chauffeur.Tests.Deliverables
 {
-    class ChangeAliasDeliverableTests
+    public class ChangeAliasDeliverableTests
     {
         [Fact]
         public async Task NoArguments_WillWarnAndExit()
@@ -43,7 +43,7 @@ namespace Chauffeur.Tests.Deliverables
             Assert.Equal(writer.Messages.Count(), 1);
         }
 
-        [Fact]
+        [Theory]
         [InlineData("document-type")]
         [InlineData("doc-type")]
         [InlineData("dt")]

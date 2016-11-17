@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Chauffeur.Tests.Deliverables
 {
-    class InstallDeliverableTests
+    public class InstallDeliverableTests
     {
         [Fact]
         public async Task MissingConnectionString_WillWarnAndExit()

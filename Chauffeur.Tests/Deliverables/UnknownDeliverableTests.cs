@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Chauffeur.Tests.Deliverables
 {
-    class UnknownDeliverableTests
+    public class UnknownDeliverableTests
     {
         [Fact]
         public async Task ShouldReturnContinue()

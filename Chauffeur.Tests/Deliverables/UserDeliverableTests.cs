@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Chauffeur.Tests.Deliverables
 {
-    class UserDeliverableTests
+    public class UserDeliverableTests
     {
         [Fact]
         public async Task NoArgumentsWillWriteOutMessage()

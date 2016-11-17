@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Chauffeur.Tests.Deliverables
 {
-    class ContentTypeDeliverableTests
+    public class ContentTypeDeliverableTests
     {
         [Fact]
         public async Task GetAllCommandGetsAllFromUmbracoApi()
