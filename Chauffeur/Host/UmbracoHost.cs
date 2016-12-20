@@ -38,6 +38,9 @@ namespace Chauffeur.Host
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             var builders = assemblies
                 .Where(asm => !asm.IsDynamic)
+#if DEBUG
+                .Where(asm => !asm.FullName.Contains("xunit"))
+#endif
                 .SelectMany(a => a.GetExportedTypes())
                 .Where(t => t.IsClass)
                 .Where(t => typeof(IBuildDependencies).IsAssignableFrom(t))
