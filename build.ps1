@@ -8,3 +8,5 @@ $nuget = "$toolsDir\nuget.exe"
 
 'Dependencies downloaded, time to run FAKE'
 . "$toolsDir\FAKE.Core\tools\Fake.exe" "build.fsx"
+
+'And we are done!'
