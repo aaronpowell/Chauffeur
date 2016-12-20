@@ -1,7 +1,11 @@
 version: 0.7.{build}
 test: off
 build_script:
-  - ps: .\build.ps1
+  - ps: .\build.ps1 -Target Setup
+  - ps: .\build.ps1 -Target Build
+  - ps: .\build.ps1 -Target UnitTests
+  - ps: .\build.ps1 -Target IntegrationTests
+  - ps: .\build.ps1 -Target Package
 artifacts:
   - path: packaging\*.nupkg
 deploy:

@@ -12,11 +12,8 @@ let packagingRoot = "./packaging/"
 let packagingDir = packagingRoot @@ "chauffeur"
 let packagingRunnerDir = packagingRoot @@ "chauffeur.runner"
 let testDir = "./.testresults"
-
 let buildMode = getBuildParamOrDefault "buildMode" "Release"
-
-let isAppVeyorBuild = environVar "APPVEYOR" <> null
-
+let isAppVeyorBuild = not (isNull (environVar "APPVEYOR"))
 let projectName = "Chauffeur"
 let chauffeurSummary = "Chauffeur is a tool for helping with delivering changes to an Umbraco instance."
 let chauffeurDescription = chauffeurSummary
@@ -29,7 +26,11 @@ let releaseNotes =
         |> ReleaseNotesHelper.parseReleaseNotes
 
 let prv = match releaseNotes.SemVer.PreRelease with
-            | Some pr -> sprintf "-%s%s" pr.Name (if environVar "APPVEYOR_BUILD_NUMBER" <> null then environVar "APPVEYOR_BUILD_NUMBER" else "")
+            | Some pr -> sprintf "-%s%s" pr.Name (
+                            match environVar "APPVEYOR_BUILD_NUMBER" with
+                            | null -> ""
+                            | _ -> "APPVEYOR_BUILD_NUMBER"
+                            )
             | None -> ""
 
 let nugetVersion = sprintf "%d.%d.%d%s" releaseNotes.SemVer.Major releaseNotes.SemVer.Minor releaseNotes.SemVer.Patch prv
@@ -61,14 +62,27 @@ Target "RestoreChauffeurTestsPackages" (fun _ ->
     RestorePackage id "./Chauffeur.Tests.Integration/packages.config"
 )
 
-Target "BuildApp" (fun _ ->
+Target "Build" (fun _ ->
     MSBuild null "Build" ["Configuration", buildMode] ["Chauffeur.sln"]
     |> Log "AppBuild-Output: "
 )
 
 Target "UnitTests" (fun _ ->
-    !! (sprintf "./Chauffeur.Tests*/bin/%s/**/Chauffeur.Tests*.dll" buildMode)
+    !! (sprintf "./Chauffeur.Tests/bin/%s/**/Chauffeur.Tests.dll" buildMode)
     |> xUnit2 (fun p -> { p with HtmlOutputPath = Some (testDir @@ "xunit.html") })
+)
+
+Target "EnsureSqlExpressAssemblies" (fun _ ->
+    CopyDir (sprintf "./Chauffeur.Tests.Integration/bin/%s" buildMode) "packages/UmbracoCms.7.5.4/UmbracoFiles/bin" (fun x -> true)
+)
+
+Target "CleanXUnitVSRunner" (fun _ ->
+    DeleteFile (sprintf "./Chauffeur.Tests.Integration/bin/%s/xunit.runner.visualstudio.testadapter.dll" buildMode)
+)
+
+Target "IntegrationTests" (fun _ ->
+    !! (sprintf "./Chauffeur.Tests.Integration/bin/%s/**/Chauffeur.Tests.Integration.dll" buildMode)
+    |> xUnit2 (fun p -> { p with HtmlOutputPath = Some (testDir @@ "xunit-integration.html") })
 )
 
 Target "CreateChauffeurPackage" (fun _ ->
@@ -125,13 +139,25 @@ Target "BuildVersion" (fun _ ->
     Shell.Exec("appveyor", sprintf "UpdateBuild -Version \"%s\"" nugetVersion) |> ignore
 )
 
+Target "Package" DoNothing
+
 "Clean"
     =?> ("BuildVersion", isAppVeyorBuild)
-    ==> "RestoreChauffeurPackages"
-    =?> ("RestoreChauffeurDemoPackages", buildMode <> "Release")
+    ==> "Build"
+
+"RestoreChauffeurPackages"
+    ==> "RestoreChauffeurDemoPackages"
     ==> "RestoreChauffeurTestsPackages"
-    ==> "BuildApp"
-    ==> "UnitTests"
+    ==> "Build"
+
+"UnitTests"
+    ==> "Default"
+
+"EnsureSqlExpressAssemblies"
+    ==> "CleanXUnitVSRunner"
+    ==> "IntegrationTests"
+
+"Package"
     ==> "CreateChauffeurPackage"
     ==> "CreateRunnerPackage"
     ==> "Default"
