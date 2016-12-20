@@ -2,6 +2,7 @@
 * Updated to Umbraco 7.5.4
 * Adding integration tests
 * Adding support for doc type composition
+* Getting AppVeyor up and running again
 
 ## New in 0.6.4 (Released 08/09/2015)
 * Merging PR #32. Thanks @dinc5150
@@ -22,7 +23,7 @@
 * Refactored the `user change-password` to not require the existing password and to use the username for lookup, not id
 
 ## New in 0.5.1 (Released 23/06/2015)
-* Removed C# 6 usage as AppVoyer doesn't support it
+* Removed C# 6 usage as AppVeyor doesn't support it
 * Turned on warnings as errors
 
 ## New in 0.5.0 (Released 23/06/2015)
