@@ -1,7 +1,7 @@
 version: 0.7.{build}
 test: off
 build_script:
-    - ps: .\build.ps1
+    - ps: build.ps1
 artifacts:
     - path: packaging\*.nupkg
 deploy:
