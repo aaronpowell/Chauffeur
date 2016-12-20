@@ -30,3 +30,5 @@ packaging
 .vs
 .testresults
 .fake
+
+Chauffeur.Tests.Integration/Views

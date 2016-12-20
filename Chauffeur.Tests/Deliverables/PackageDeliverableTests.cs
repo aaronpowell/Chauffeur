@@ -303,7 +303,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await package.Run(null, new[] { "Text" });
 
-            packagingService.Received(2).ImportContentTypes(Arg.Any<XElement>());
+            packagingService.Received(1).ImportContentTypes(Arg.Any<XElement>());
         }
 
         [Fact]
