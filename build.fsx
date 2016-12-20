@@ -49,15 +49,16 @@ Target "Clean" (fun _ ->
 )
 
 Target "RestoreChauffeurPackages" (fun _ ->
-    RestorePackage (fun p -> p) "./Chauffeur/packages.config"
+    RestorePackage id "./Chauffeur/packages.config"
 )
 
 Target "RestoreChauffeurDemoPackages" (fun _ ->
-    RestorePackage (fun p -> p) "./Chauffeur.Demo/packages.config"
+    RestorePackage id "./Chauffeur.Demo/packages.config"
 )
 
 Target "RestoreChauffeurTestsPackages" (fun _ ->
-    RestorePackage (fun p -> p) "./Chauffeur.Tests/packages.config"
+    RestorePackage id "./Chauffeur.Tests/packages.config"
+    RestorePackage id "./Chauffeur.Tests.Integration/packages.config"
 )
 
 Target "BuildApp" (fun _ ->
