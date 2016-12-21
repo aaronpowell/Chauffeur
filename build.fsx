@@ -157,9 +157,8 @@ Target "Package" DoNothing
     ==> "CleanXUnitVSRunner"
     ==> "IntegrationTests"
 
-"Package"
-    ==> "CreateChauffeurPackage"
+"CreateChauffeurPackage"
     ==> "CreateRunnerPackage"
-    ==> "Default"
+    ==> "Package"
 
 RunTargetOrDefault "Default"
