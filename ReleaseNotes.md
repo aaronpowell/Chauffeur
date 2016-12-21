@@ -1,4 +1,4 @@
-## New in 0.7.0 (Unreleased)
+## New in 0.7.0 (Released 22/12/2016)
 * Updated to Umbraco 7.5.4
 * Adding integration tests
 * Adding support for doc type composition
