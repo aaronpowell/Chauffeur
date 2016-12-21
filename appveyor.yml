@@ -18,5 +18,3 @@ deploy:
 environment:
   nuget_key:
     secure: jIk7hDIpgOtyTG6FPxA3s55xN1pxaiJIBTeJrGlV664POb4pGAVdr90zFLt3jmDy
-after_deploy:
-  - ps: .\postDeploy.ps1
