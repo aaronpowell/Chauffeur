@@ -8,7 +8,7 @@ let authors = ["Aaron Powell"]
 
 let chauffeurDir = "./Chauffeur/bin/"
 let chauffeurRunnerDir = "./Chauffeur.Runner/bin/"
-let packagingRoot = "./packaging/"
+let packagingRoot = "./.packaging/"
 let packagingDir = packagingRoot @@ "chauffeur"
 let packagingRunnerDir = packagingRoot @@ "chauffeur.runner"
 let testDir = "./.testresults"
