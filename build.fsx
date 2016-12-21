@@ -25,14 +25,13 @@ let releaseNotes =
     ReadFile "ReleaseNotes.md"
         |> ReleaseNotesHelper.parseReleaseNotes
 
-let prv = match releaseNotes.SemVer.PreRelease with
-            | Some pr -> sprintf "-%s%s" pr.Name (
+let prv = match environVar "APPVEYOR_REPO_BRANCH" with
+            | "master" -> ""
+            | branch -> sprintf "-%s%s" branch (
                             match environVar "APPVEYOR_BUILD_NUMBER" with
                             | null -> ""
-                            | _ -> "APPVEYOR_BUILD_NUMBER"
+                            | _ -> sprintf "-%s" (environVar "APPVEYOR_BUILD_NUMBER")
                             )
-            | None -> ""
-
 let nugetVersion = sprintf "%d.%d.%d%s" releaseNotes.SemVer.Major releaseNotes.SemVer.Minor releaseNotes.SemVer.Patch prv
 
 Target "Default" DoNothing
