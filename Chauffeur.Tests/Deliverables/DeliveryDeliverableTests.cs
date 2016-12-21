@@ -8,17 +8,16 @@ using System.Threading.Tasks;
 using Chauffeur.Deliverables;
 using Chauffeur.Host;
 using NSubstitute;
-using NUnit.Framework;
 using Umbraco.Core.Persistence;
 using Umbraco.Core.Persistence.DatabaseModelDefinitions;
 using Umbraco.Core.Persistence.SqlSyntax;
+using Xunit;
 
 namespace Chauffeur.Tests.Deliverables
 {
-    [TestFixture]
     public class DeliveryDeliverableTests
     {
-        [Test]
+        [Fact]
         public async Task NoExistingDatabase_WillCreateTable()
         {
             var provider = Substitute.For<ISqlSyntaxProvider>();
@@ -40,7 +39,7 @@ namespace Chauffeur.Tests.Deliverables
             provider.Received().DoesTableExist(Arg.Is((Database)db), Arg.Any<string>());
         }
 
-        [Test]
+        [Fact]
         public async Task NoDeliveriesFound_DoesntRequireHost()
         {
             var provider = Substitute.For<ISqlSyntaxProvider>();
@@ -70,10 +69,10 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run(null, null);
 
-            Assert.That(writer.Messages.Count(), Is.EqualTo(1));
+            Assert.Equal(writer.Messages.Count(), 1);
         }
 
-        [Test]
+        [Fact]
         public async Task FoundDeliveryNotPreviouslyRun_WillBeGivenToTheHost()
         {
             var provider = Substitute.For<ISqlSyntaxProvider>();
@@ -113,7 +112,7 @@ namespace Chauffeur.Tests.Deliverables
             host.Received(1).Run(Arg.Any<string[]>()).IgnoreAwaitForNSubstituteAssertion();
         }
 
-        [Test]
+        [Fact]
         public async Task FoundDeliveryPreviouslyRun_WillBeSkipped()
         {
             var provider = Substitute.For<ISqlSyntaxProvider>();
@@ -164,7 +163,7 @@ namespace Chauffeur.Tests.Deliverables
             host.Received(0).Run(Arg.Any<string[]>()).IgnoreAwaitForNSubstituteAssertion();
         }
 
-        [Test]
+        [Fact]
         public async Task DatabaseError_WillStillAttemptFirstDeliverableThenCreateTableAgain()
         {
             var ex =Substitute.For<DbException>();

@@ -1,22 +1,19 @@
-#I @"tools/FAKE/tools/"
-#r @"FakeLib.dll"
+#r @"tools/FAKE.Core/tools/FakeLib.dll"
 
 open Fake
+open Fake.Testing.XUnit2
+open Fake.AssemblyInfoFile
 
 let authors = ["Aaron Powell"]
 
 let chauffeurDir = "./Chauffeur/bin/"
 let chauffeurRunnerDir = "./Chauffeur.Runner/bin/"
-let packagingRoot = "./packaging/"
+let packagingRoot = "./.packaging/"
 let packagingDir = packagingRoot @@ "chauffeur"
 let packagingRunnerDir = packagingRoot @@ "chauffeur.runner"
-
+let testDir = "./.testresults"
 let buildMode = getBuildParamOrDefault "buildMode" "Release"
-
-let isAppVeyorBuild = environVar "APPVEYOR" <> null
-
-open Fake.AssemblyInfoFile
-
+let isAppVeyorBuild = not (isNull (environVar "APPVEYOR"))
 let projectName = "Chauffeur"
 let chauffeurSummary = "Chauffeur is a tool for helping with delivering changes to an Umbraco instance."
 let chauffeurDescription = chauffeurSummary
@@ -28,10 +25,13 @@ let releaseNotes =
     ReadFile "ReleaseNotes.md"
         |> ReleaseNotesHelper.parseReleaseNotes
 
-let prv = match releaseNotes.SemVer.PreRelease with
-    | Some pr -> sprintf "-%s%s" pr.Name (if environVar "APPVEYOR_BUILD_NUMBER" <> null then environVar "APPVEYOR_BUILD_NUMBER" else "")
-    | None -> ""
-
+let prv = match environVar "APPVEYOR_REPO_BRANCH" with
+            | "master" -> ""
+            | branch -> sprintf "-%s%s" branch (
+                            match environVar "APPVEYOR_BUILD_NUMBER" with
+                            | null -> ""
+                            | _ -> sprintf "-%s" (environVar "APPVEYOR_BUILD_NUMBER")
+                            )
 let nugetVersion = sprintf "%d.%d.%d%s" releaseNotes.SemVer.Major releaseNotes.SemVer.Minor releaseNotes.SemVer.Patch prv
 
 Target "Default" DoNothing
@@ -45,32 +45,43 @@ Target "AssemblyInfo" (fun _ ->
 )
 
 Target "Clean" (fun _ ->
-    CleanDirs [chauffeurDir; chauffeurRunnerDir]
+    CleanDirs [chauffeurDir; chauffeurRunnerDir; testDir]
 )
 
 Target "RestoreChauffeurPackages" (fun _ ->
-    RestorePackage (fun p -> p) "./Chauffeur/packages.config"
+    RestorePackage id "./Chauffeur/packages.config"
 )
 
 Target "RestoreChauffeurDemoPackages" (fun _ ->
-    RestorePackage (fun p -> p) "./Chauffeur.Demo/packages.config"
+    RestorePackage id "./Chauffeur.Demo/packages.config"
 )
 
 Target "RestoreChauffeurTestsPackages" (fun _ ->
-    RestorePackage (fun p -> p) "./Chauffeur.Tests/packages.config"
+    RestorePackage id "./Chauffeur.Tests/packages.config"
+    RestorePackage id "./Chauffeur.Tests.Integration/packages.config"
 )
 
-Target "BuildApp" (fun _ ->
+Target "Build" (fun _ ->
     MSBuild null "Build" ["Configuration", buildMode] ["Chauffeur.sln"]
     |> Log "AppBuild-Output: "
 )
 
 Target "UnitTests" (fun _ ->
-    !! (sprintf "./Chauffeur.Tests/bin/%s/**/Chauffeur.Tests*.dll" buildMode)
-    |> NUnitParallel (fun p ->
-            {p with
-                DisableShadowCopy = true;
-                OutputFile = (sprintf "./Chauffeur.Tests/bin/%s/TestResults.xml" buildMode) })
+    !! (sprintf "./Chauffeur.Tests/bin/%s/**/Chauffeur.Tests.dll" buildMode)
+    |> xUnit2 (fun p -> { p with HtmlOutputPath = Some (testDir @@ "xunit.html") })
+)
+
+Target "EnsureSqlExpressAssemblies" (fun _ ->
+    CopyDir (sprintf "./Chauffeur.Tests.Integration/bin/%s" buildMode) "packages/UmbracoCms.7.5.4/UmbracoFiles/bin" (fun x -> true)
+)
+
+Target "CleanXUnitVSRunner" (fun _ ->
+    DeleteFile (sprintf "./Chauffeur.Tests.Integration/bin/%s/xunit.runner.visualstudio.testadapter.dll" buildMode)
+)
+
+Target "IntegrationTests" (fun _ ->
+    !! (sprintf "./Chauffeur.Tests.Integration/bin/%s/**/Chauffeur.Tests.Integration.dll" buildMode)
+    |> xUnit2 (fun p -> { p with HtmlOutputPath = Some (testDir @@ "xunit-integration.html") })
 )
 
 Target "CreateChauffeurPackage" (fun _ ->
@@ -127,15 +138,26 @@ Target "BuildVersion" (fun _ ->
     Shell.Exec("appveyor", sprintf "UpdateBuild -Version \"%s\"" nugetVersion) |> ignore
 )
 
+Target "Package" DoNothing
+
 "Clean"
     =?> ("BuildVersion", isAppVeyorBuild)
-    ==> "RestoreChauffeurPackages"
-    =?> ("RestoreChauffeurDemoPackages", buildMode <> "Release")
+    ==> "Build"
+
+"RestoreChauffeurPackages"
+    ==> "RestoreChauffeurDemoPackages"
     ==> "RestoreChauffeurTestsPackages"
-    ==> "BuildApp"
-    ==> "UnitTests"
-    ==> "CreateChauffeurPackage"
-    ==> "CreateRunnerPackage"
+    ==> "Build"
+
+"UnitTests"
     ==> "Default"
+
+"EnsureSqlExpressAssemblies"
+    ==> "CleanXUnitVSRunner"
+    ==> "IntegrationTests"
+
+"CreateChauffeurPackage"
+    ==> "CreateRunnerPackage"
+    ==> "Package"
 
 RunTargetOrDefault "Default"

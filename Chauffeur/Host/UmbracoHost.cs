@@ -12,7 +12,7 @@ using Umbraco.Core.Logging;
 
 namespace Chauffeur.Host
 {
-    public sealed class UmbracoHost : IChauffeurHost
+    public sealed class UmbracoHost : IChauffeurHost, IDisposable
     {
         private readonly TextReader reader;
         private readonly TextWriter writer;
@@ -38,6 +38,9 @@ namespace Chauffeur.Host
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             var builders = assemblies
                 .Where(asm => !asm.IsDynamic)
+#if DEBUG
+                .Where(asm => !asm.FullName.Contains("xunit"))
+#endif
                 .SelectMany(a => a.GetExportedTypes())
                 .Where(t => t.IsClass)
                 .Where(t => typeof(IBuildDependencies).IsAssignableFrom(t))
@@ -127,6 +130,11 @@ namespace Chauffeur.Host
         {
             await writer.WriteAsync("umbraco> ");
             return await reader.ReadLineAsync();
+        }
+
+        public void Dispose()
+        {
+            ((IDisposable)ApplicationContext.Current).Dispose();
         }
     }
 }

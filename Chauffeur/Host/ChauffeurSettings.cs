@@ -22,11 +22,9 @@ namespace Chauffeur.Host
         {
             exportDirectory = string.Empty;
 
-            string rootFolder;
-            if (!TryGetSiteRootDirectory(out rootFolder))
-                return false;
+            var rootFolder = (string)AppDomain.CurrentDomain.GetData("DataDirectory");
 
-            exportDirectory = fileSystem.Path.Combine(rootFolder, "App_Data", "Chauffeur");
+            exportDirectory = fileSystem.Path.Combine(rootFolder, "Chauffeur");
 
             if (!fileSystem.Directory.Exists(exportDirectory))
             {

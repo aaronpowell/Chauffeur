@@ -6,14 +6,13 @@ using System.Xml.Linq;
 using Chauffeur.Deliverables;
 using Chauffeur.Host;
 using NSubstitute;
-using NUnit.Framework;
 using Umbraco.Core.Models;
 using Umbraco.Core.Services;
 using Task = System.Threading.Tasks.Task;
+using Xunit;
 
 namespace Chauffeur.Tests.Deliverables
 {
-    [TestFixture]
     public class PackageDeliverableTests
     {
         #region SampleDocumentTypesXml
@@ -253,7 +252,7 @@ namespace Chauffeur.Tests.Deliverables
 </umbPackage>";
         #endregion
 
-        [Test]
+        [Fact]
         public async Task NoPackagesAbortsEarly()
         {
             var writer = Substitute.ForPartsOf<TextWriter>();
@@ -264,7 +263,7 @@ namespace Chauffeur.Tests.Deliverables
             writer.Received(1).WriteLineAsync(Arg.Any<string>()).IgnoreAwaitForNSubstituteAssertion();
         }
 
-        [Test]
+        [Fact]
         public async Task NotFoundPackageAbortsEarly()
         {
             var writer = new MockTextWriter();
@@ -279,10 +278,10 @@ namespace Chauffeur.Tests.Deliverables
 
             await package.Run(null, new[] { "Test" });
 
-            Assert.That(writer.Messages.Count(), Is.EqualTo(1));
+            Assert.Equal(writer.Messages.Count(), 1);
         }
 
-        [Test]
+        [Fact]
         public async Task HavingMultipleDocumentTypesWillReadThemIn()
         {
             var writer = new MockTextWriter();
@@ -304,10 +303,10 @@ namespace Chauffeur.Tests.Deliverables
 
             await package.Run(null, new[] { "Text" });
 
-            packagingService.Received(2).ImportContentTypes(Arg.Any<XElement>());
+            packagingService.Received(1).ImportContentTypes(Arg.Any<XElement>());
         }
 
-        [Test]
+        [Fact]
         public async Task HavingSingleDocumentTypeWillReadItIn()
         {
             var writer = new MockTextWriter();
@@ -332,7 +331,7 @@ namespace Chauffeur.Tests.Deliverables
             packagingService.Received(1).ImportContentTypes(Arg.Any<XElement>());
         }
 
-        [Test]
+        [Fact]
         public async Task HavingDataTypesWillReadThemIn()
         {
             var writer = new MockTextWriter();
@@ -357,7 +356,7 @@ namespace Chauffeur.Tests.Deliverables
             packagingService.Received(2).ImportDataTypeDefinitions(Arg.Any<XElement>());
         }
 
-        [Test]
+        [Fact]
         public async Task HavingTemplatesWillReadThemIn()
         {
             var writer = new MockTextWriter();
@@ -382,7 +381,7 @@ namespace Chauffeur.Tests.Deliverables
             packagingService.Received(1).ImportTemplates(Arg.Any<XElement>());
         }
 
-        [Test]
+        [Fact]
         public async Task HavingMacrosWillReadThemIn()
         {
             var writer = new MockTextWriter();

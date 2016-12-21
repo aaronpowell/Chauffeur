@@ -89,40 +89,12 @@ namespace Chauffeur.Deliverables
                 if (element != null)
                 {
                     var docTypes = element.Elements("DocumentType");
-                    var importedDocTypes = await UnpackDocumentTypes(docTypes);
-                    await UpdateDocumentTypesStructure(docTypes, importedDocTypes);
+                    await UnpackDocumentTypes(element);
                 }
                 else if (xml.Root.Name == "DocumentType")
                 {
-                    var importedDocTypes = await UnpackDocumentTypes(new[] { xml.Root });
-                    await UpdateDocumentTypesStructure(new[] { xml.Root }, importedDocTypes);
+                    await UnpackDocumentTypes(xml.Root);
                 }
-            }
-        }
-
-        private async Task UpdateDocumentTypesStructure(IEnumerable<XElement> docTypes, IEnumerable<IContentType> importedDocumentTypes)
-        {
-            var allDocumentTypes = contentTypeService.GetAllContentTypes();
-
-            foreach (var docType in docTypes)
-            {
-                var allowedChildren = docType.Element("Structure").Elements("DocumentType");
-                if (!allowedChildren.Any())
-                    continue;
-
-                var current = importedDocumentTypes.First(x => x.Alias == docType.Element("Info").Element("Alias").Value);
-                var currentAllowed = current.AllowedContentTypes.ToList();
-                foreach (var allowedChild in allowedChildren)
-                {
-                    var dt = allDocumentTypes.FirstOrDefault(x => x.Alias == (string)allowedChild);
-                    if (dt != null && !currentAllowed.Any(x => x.Alias == dt.Alias))
-                    {
-                        await Out.WriteLineFormattedAsync("Adding '{0}' as a child of '{1}'", dt.Alias, current.Alias);
-                        currentAllowed.Add(new ContentTypeSort(new Lazy<int>(() => dt.Id), currentAllowed.Count + 1, (string)allowedChild));
-                    }
-                }
-                current.AllowedContentTypes = currentAllowed;
-                contentTypeService.Save(current);
             }
         }
 
@@ -169,17 +141,10 @@ namespace Chauffeur.Deliverables
             }
         }
 
-        private async Task<IEnumerable<IContentType>> UnpackDocumentTypes(IEnumerable<XElement> elements)
+        private async Task<IEnumerable<IContentType>> UnpackDocumentTypes(XElement elements)
         {
-            var docTypes = new List<IContentType>();
-            foreach (var element in elements)
-            {
-                var name = (string)element.Element("Info").Element("Name");
-                await Out.WriteLineFormattedAsync("Importing DocumentType '{0}'", name);
-                docTypes.AddRange(packagingService.ImportContentTypes(element));
-            }
-
-            return docTypes;
+            await Out.WriteLineAsync("Importing content types");
+            return packagingService.ImportContentTypes(elements);
         }
     }
 }

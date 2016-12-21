@@ -1,22 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Chauffeur.Deliverables;
 using Chauffeur.Host;
 using NSubstitute;
-using NUnit.Framework;
-using Umbraco.Core;
-using Umbraco.Core.Persistence;
+using Xunit;
 
 namespace Chauffeur.Tests.Deliverables
 {
-    [TestFixture]
-    class InstallDeliverableTests
+    public class InstallDeliverableTests
     {
-        [Test]
+        [Fact]
         public async Task MissingConnectionString_WillWarnAndExit()
         {
             var writer = new MockTextWriter();
@@ -25,7 +18,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run(null, null);
 
-            Assert.That(writer.Messages.Count(), Is.EqualTo(1));
+            Assert.Equal(writer.Messages.Count(), 1);
         }
     }
 }

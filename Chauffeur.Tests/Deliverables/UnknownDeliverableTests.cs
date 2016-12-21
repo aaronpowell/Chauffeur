@@ -2,20 +2,20 @@
 using System.Threading.Tasks;
 using Chauffeur.Deliverables;
 using NSubstitute;
-using NUnit.Framework;
+using Xunit;
+
 namespace Chauffeur.Tests.Deliverables
 {
-    [TestFixture]
-    class UnknownDeliverableTests
+    public class UnknownDeliverableTests
     {
-        [Test]
+        [Fact]
         public async Task ShouldReturnContinue()
         {
             var deliverable = new UnknownDeliverable(null, Substitute.ForPartsOf<TextWriter>());
 
             var result = await deliverable.Run("", new[] { "" });
 
-            Assert.That(result, Is.EqualTo(DeliverableResponse.Continue));
+            Assert.Equal(result, DeliverableResponse.Continue);
         }
     }
 }

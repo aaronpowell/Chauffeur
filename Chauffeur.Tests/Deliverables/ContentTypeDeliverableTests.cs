@@ -2,17 +2,16 @@
 using System.Linq;
 using Chauffeur.Deliverables;
 using NSubstitute;
-using NUnit.Framework;
 using Umbraco.Core.Models;
 using Umbraco.Core.Services;
 using Task = System.Threading.Tasks.Task;
+using Xunit;
 
 namespace Chauffeur.Tests.Deliverables
 {
-    [TestFixture]
-    class ContentTypeDeliverableTests
+    public class ContentTypeDeliverableTests
     {
-        [Test]
+        [Fact]
         public async Task GetAllCommandGetsAllFromUmbracoApi()
         {
             var service = Substitute.For<IContentTypeService>();
@@ -33,7 +32,7 @@ namespace Chauffeur.Tests.Deliverables
             service.Received().GetAllContentTypes();
         }
 
-        [Test]
+        [Fact]
         public async Task GetCommandWithIdReturnsItemFromUmbracoApi()
         {
             var service = Substitute.For<IContentTypeService>();
@@ -54,7 +53,7 @@ namespace Chauffeur.Tests.Deliverables
             service.Received().GetContentType(Arg.Any<int>());
         }
 
-        [Test]
+        [Fact]
         public async Task GetCommandWithAliasReturnsItemFromUmbracoApi()
         {
             var service = Substitute.For<IContentTypeService>();

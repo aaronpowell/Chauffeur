@@ -26,5 +26,9 @@ readme.html
 Chauffeur.Demo/Views/
 Chauffeur.Demo/masterpages/
 tools
-packaging
+.packaging
 .vs
+.testresults
+.fake
+
+Chauffeur.Tests.Integration/Views

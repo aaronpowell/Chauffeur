@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Security;
 using Chauffeur.Deliverables;
 using NSubstitute;
-using NUnit.Framework;
 using Umbraco.Core.Models.Membership;
-using Umbraco.Core.Security;
 using Umbraco.Core.Services;
+using Xunit;
 
 namespace Chauffeur.Tests.Deliverables
 {
-    [TestFixture]
-    class UserDeliverableTests
+    public class UserDeliverableTests
     {
-        [Test]
+        [Fact]
         public async Task NoArgumentsWillWriteOutMessage()
         {
             var writer = new MockTextWriter();
@@ -24,10 +18,10 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run("user", new string[0]);
 
-            Assert.That(writer.Messages.Count(), Is.EqualTo(1));
+            Assert.Equal(writer.Messages.Count(), 1);
         }
 
-        [Test]
+        [Fact]
         public async Task ChangePasswordWillFailIfExpectedArgumentsAreNotProvided()
         {
             var writer = new MockTextWriter();
@@ -35,10 +29,10 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run("user", new[] { "change-password" });
 
-            Assert.That(writer.Messages.Count(), Is.EqualTo(2));
+            Assert.Equal(writer.Messages.Count(), 2);
         }
 
-        [Test]
+        [Fact]
         public async Task UserIdNotMatchingAnyWillCauseAnError()
         {
             var writer = new MockTextWriter();
@@ -49,11 +43,11 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run("user", new[] { "change-password", "0", "a" });
 
-            Assert.That(writer.Messages.Count(), Is.EqualTo(1));
+            Assert.Equal(writer.Messages.Count(), 1);
             userService.Received(1).GetByUsername(Arg.Any<string>());
         }
 
-        [Test]
+        [Fact]
         public async Task ValidUserWillHaveTheirPasswordUpdated()
         {
             var writer = new MockTextWriter();
@@ -65,7 +59,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run("user", new[] { "change-password", "0", "ab" });
 
-            Assert.That(writer.Messages.Count(), Is.EqualTo(1));
+            Assert.Equal(writer.Messages.Count(), 1);
             userService.Received(1).SavePassword(user, "ab");
         }
     }
