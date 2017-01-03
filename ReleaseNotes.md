@@ -1,3 +1,6 @@
+## New in 0.7.1 (Unreleased)
+* Added FSharp Lint to ensure coding standards in the integration tests
+
 ## New in 0.7.0 (Released 22/12/2016)
 * Updated to Umbraco 7.5.4
 * Adding integration tests
