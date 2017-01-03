@@ -1,5 +1,8 @@
 ﻿module TestSamples
 
+open System.Diagnostics.CodeAnalysis
+
+[<SuppressMessage("SourceLength", "MaxLinesInValue")>]
 let compositeDocTypeSample =
     "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>
 <umbPackage>

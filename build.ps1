@@ -17,6 +17,7 @@ if ($Target -eq 'Setup') {
 
     . $nuget "Install" "FAKE.Core" "-OutputDirectory" $toolsDir "-ExcludeVersion"
     . $nuget "Install" "xunit.runner.console" "-OutputDirectory" $toolsDir "-ExcludeVersion"
+    . $nuget "Install" "FSharpLint.Fake" "-OutputDirectory" $toolsDir "-ExcludeVersion"
 } else {
     . "$toolsDir\FAKE.Core\tools\Fake.exe" "build.fsx" "target=$Target"
 }
