@@ -230,7 +230,7 @@ namespace Chauffeur.Tests.Deliverables
 
             var writer = new MockTextWriter();
 
-            var deliverableScript = "foo $bar";
+            var deliverableScript = "foo $bar$";
             var fs = new MockFileSystem(new Dictionary<string, MockFileData>
             {
                 {@"c:\foo\bar.delivery", new MockFileData(deliverableScript)}
@@ -244,7 +244,7 @@ namespace Chauffeur.Tests.Deliverables
             await deliverable.Run(null, new[] { "-p:bar=baz" });
 
             host.Received(1)
-                .Run(Arg.Is(new[] { "foo baz" }))
+                .Run(Arg.Is<string[]>(x => x[0] == "foo baz"))
                 .IgnoreAwaitForNSubstituteAssertion();
         }
     }

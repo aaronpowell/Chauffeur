@@ -1,21 +1,27 @@
-﻿using System;
+﻿using Chauffeur.Host;
+using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Chauffeur.Host;
 using Umbraco.Core.Persistence;
 using Umbraco.Core.Persistence.DatabaseAnnotations;
-using Umbraco.Core.Persistence.SqlSyntax;
+
 namespace Chauffeur.Deliverables
 {
     [DeliverableName("delivery")]
     [DeliverableAlias("d")]
     public sealed class DeliveryDeliverable : Deliverable
     {
+        static readonly Regex tokenRegex = new Regex(@"\$(\w+)\$", RegexOptions.Compiled);
+        static readonly Func<IDictionary<string, string>, string, string> replaceTokens =
+            (@params, input) => tokenRegex.Replace(input, match => @params[match.Groups[1].Value]);
+
         private readonly Database database;
         private readonly IChauffeurSettings settings;
         private readonly IFileSystem fileSystem;
@@ -74,6 +80,11 @@ namespace Chauffeur.Deliverables
                 return DeliverableResponse.Continue;
             }
 
+            var @params = args.Where(arg => arg.StartsWith("-p:"))
+                .Select(arg => arg.TrimStart(new[] { '-', 'p', ':' }))
+                .Select(arg => arg.Split('='))
+                .ToDictionary(arg => arg[0], arg => arg[1]);
+
             if (dbNotReady)
             {
                 try
@@ -81,7 +92,7 @@ namespace Chauffeur.Deliverables
                     var delivery = allDeliveries.First();
                     var file = fileSystem.FileInfo.FromFileName(delivery);
 
-                    var tracking = await Deliver(file);
+                    var tracking = await Deliver(file, @params);
 
                     if (!tracking.SignedFor)
                         return DeliverableResponse.FinishedWithError;
@@ -100,12 +111,12 @@ namespace Chauffeur.Deliverables
                 }
             }
 
-            await ProcessDeliveries(allDeliveries);
+            await ProcessDeliveries(allDeliveries, @params);
 
             return DeliverableResponse.Continue;
         }
 
-        private async Task ProcessDeliveries(string[] allDeliveries)
+        private async Task ProcessDeliveries(string[] allDeliveries, IDictionary<string, string> @params)
         {
             foreach (var delivery in allDeliveries)
             {
@@ -123,16 +134,18 @@ namespace Chauffeur.Deliverables
                     continue;
                 }
 
-                var tracking = await Deliver(file);
+                var tracking = await Deliver(file, @params);
                 database.Save(tracking);
                 if (!tracking.SignedFor)
                     break;
             }
         }
 
-        private async Task<ChauffeurDeliveryTable> Deliver(FileInfoBase file)
+        private async Task<ChauffeurDeliveryTable> Deliver(FileInfoBase file, IDictionary<string, string> @params)
         {
-            var instructions = fileSystem.File.ReadAllLines(file.FullName).Where(x => !string.IsNullOrEmpty(x));
+            var instructions = fileSystem.File
+                .ReadAllLines(file.FullName)
+                .Where(x => !string.IsNullOrEmpty(x));
 
             var tracking = new ChauffeurDeliveryTable
             {
@@ -143,7 +156,7 @@ namespace Chauffeur.Deliverables
             };
             foreach (var instruction in instructions)
             {
-                var result = await host.Run(new[] { instruction });
+                var result = await host.Run(new[] { replaceTokens(@params, instruction) });
 
                 if (result != DeliverableResponse.Continue)
                 {
