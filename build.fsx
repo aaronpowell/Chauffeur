@@ -1,8 +1,10 @@
 #r @"tools/FAKE.Core/tools/FakeLib.dll"
+#r @"tools/FSharpLint.Fake/tools/FSharpLint.Fake.dll"
 
 open Fake
 open Fake.Testing.XUnit2
 open Fake.AssemblyInfoFile
+open FSharpLint.Fake
 
 let authors = ["Aaron Powell"]
 
@@ -140,8 +142,13 @@ Target "BuildVersion" (fun _ ->
 
 Target "Package" DoNothing
 
+Target "Lint" (fun _ ->
+    !! "src/**/*.fsproj"
+        |> Seq.iter (FSharpLint id))
+
 "Clean"
     =?> ("BuildVersion", isAppVeyorBuild)
+    ==> "Lint"
     ==> "Build"
 
 "RestoreChauffeurPackages"
