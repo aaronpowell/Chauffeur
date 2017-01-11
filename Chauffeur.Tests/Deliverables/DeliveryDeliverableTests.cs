@@ -107,7 +107,7 @@ namespace Chauffeur.Tests.Deliverables
 
             var deliverable = new DeliveryDeliverable(null, writer, db, settings, fs, host);
 
-            await deliverable.Run(null, null);
+            await deliverable.Run(null, new string[0]);
 
             host.Received(1).Run(Arg.Any<string[]>()).IgnoreAwaitForNSubstituteAssertion();
         }
