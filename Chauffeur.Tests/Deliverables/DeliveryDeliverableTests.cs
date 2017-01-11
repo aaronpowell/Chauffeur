@@ -34,7 +34,7 @@ namespace Chauffeur.Tests.Deliverables
 
             var deliverable = new DeliveryDeliverable(null, new MockTextWriter(), db, settings, null, null);
 
-            await deliverable.Run(null, null);
+            await deliverable.Run(null, new string[0]);
 
             provider.Received().DoesTableExist(Arg.Is((Database)db), Arg.Any<string>());
         }
@@ -67,7 +67,7 @@ namespace Chauffeur.Tests.Deliverables
 
             var deliverable = new DeliveryDeliverable(null, writer, db, settings, fs, null);
 
-            await deliverable.Run(null, null);
+            await deliverable.Run(null, new string[0]);
 
             Assert.Equal(writer.Messages.Count(), 1);
         }
@@ -158,7 +158,7 @@ namespace Chauffeur.Tests.Deliverables
 
             var deliverable = new DeliveryDeliverable(null, writer, db, settings, fs, host);
 
-            await deliverable.Run(null, null);
+            await deliverable.Run(null, new string[0]);
 
             host.Received(0).Run(Arg.Any<string[]>()).IgnoreAwaitForNSubstituteAssertion();
         }
@@ -201,7 +201,7 @@ namespace Chauffeur.Tests.Deliverables
 
             var deliverable = new DeliveryDeliverable(null, writer, db, settings, fs, host);
 
-            await deliverable.Run(null, null);
+            await deliverable.Run(null, new string[0]);
 
             cmd.Received().CommandText = Arg.Any<string>();
         }
