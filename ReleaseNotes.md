@@ -1,3 +1,6 @@
+## New in 0.8.0 (Unreleased)
+* Supporting parameters to be passed into Deliverables (Issue [#38](https://github.com/aaronpowell/Chauffeur/issues/38)])
+
 ## New in 0.7.1 (Released 11/01/2017)
 * Added FSharp Lint to ensure coding standards in the integration tests
 

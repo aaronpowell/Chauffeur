@@ -119,3 +119,24 @@ type ``Multiple deliveries``() =
             rows.[1] |> asserter "002-get-doctypes.delivery"
         }
         |> Async.RunSynchronously
+
+type ``Deliveries with parameters``() =
+    inherit UmbracoHostTestBase()
+    let setupInstallDelivery = setupDelivery "001-install.delivery" "install $Install$"
+
+    [<Fact>]
+    member x.``When passing $Install flag it will be sustituted and used``() =
+        setupInstallDelivery x.DatabaseLocation
+        async {
+            let! response = [| "delivery -p:Install=y" |]
+                            |> x.Host.Run
+                            |> Async.AwaitTask
+            let! dbSet = trackedDeliveries
+            let rows = dbSet.Tables.["Chauffeur_Delivery"].Rows
+            rows.Count |> should equal 1
+            let asserter deliveryName (row : DataRow) =
+                row.["Name"] :?> string |> should equal deliveryName
+                row.["SignedFor"] :?> bool |> should be True
+            rows.[0] |> asserter "001-install.delivery"
+        }
+        |> Async.RunSynchronously

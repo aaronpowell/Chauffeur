@@ -34,7 +34,7 @@ namespace Chauffeur.Tests.Deliverables
 
             var deliverable = new DeliveryDeliverable(null, new MockTextWriter(), db, settings, null, null);
 
-            await deliverable.Run(null, null);
+            await deliverable.Run(null, new string[0]);
 
             provider.Received().DoesTableExist(Arg.Is((Database)db), Arg.Any<string>());
         }
@@ -67,7 +67,7 @@ namespace Chauffeur.Tests.Deliverables
 
             var deliverable = new DeliveryDeliverable(null, writer, db, settings, fs, null);
 
-            await deliverable.Run(null, null);
+            await deliverable.Run(null, new string[0]);
 
             Assert.Equal(writer.Messages.Count(), 1);
         }
@@ -107,7 +107,7 @@ namespace Chauffeur.Tests.Deliverables
 
             var deliverable = new DeliveryDeliverable(null, writer, db, settings, fs, host);
 
-            await deliverable.Run(null, null);
+            await deliverable.Run(null, new string[0]);
 
             host.Received(1).Run(Arg.Any<string[]>()).IgnoreAwaitForNSubstituteAssertion();
         }
@@ -158,7 +158,7 @@ namespace Chauffeur.Tests.Deliverables
 
             var deliverable = new DeliveryDeliverable(null, writer, db, settings, fs, host);
 
-            await deliverable.Run(null, null);
+            await deliverable.Run(null, new string[0]);
 
             host.Received(0).Run(Arg.Any<string[]>()).IgnoreAwaitForNSubstituteAssertion();
         }
@@ -201,9 +201,51 @@ namespace Chauffeur.Tests.Deliverables
 
             var deliverable = new DeliveryDeliverable(null, writer, db, settings, fs, host);
 
-            await deliverable.Run(null, null);
+            await deliverable.Run(null, new string[0]);
 
             cmd.Received().CommandText = Arg.Any<string>();
+        }
+
+        [Fact]
+        public async Task WhenRunWithParameters_ParametersSubsitutedToDeliverable()
+        {
+            var provider = Substitute.For<ISqlSyntaxProvider>();
+            provider.DoesTableExist(Arg.Any<Database>(), Arg.Any<string>()).Returns(true);
+
+            SqlSyntaxContext.SqlSyntaxProvider = provider;
+
+            var settings = Substitute.For<IChauffeurSettings>();
+            string s;
+            settings.TryGetChauffeurDirectory(out s).Returns(x =>
+            {
+                x[0] = @"c:\foo";
+                return true;
+            });
+
+            var cmd = Substitute.For<IDbCommand>();
+            cmd.ExecuteScalar().Returns(1);
+            var conn = Substitute.For<IDbConnection>();
+            conn.CreateCommand().Returns(cmd);
+            var db = new Database(conn);
+
+            var writer = new MockTextWriter();
+
+            var deliverableScript = "foo $bar$";
+            var fs = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                {@"c:\foo\bar.delivery", new MockFileData(deliverableScript)}
+            });
+
+            var host = Substitute.For<IChauffeurHost>();
+            host.Run(Arg.Any<string[]>()).Returns(Task.FromResult(DeliverableResponse.Continue));
+
+            var deliverable = new DeliveryDeliverable(null, writer, db, settings, fs, host);
+
+            await deliverable.Run(null, new[] { "-p:bar=baz" });
+
+            host.Received(1)
+                .Run(Arg.Is<string[]>(x => x[0] == "foo baz"))
+                .IgnoreAwaitForNSubstituteAssertion();
         }
     }
 }
