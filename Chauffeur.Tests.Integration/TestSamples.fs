@@ -120,3 +120,52 @@ let compositeDocTypeSample =
   <Languages />
   <DataTypes />
 </umbPackage>"
+
+let sampleDictionary = "<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<umbPackage>
+  <files />
+  <info>
+    <package>
+      <name>DictionaryTest</name>
+      <version>1</version>
+      <iconUrl />
+      <license url='None'>None</license>
+      <url>local</url>
+      <requirements type='strict'>
+        <major>7</major>
+        <minor>5</minor>
+        <patch>4</patch>
+      </requirements>
+    </package>
+    <author>
+      <name>Mark M</name>
+      <website>@MarkMcD27</website>
+    </author>
+    <readme><![CDATA[]]></readme>
+  </info>
+  <DocumentTypes />
+  <Templates />
+  <Stylesheets />
+  <Macros />
+  <DictionaryItems>
+    <DictionaryItem Key='TestTwo'>
+      <DictionaryItem Key='TestTwo.Child2'>
+        <Value LanguageId='1' LanguageCultureAlias='en-US'><![CDATA[Test two Child 2 US]]></Value>
+        <Value LanguageId='2' LanguageCultureAlias='en-GB'><![CDATA[Test two Child 2 UK]]></Value>
+      </DictionaryItem>
+      <DictionaryItem Key='TestTwo.Child1'>
+        <Value LanguageId='1' LanguageCultureAlias='en-US'><![CDATA[Test two Child 1 US]]></Value>
+        <Value LanguageId='2' LanguageCultureAlias='en-GB'><![CDATA[Test two Child 1 UK]]></Value>
+      </DictionaryItem>
+    </DictionaryItem>
+    <DictionaryItem Key='TestOne'>
+      <Value LanguageId='1' LanguageCultureAlias='en-US'><![CDATA[Test One US]]></Value>
+      <Value LanguageId='2' LanguageCultureAlias='en-GB'><![CDATA[Test One UK]]></Value>
+    </DictionaryItem>
+  </DictionaryItems>
+  <Languages>
+    <Language Id='1' CultureAlias='en-US' FriendlyName='en-US' />
+    <Language Id='2' CultureAlias='en-GB' FriendlyName='English (United Kingdom)' />
+  </Languages>
+  <DataTypes />
+</umbPackage>"
