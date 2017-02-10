@@ -105,16 +105,16 @@
     <Content Include="config\404handlers.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Compile Include="DictionarySetup.fs" />
     <Compile Include="MockIO.fs" />
     <Compile Include="TestSamples.fs" />
     <Compile Include="TestHelpers.fs" />
+    <Compile Include="DictionarySetup.fs" />
     <Compile Include="InstallDeliverable.fs" />
     <Compile Include="RunningDeliverables.fs" />
     <Compile Include="Packages.fs" />
+    <Compile Include="DocumentTypeSetup.fs" />
     <Content Include="packages.config" />
     <Content Include="app.config" />
-    <Compile Include="DocumentTypeSetup.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AutoMapper">
