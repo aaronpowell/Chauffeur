@@ -248,6 +248,7 @@
     <Compile Include="Deliverables\ChangeAliasDeliverableTests.cs" />
     <Compile Include="Deliverables\ContentTypeDeliverableTests.cs" />
     <Compile Include="Deliverables\DeliveryDeliverableTests.cs" />
+    <Compile Include="Deliverables\DictionaryDeliverableTests.cs" />
     <Compile Include="Deliverables\InstallDeliverableTests.cs" />
     <Compile Include="Deliverables\PackageDeliverableTests.cs" />
     <Compile Include="Deliverables\UnknownDeliverableTests.cs" />

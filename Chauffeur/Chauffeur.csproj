@@ -227,6 +227,7 @@
       <Link>Properties\SolutionInfo.cs</Link>
     </Compile>
     <Compile Include="Deliverables\DeliveryDeliverable.cs" />
+    <Compile Include="Deliverables\DictionaryDeliverable.cs" />
     <Compile Include="Deliverables\InstallDeliverable.cs" />
     <Compile Include="Deliverables\PackageDeliverable.cs" />
     <Compile Include="Deliverables\ChangeAliasDeliverable.cs" />
