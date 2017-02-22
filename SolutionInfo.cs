@@ -3,11 +3,11 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyCompany("Aaron Powell")]
 [assembly: AssemblyProduct("Chauffeur")]
-[assembly: AssemblyCopyright("Copyright © 2014 - 2015")]
+[assembly: AssemblyCopyright("Copyright © 2014 - 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("0.7.0.0")]
-[assembly: AssemblyFileVersion("0.7.0.0")]
+[assembly: AssemblyVersion("0.8.1.0")]
+[assembly: AssemblyFileVersion("0.8.1.0")]
 
 [assembly: ComVisible(false)]

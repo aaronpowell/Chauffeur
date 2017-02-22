@@ -1,3 +1,6 @@
+## New in 0.8.1 (22/02/2017)
+* Fixing the version number that I forgot on the v0.8.0 release
+
 ## New in 0.8.0 (10/02/2017)
 * Supporting parameters to be passed into Deliverables (Issue [#38](https://github.com/aaronpowell/Chauffeur/issues/38)])
 * Supporting dictionary item importing [thanks to markmc27](https://github.com/aaronpowell/Chauffeur/pull/42)
