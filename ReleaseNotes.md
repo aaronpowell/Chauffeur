@@ -1,3 +1,6 @@
+## New in 0.9.0 (Unreleased)
+* Adding a property to the settings which is the Umbraco version number (this causes a change to `IChauffeurSettings`)
+
 ## New in 0.8.1 (22/02/2017)
 * Fixing the version number that I forgot on the v0.8.0 release
 

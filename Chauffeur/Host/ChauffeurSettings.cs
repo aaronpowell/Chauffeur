@@ -68,5 +68,13 @@ namespace Chauffeur.Host
                 return ConfigurationManager.ConnectionStrings["umbracoDbDSN"];
             }
         }
+
+        public string UmbracoVersion
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["umbracoConfigurationStatus"];
+            }
+        }
     }
 }
