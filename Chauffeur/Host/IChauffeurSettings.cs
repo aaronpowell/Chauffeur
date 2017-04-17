@@ -8,5 +8,6 @@ namespace Chauffeur.Host
         bool TryGetSiteRootDirectory(out string siteRootDirectory);
         bool TryGetUmbracoDirectory(out string umbracoDirectory);
         ConnectionStringSettings ConnectionString { get; }
+        string UmbracoVersion { get; }
     }
 }

@@ -27,9 +27,15 @@ let releaseNotes =
     ReadFile "ReleaseNotes.md"
         |> ReleaseNotesHelper.parseReleaseNotes
 
+let trimBranchName (branch: string) =
+    if branch.Length > 10 then
+        branch.Substring(0, 10)
+    else
+        branch
+
 let prv = match environVar "APPVEYOR_REPO_BRANCH" with
             | "master" -> ""
-            | branch -> sprintf "-%s%s" branch (
+            | branch -> sprintf "-%s%s" (trimBranchName branch) (
                             match environVar "APPVEYOR_BUILD_NUMBER" with
                             | null -> ""
                             | _ -> sprintf "-%s" (environVar "APPVEYOR_BUILD_NUMBER")
