@@ -25,14 +25,14 @@ namespace Chauffeur.Tests.Deliverables
             provider.Format(Arg.Any<ICollection<IndexDefinition>>()).Returns(new List<string>());
             provider.DoesTableExist(Arg.Any<Database>(), Arg.Any<string>()).Returns(false);
 
-            SqlSyntaxContext.SqlSyntaxProvider = provider;
-
             var conn = Substitute.For<IDbConnection>();
             var db = new Database(conn);
 
+            var dbSchema = new DatabaseSchemaHelper(db, null, provider);
+
             var settings = Substitute.For<IChauffeurSettings>();
 
-            var deliverable = new DeliveryDeliverable(null, new MockTextWriter(), db, settings, null, null);
+            var deliverable = new DeliveryDeliverable(null, new MockTextWriter(), dbSchema, db, settings, null, null, null);
 
             await deliverable.Run(null, new string[0]);
 
@@ -45,8 +45,6 @@ namespace Chauffeur.Tests.Deliverables
             var provider = Substitute.For<ISqlSyntaxProvider>();
             provider.DoesTableExist(Arg.Any<Database>(), Arg.Any<string>()).Returns(true);
 
-            SqlSyntaxContext.SqlSyntaxProvider = provider;
-
             var settings = Substitute.For<IChauffeurSettings>();
             string s;
             settings.TryGetChauffeurDirectory(out s).Returns(x =>
@@ -58,6 +56,8 @@ namespace Chauffeur.Tests.Deliverables
             var conn = Substitute.For<IDbConnection>();
             var db = new Database(conn);
 
+            var dbSchema = new DatabaseSchemaHelper(db, null, provider);
+
             var writer = new MockTextWriter();
 
             var fs = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -65,7 +65,7 @@ namespace Chauffeur.Tests.Deliverables
                 {@"c:\foo\bar.txt", new MockFileData("This is not a deliverable")}
             });
 
-            var deliverable = new DeliveryDeliverable(null, writer, db, settings, fs, null);
+            var deliverable = new DeliveryDeliverable(null, writer, dbSchema,  db, settings, fs, null, null);
 
             await deliverable.Run(null, new string[0]);
 
@@ -77,8 +77,6 @@ namespace Chauffeur.Tests.Deliverables
         {
             var provider = Substitute.For<ISqlSyntaxProvider>();
             provider.DoesTableExist(Arg.Any<Database>(), Arg.Any<string>()).Returns(true);
-
-            SqlSyntaxContext.SqlSyntaxProvider = provider;
 
             var settings = Substitute.For<IChauffeurSettings>();
             string s;
@@ -105,7 +103,9 @@ namespace Chauffeur.Tests.Deliverables
             var host = Substitute.For<IChauffeurHost>();
             host.Run(Arg.Any<string[]>()).Returns(Task.FromResult(DeliverableResponse.Continue));
 
-            var deliverable = new DeliveryDeliverable(null, writer, db, settings, fs, host);
+            var dbSchema = new DatabaseSchemaHelper(db, null, provider);
+
+            var deliverable = new DeliveryDeliverable(null, writer, dbSchema, db, settings, fs, host, provider);
 
             await deliverable.Run(null, new string[0]);
 
@@ -117,8 +117,6 @@ namespace Chauffeur.Tests.Deliverables
         {
             var provider = Substitute.For<ISqlSyntaxProvider>();
             provider.DoesTableExist(Arg.Any<Database>(), Arg.Any<string>()).Returns(true);
-
-            SqlSyntaxContext.SqlSyntaxProvider = provider;
 
             var settings = Substitute.For<IChauffeurSettings>();
             string s;
@@ -156,7 +154,9 @@ namespace Chauffeur.Tests.Deliverables
             var host = Substitute.For<IChauffeurHost>();
             host.Run(Arg.Any<string[]>()).Returns(Task.FromResult(DeliverableResponse.Continue));
 
-            var deliverable = new DeliveryDeliverable(null, writer, db, settings, fs, host);
+            var dbSchema = new DatabaseSchemaHelper(db, null, provider);
+
+            var deliverable = new DeliveryDeliverable(null, writer, dbSchema, db, settings, fs, host, provider);
 
             await deliverable.Run(null, new string[0]);
 
@@ -172,8 +172,6 @@ namespace Chauffeur.Tests.Deliverables
             provider.Format(Arg.Any<ICollection<ForeignKeyDefinition>>()).Returns(new List<string>());
             provider.Format(Arg.Any<ICollection<IndexDefinition>>()).Returns(new List<string>());
             provider.DoesTableExist(Arg.Any<Database>(), Arg.Any<string>()).Returns(_ => { throw ex; }, _ => true);
-
-            SqlSyntaxContext.SqlSyntaxProvider = provider;
 
             var conn = Substitute.For<IDbConnection>();
             var cmd = Substitute.For<IDbCommand>();
@@ -199,7 +197,9 @@ namespace Chauffeur.Tests.Deliverables
             var host = Substitute.For<IChauffeurHost>();
             host.Run(Arg.Any<string[]>()).Returns(Task.FromResult(DeliverableResponse.Continue));
 
-            var deliverable = new DeliveryDeliverable(null, writer, db, settings, fs, host);
+            var dbSchema = new DatabaseSchemaHelper(db, null, provider);
+
+            var deliverable = new DeliveryDeliverable(null, writer, dbSchema, db, settings, fs, host, provider);
 
             await deliverable.Run(null, new string[0]);
 
@@ -211,8 +211,6 @@ namespace Chauffeur.Tests.Deliverables
         {
             var provider = Substitute.For<ISqlSyntaxProvider>();
             provider.DoesTableExist(Arg.Any<Database>(), Arg.Any<string>()).Returns(true);
-
-            SqlSyntaxContext.SqlSyntaxProvider = provider;
 
             var settings = Substitute.For<IChauffeurSettings>();
             string s;
@@ -239,7 +237,9 @@ namespace Chauffeur.Tests.Deliverables
             var host = Substitute.For<IChauffeurHost>();
             host.Run(Arg.Any<string[]>()).Returns(Task.FromResult(DeliverableResponse.Continue));
 
-            var deliverable = new DeliveryDeliverable(null, writer, db, settings, fs, host);
+            var dbSchema = new DatabaseSchemaHelper(db, null, provider);
+
+            var deliverable = new DeliveryDeliverable(null, writer, dbSchema, db, settings, fs, host, provider);
 
             await deliverable.Run(null, new[] { "-p:bar=baz" });
 

@@ -14,8 +14,12 @@ namespace Chauffeur.DependencyBuilders
 
             var context = ApplicationContext.Current;
 
+            container.Register(() => context);
             container.Register(() => context.DatabaseContext);
             container.Register(() => context.DatabaseContext.Database).As<Database>();
+            container.Register(() => context.DatabaseContext.SqlSyntax);
+            container.Register(() => context.ProfilingLogger.Logger);
+            container.Register<DatabaseSchemaHelper>();
 
             var services = context.Services;
             container.Register(() => services.ContentService);

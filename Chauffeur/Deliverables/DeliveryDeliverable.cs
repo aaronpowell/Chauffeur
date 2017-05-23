@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Umbraco.Core.Persistence;
 using Umbraco.Core.Persistence.DatabaseAnnotations;
+using Umbraco.Core.Persistence.SqlSyntax;
 
 namespace Chauffeur.Deliverables
 {
@@ -22,27 +23,33 @@ namespace Chauffeur.Deliverables
         static readonly Func<IDictionary<string, string>, string, string> replaceTokens =
             (@params, input) => tokenRegex.Replace(input, match => @params[match.Groups[1].Value]);
 
+        private readonly DatabaseSchemaHelper dbSchemaHelper;
         private readonly Database database;
         private readonly IChauffeurSettings settings;
         private readonly IFileSystem fileSystem;
         private readonly IChauffeurHost host;
+        private readonly ISqlSyntaxProvider sqlSyntax;
 
         public const string TableName = "Chauffeur_Delivery";
 
         public DeliveryDeliverable(
             TextReader reader,
             TextWriter writer,
+            DatabaseSchemaHelper dbSchemaHelper,
             Database database,
             IChauffeurSettings settings,
             IFileSystem fileSystem,
-            IChauffeurHost host
+            IChauffeurHost host,
+            ISqlSyntaxProvider sqlSyntax
         )
             : base(reader, writer)
         {
+            this.dbSchemaHelper = dbSchemaHelper;
             this.database = database;
             this.settings = settings;
             this.fileSystem = fileSystem;
             this.host = host;
+            this.sqlSyntax = sqlSyntax;
         }
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
@@ -50,7 +57,7 @@ namespace Chauffeur.Deliverables
             var dbNotReady = false;
             try
             {
-                if (!database.TableExist(TableName))
+                if (!dbSchemaHelper.TableExist(TableName))
                 {
                     if (!await SetupDatabase())
                         return DeliverableResponse.FinishedWithError;
@@ -123,8 +130,8 @@ namespace Chauffeur.Deliverables
                 var file = fileSystem.FileInfo.FromFileName(delivery);
 
                 var sql = new Sql()
-                    .From<ChauffeurDeliveryTable>()
-                    .Where<ChauffeurDeliveryTable>(t => t.Name == file.Name);
+                    .From<ChauffeurDeliveryTable>(sqlSyntax)
+                    .Where<ChauffeurDeliveryTable>(t => t.Name == file.Name, sqlSyntax);
 
                 var entry = database.Fetch<ChauffeurDeliveryTable>(sql).FirstOrDefault();
 
@@ -173,7 +180,7 @@ namespace Chauffeur.Deliverables
 
             try
             {
-                database.CreateTable<ChauffeurDeliveryTable>(true);
+                dbSchemaHelper.CreateTable<ChauffeurDeliveryTable>(true);
             }
             catch (Exception ex)
             {

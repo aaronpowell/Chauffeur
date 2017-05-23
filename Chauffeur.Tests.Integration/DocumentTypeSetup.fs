@@ -115,7 +115,7 @@ type ``Importing document types``() =
                 |> List.head
 
             let parts = infoRow.Split([| '\t' |], StringSplitOptions.RemoveEmptyEntries)
-            parts.[0] |> should equal "1050"
+            parts.[0] |> should equal "1060"
             parts.[1] |> should equal "BlogPost"
             parts.[2] |> should equal "Blog Post"
             parts.[3] |> should equal "-1"
