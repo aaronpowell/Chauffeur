@@ -28,10 +28,11 @@ let releaseNotes =
         |> ReleaseNotesHelper.parseReleaseNotes
 
 let trimBranchName (branch: string) =
-    if branch.Length > 10 then
-        branch.Substring(0, 10)
-    else
-        branch
+    let trimmed = match branch.Length > 10 with
+                    | true -> branch.Substring(0, 10)
+                    | _ -> branch
+
+    trimmed.Replace(".", "")
 
 let prv = match environVar "APPVEYOR_REPO_BRANCH" with
             | "master" -> ""
