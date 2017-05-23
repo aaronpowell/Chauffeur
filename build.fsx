@@ -80,7 +80,7 @@ Target "UnitTests" (fun _ ->
 )
 
 Target "EnsureSqlExpressAssemblies" (fun _ ->
-    CopyDir (sprintf "./Chauffeur.Tests.Integration/bin/%s" buildMode) "packages/UmbracoCms.7.5.4/UmbracoFiles/bin" (fun x -> true)
+    CopyDir (sprintf "./Chauffeur.Tests.Integration/bin/%s" buildMode) "packages/UmbracoCms.7.6.1/UmbracoFiles/bin" (fun x -> true)
 )
 
 Target "CleanXUnitVSRunner" (fun _ ->
