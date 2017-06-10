@@ -111,6 +111,7 @@
     <Compile Include="DictionarySetup.fs" />
     <Compile Include="InstallDeliverable.fs" />
     <Compile Include="RunningDeliverables.fs" />
+    <Compile Include="UserDeliverable.fs" />
     <Compile Include="Packages.fs" />
     <Compile Include="DocumentTypeSetup.fs" />
     <Content Include="packages.config" />
