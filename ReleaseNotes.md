@@ -1,3 +1,6 @@
+## New in 0.10.0 (Unreleased)
+* Updating to use Umbraco 7.6
+
 ## New in 0.9.0 (17/04/2017)
 * Adding a property to the settings which is the Umbraco version number (this causes a change to `IChauffeurSettings`)
 * Merging PR #44 which adds two new commands to `user`, `change-name` and `change-loginname`

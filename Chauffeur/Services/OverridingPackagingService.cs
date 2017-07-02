@@ -243,5 +243,10 @@ namespace Chauffeur.Services
 
             return instance as IMacro;
         }
+
+        public string FetchPackageFile(Guid packageId, Version umbracoVersion, int userId)
+        {
+            return realPackagingService.FetchPackageFile(packageId, umbracoVersion, userId);
+        }
     }
 }

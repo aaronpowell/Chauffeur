@@ -13,25 +13,28 @@ namespace Chauffeur.Deliverables
     [DeliverableName("install")]
     public sealed class InstallDeliverable : Deliverable
     {
-        private readonly DatabaseContext context;
+        private readonly DatabaseSchemaHelper dbSchemaHelper;
         private readonly IChauffeurSettings settings;
         private readonly Func<string, ISqlCeEngine> sqlCeEngineFactory;
         private readonly IFileSystem fileSystem;
+        private readonly ApplicationContext appContext;
 
         public InstallDeliverable(
             TextReader reader,
             TextWriter writer,
-            DatabaseContext context,
+            DatabaseSchemaHelper dbSchemaHelper,
             IChauffeurSettings settings,
             Func<string, ISqlCeEngine> sqlCeEngineFactory,
-            IFileSystem fileSystem
+            IFileSystem fileSystem,
+            ApplicationContext appContext
             )
             : base(reader, writer)
         {
-            this.context = context;
+            this.dbSchemaHelper = dbSchemaHelper;
             this.settings = settings;
             this.sqlCeEngineFactory = sqlCeEngineFactory;
             this.fileSystem = fileSystem;
+            this.appContext = appContext;
         }
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
@@ -85,7 +88,7 @@ namespace Chauffeur.Deliverables
 
             await Out.WriteLineAsync("Preparing to install Umbraco's database");
 
-            context.Database.CreateDatabaseSchema(false);
+            dbSchemaHelper.CreateDatabaseSchema(false, appContext);
 
             await Out.WriteLineAsync("Database installed and ready to go");
 

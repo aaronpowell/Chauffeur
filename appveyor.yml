@@ -9,7 +9,7 @@ build_script:
   - ps: .\build.ps1 -Target IntegrationTests
   - ps: .\build.ps1 -Target Package
 artifacts:
-  - path: packaging\*.nupkg
+  - path: .packaging\*.nupkg
 deploy:
   provider: NuGet
   api_key:

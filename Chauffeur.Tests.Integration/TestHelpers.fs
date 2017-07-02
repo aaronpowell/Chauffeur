@@ -67,7 +67,8 @@ let knownTables =
     "umbracoUser2app";
     "umbracoUser2NodeNotify";
     "umbracoUser2NodePermission";
-    "umbracoUserType"]
+    "umbracoUserType";
+    "umbracoLock"]
 
 [<AbstractClass>]
 type UmbracoHostTestBase() =

@@ -1,7 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Umbraco.Core.Security;
+using Umbraco.Core.Logging;
 using Umbraco.Core.Services;
 
 namespace Chauffeur.Deliverables
@@ -69,8 +70,19 @@ namespace Chauffeur.Deliverables
                 return;
             }
 
-            userService.SavePassword(user, args[1]);
-            await Out.WriteLineFormattedAsync("User '{0}' has had their password updated", username);
+            try
+            {
+                userService.SavePassword(user, args[1]);
+                await Out.WriteLineFormattedAsync("User '{0}' has had their password updated", username);
+            }
+            catch (NotSupportedException ex)
+            {
+                LogHelper.Error<UserDeliverable>("Wasn't able to update the user password from Chauffeur", ex);
+
+                await Out.WriteLineAsync("Updating the user password is not supported.");
+                await Out.WriteLineAsync("It's most likely because your UsersMembershipProvider has 'allowManuallyChangingPassword=\"false\"'.");
+                await Out.WriteLineAsync("Currently Chauffeur can't update passwords for membership providers configured like this.");
+            }
         }
 
         private async Task ChangeName(string[] args)

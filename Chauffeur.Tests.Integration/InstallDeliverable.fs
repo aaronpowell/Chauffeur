@@ -46,7 +46,8 @@ type ``Successfully setup the database``() =
             let rec testTable (reader : SqlCeDataReader) =
                 if reader.Read() then
                     let tableName = reader.GetString 0
-                    List.contains tableName knownTables |> should equal true
+                    knownTables |> should contain tableName
+                    //List.contains tableName knownTables |> should equal true
                     testTable reader
                 else ignore
             cmd.ExecuteReader()
