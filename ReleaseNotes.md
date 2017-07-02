@@ -1,4 +1,4 @@
-## New in 0.10.0 (Unreleased)
+## New in 0.10.0 (03/07/2017)
 * Updating to use Umbraco 7.6
 
 ## New in 0.9.0 (17/04/2017)
