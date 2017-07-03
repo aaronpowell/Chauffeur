@@ -114,7 +114,7 @@ Target "CreateChauffeurPackage" (fun _ ->
             SymbolPackage = NugetSymbolPackage.Nuspec
             AccessKey = getBuildParamOrDefault "nugetkey" ""
             Dependencies =
-                ["System.IO.Abstractions", "1.4.0.83"]
+                ["System.IO.Abstractions", "1.4.0.93"]
             Publish = hasBuildParam "nugetkey" }) "Chauffeur/Chauffeur.nuspec"
 )
 
