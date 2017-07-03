@@ -18,3 +18,8 @@ deploy:
 environment:
   nuget_key:
     secure: jIk7hDIpgOtyTG6FPxA3s55xN1pxaiJIBTeJrGlV664POb4pGAVdr90zFLt3jmDy
+deploy_script:
+  # download latest nuget
+  - appveyor DownloadFile https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+  # publish packages    
+  - ps: ($artifacts.values | Where-Object {($_.path -like '*.nupkg') -and  !($_.path -like '*.symbols.nupkg')}) | foreach-object {nuget.exe push $_.path -Source https://www.nuget.org/api/v2/package -ApiKey $env:api_key; if ($lastexitcode -ne 0) {throw}}
