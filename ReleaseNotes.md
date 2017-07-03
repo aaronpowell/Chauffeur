@@ -1,3 +1,6 @@
+## New in 0.10.1 (Unreleased)
+* Upgraded to .NET 4.6.2
+
 ## New in 0.10.0 (03/07/2017)
 * Updating to use Umbraco 7.6
 
