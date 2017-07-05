@@ -1,4 +1,7 @@
-## New in 0.10.1 (Unreleased)
+## New in 0.10.2 (05/07/2017)
+* Fixing the nuspec dependency for System.IO.Abstractions
+
+## New in 0.10.1 (04/07/2017)
 * Upgraded to .NET 4.6.2
 
 ## New in 0.10.0 (03/07/2017)

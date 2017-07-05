@@ -15,7 +15,7 @@
     <tags>umbraco deployment</tags>
     <dependencies>
       <dependency id="UmbracoCms.Core" version="7.2.5" />
-      <dependency id="System.IO.Abstractions" version="1.4.0.83" />
+      <dependency id="System.IO.Abstractions" version="1.4.0.93" />
     </dependencies>
   </metadata>
 </package>
