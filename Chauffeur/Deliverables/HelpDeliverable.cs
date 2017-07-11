@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Chauffeur.Host;
 using Umbraco.Core;
 
 namespace Chauffeur.Deliverables
@@ -13,12 +10,12 @@ namespace Chauffeur.Deliverables
     [DeliverableAlias("?")]
     public class HelpDeliverable : Deliverable, IProvideDirections
     {
-        private readonly IChauffeurHost host;
+        private readonly IContainer container;
 
-        public HelpDeliverable(TextReader reader, TextWriter writer, IChauffeurHost host)
+        public HelpDeliverable(TextReader reader, TextWriter writer, IContainer container)
             : base(reader, writer)
         {
-            this.host = host;
+            this.container = container;
         }
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
@@ -33,8 +30,7 @@ namespace Chauffeur.Deliverables
 
         private async Task Print(string command)
         {
-            var deliverable = UmbracoHost.Current.Container.ResolveDeliverableByName(command) as IProvideDirections;
-            if (deliverable != null)
+            if (container.ResolveDeliverableByName(command) is IProvideDirections deliverable)
             {
                 await deliverable.Directions();
                 return;
@@ -44,12 +40,11 @@ namespace Chauffeur.Deliverables
                 "The command '{0}' doesn't implement help, you best contact the author",
                 command
             );
-
         }
 
         private async Task PrintAll()
         {
-            var deliverables = UmbracoHost.Current.Container.ResolveAllDeliverables();
+            var deliverables = container.ResolveAllDeliverables();
             await Out.WriteLineAsync("The following deliverables are loaded. Use `help <deliverable>` for detailed help");
 
             foreach (var deliverable in deliverables)

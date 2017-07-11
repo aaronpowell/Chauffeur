@@ -252,6 +252,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="App_Data\Chauffeur\001-base.xml" />
     <Content Include="config\grid.editors.config.js" />
     <Content Include="default.aspx" />
     <Content Include="Views\Web.config" />
@@ -286,6 +287,7 @@
     <Content Include="config\BaseRestExtensions.config" />
     <Content Include="config\applications.config" />
     <Content Include="config\404handlers.config" />
+    <Content Include="App_Data\Chauffeur\001-Setup.delivery" />
     <None Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

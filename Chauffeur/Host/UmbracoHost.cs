@@ -33,7 +33,8 @@ namespace Chauffeur.Host
             Container.RegisterFrom<BootManagerBuilder>();
             Container.RegisterFrom<ChauffeurSettingBuilder>();
             Container.RegisterFrom<FileSystemBuilder>();
-            Container.RegisterFrom< SqlSyntaxProviderBuilder>();
+            Container.RegisterFrom<SqlSyntaxProviderBuilder>();
+            Container.Register(() => Container).As<IContainer>();
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             var builders = assemblies

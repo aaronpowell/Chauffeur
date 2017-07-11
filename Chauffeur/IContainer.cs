@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Chauffeur
 {
@@ -10,5 +11,7 @@ namespace Chauffeur
         void RegisterFrom<T>() where T : IBuildDependencies, new();
         T Resolve<T>();
         object Resolve(Type type);
+        Deliverable ResolveDeliverableByName(string command);
+        IEnumerable<Deliverable> ResolveAllDeliverables();
     }
 }

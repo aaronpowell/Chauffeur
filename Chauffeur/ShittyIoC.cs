@@ -162,6 +162,10 @@ namespace Chauffeur
                 .Where(ctor => !ctor.GetParameters().Any(pt => pt.ParameterType == typeof(string)))
                 .Where(ctor => !ctor.GetParameters().Any(pt => pt.ParameterType == typeof(bool)))
                 .LastOrDefault();
+
+            if (constructor == null)
+                throw new EntryPointNotFoundException($"Unable to create an instance of {resolvedType.Name} as we cannot find a single public constructor for it. Make sure you have at least 1 public constructor (we'll pick the one with most arguments though)");
+
             var parameters = constructor.GetParameters();
 
             object instance;
@@ -177,8 +181,7 @@ namespace Chauffeur
                 );
             }
 
-            if (registration.AfterCreation != null)
-                registration.AfterCreation(instance);
+            registration.AfterCreation?.Invoke(instance);
 
             return instance;
         }
