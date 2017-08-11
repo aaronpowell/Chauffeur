@@ -1,0 +1,3 @@
+﻿install y
+user change-password admin $pwd$
+pkg 001-base
