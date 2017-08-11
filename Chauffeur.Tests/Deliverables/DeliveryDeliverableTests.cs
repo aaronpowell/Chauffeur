@@ -247,5 +247,47 @@ namespace Chauffeur.Tests.Deliverables
                 .Run(Arg.Is<string[]>(x => x[0] == "foo baz"))
                 .IgnoreAwaitForNSubstituteAssertion();
         }
+
+        [Fact]
+        public async Task WhenRunWithMultipleParameters_ParametersSubsitutedToDeliverable()
+        {
+            var provider = Substitute.For<ISqlSyntaxProvider>();
+            provider.DoesTableExist(Arg.Any<Database>(), Arg.Any<string>()).Returns(true);
+
+            var settings = Substitute.For<IChauffeurSettings>();
+            string s;
+            settings.TryGetChauffeurDirectory(out s).Returns(x =>
+            {
+                x[0] = @"c:\foo";
+                return true;
+            });
+
+            var cmd = Substitute.For<IDbCommand>();
+            cmd.ExecuteScalar().Returns(1);
+            var conn = Substitute.For<IDbConnection>();
+            conn.CreateCommand().Returns(cmd);
+            var db = new Database(conn);
+
+            var writer = new MockTextWriter();
+
+            var deliverableScript = "foo $bar$ $pwd$";
+            var fs = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                {@"c:\foo\bar.delivery", new MockFileData(deliverableScript)}
+            });
+
+            var host = Substitute.For<IChauffeurHost>();
+            host.Run(Arg.Any<string[]>()).Returns(Task.FromResult(DeliverableResponse.Continue));
+
+            var dbSchema = new DatabaseSchemaHelper(db, null, provider);
+
+            var deliverable = new DeliveryDeliverable(null, writer, dbSchema, db, settings, fs, host, provider);
+
+            await deliverable.Run(null, new[] { "-p:bar=baz", "-p:pwd=pwd" });
+
+            host.Received(1)
+                .Run(Arg.Is<string[]>(x => x[0] == "foo baz pwd"))
+                .IgnoreAwaitForNSubstituteAssertion();
+        }
     }
 }

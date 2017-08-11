@@ -88,7 +88,7 @@ namespace Chauffeur.Deliverables
             }
 
             var @params = args.Where(arg => arg.StartsWith("-p:"))
-                .Select(arg => arg.TrimStart(new[] { '-', 'p', ':' }))
+                .Select(arg => arg.Replace("-p:", string.Empty))
                 .Select(arg => arg.Split('='))
                 .ToDictionary(arg => arg[0], arg => arg[1]);
 
