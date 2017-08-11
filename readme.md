@@ -16,6 +16,14 @@ To get started install Chauffeur and open up a command window and launch `Chauff
 
 [![Build status](https://ci.appveyor.com/api/projects/status/py65p0vnrjb4m7sx)](https://ci.appveyor.com/project/aaronpowell/chauffeur)
 
+# Running Demo
+
+The easiest way to run the demo application is to execute the `run-demo.ps1` script from the root. This will:
+
+- Compile
+- Install the demo website using Chauffeur
+- Start IIS Express for the demo website
+
 ## Included Deliverables
 
 ### Help

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chauffeur", "Chauffeur\Chauffeur.csproj", "{003AFAE1-5879-4441-BCB8-669905D9E0B5}"
 EndProject
@@ -22,6 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		build.fsx = build.fsx
 		readme.md = readme.md
 		ReleaseNotes.md = ReleaseNotes.md
+		run-demo.ps1 = run-demo.ps1
 		SolutionInfo.cs = SolutionInfo.cs
 	EndProjectSection
 EndProject
@@ -57,5 +58,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3FAB7BD4-704C-450F-B9C7-874A5ED61A40}
 	EndGlobalSection
 EndGlobal

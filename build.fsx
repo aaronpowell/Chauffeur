@@ -35,6 +35,7 @@ let trimBranchName (branch: string) =
     trimmed.Replace(".", "")
 
 let prv = match environVar "APPVEYOR_REPO_BRANCH" with
+            | null -> ""
             | "master" -> ""
             | branch -> sprintf "-%s%s" (trimBranchName branch) (
                             match environVar "APPVEYOR_BUILD_NUMBER" with
