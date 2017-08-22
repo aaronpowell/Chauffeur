@@ -86,7 +86,16 @@ namespace Chauffeur.Host
 
         public async Task<DeliverableResponse> Run(string[] args)
         {
-            return await Process(string.Join(" ", args));
+            if (args.Any(arg => arg.StartsWith("-c:")))
+            {
+                var connStringArg = args.First(arg => arg.StartsWith("-c:"));
+                args = args.Where(arg => !arg.StartsWith("-c:")).ToArray();
+
+                var connString = connStringArg.Replace("-c:", string.Empty);
+                UpdateConnectionString(connString);
+            }
+
+            return args.Any() ? await Process(string.Join(" ", args)) : await Run();
         }
 
         private async Task<DeliverableResponse> Process(string command)
@@ -135,6 +144,14 @@ namespace Chauffeur.Host
         public void Dispose()
         {
             ((IDisposable)ApplicationContext.Current).Dispose();
+        }
+
+        private static void UpdateConnectionString(string connectionString)
+        {
+            var settings = ConfigurationManager.ConnectionStrings["umbracoDbDSN"];
+            var fi = typeof(ConfigurationElement).GetField("_bReadOnly", BindingFlags.Instance | BindingFlags.NonPublic);
+            fi.SetValue(settings, false);
+            settings.ConnectionString = connectionString;
         }
     }
 }
