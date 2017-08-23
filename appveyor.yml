@@ -13,11 +13,11 @@ artifacts:
 deploy:
   provider: NuGet
   api_key:
-    secure: ncXwGEdSIM6NU4Df6R+E27EKuIphJTzxhLBHkc9o8Fbx87IZ57UJAkaM7se+mUJs
+    secure: KZQSrZ5K8ixovRl5PM6qPXolzMHgpTkQg3Qve5d6GrpOTpDZSSDdU37g/yC9+Ljt
   artifact: /.*\.nupkg/
 environment:
   nuget_key:
-    secure: ncXwGEdSIM6NU4Df6R+E27EKuIphJTzxhLBHkc9o8Fbx87IZ57UJAkaM7se+mUJs
+    secure: KZQSrZ5K8ixovRl5PM6qPXolzMHgpTkQg3Qve5d6GrpOTpDZSSDdU37g/yC9+Ljt
 deploy_script:
   # download latest nuget
   - appveyor DownloadFile https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
