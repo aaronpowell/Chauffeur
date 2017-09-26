@@ -1,4 +1,4 @@
-## New in 0.11.0 (unreleased)
+## New in 0.11.0 (26/09/2017)
 * Allowing a custom connection string to be set via a command line switch (Issue [#52](https://github.com/aaronpowell/Chauffeur/issues/52))
 
 ## New in 0.10.2 (05/07/2017)
