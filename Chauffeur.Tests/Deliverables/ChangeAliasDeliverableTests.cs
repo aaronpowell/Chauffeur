@@ -18,7 +18,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await delivery.Run(null, new string[0]);
 
-            Assert.Equal(writer.Messages.Count(), 1);
+            Assert.Single(writer.Messages);
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await delivery.Run(null, new[] { "dt" });
 
-            Assert.Equal(writer.Messages.Count(), 1);
+            Assert.Single(writer.Messages);
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await delivery.Run(null, new[] { "dt", "old" });
 
-            Assert.Equal(writer.Messages.Count(), 1);
+            Assert.Single(writer.Messages);
         }
 
         [Theory]

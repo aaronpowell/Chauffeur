@@ -15,7 +15,7 @@ namespace Chauffeur.Tests.Deliverables
 
             var result = await deliverable.Run("", new[] { "" });
 
-            Assert.Equal(result, DeliverableResponse.Continue);
+            Assert.Equal(DeliverableResponse.Continue, result);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run(null, null);
 
-            Assert.Equal(writer.Messages.Count(), 1);
+            Assert.Single(writer.Messages);
         }
     }
 }

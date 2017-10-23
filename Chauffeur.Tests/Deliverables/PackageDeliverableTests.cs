@@ -278,7 +278,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await package.Run(null, new[] { "Test" });
 
-            Assert.Equal(writer.Messages.Count(), 1);
+            Assert.Single(writer.Messages);
         }
 
         [Fact]

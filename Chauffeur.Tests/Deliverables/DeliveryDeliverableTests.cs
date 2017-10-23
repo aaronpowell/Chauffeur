@@ -69,7 +69,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run(null, new string[0]);
 
-            Assert.Equal(writer.Messages.Count(), 1);
+            Assert.Single(writer.Messages);
         }
 
         [Fact]

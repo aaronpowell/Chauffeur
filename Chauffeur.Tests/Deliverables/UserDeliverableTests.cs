@@ -18,7 +18,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run("user", new string[0]);
 
-            Assert.Equal(writer.Messages.Count(), 1);
+            Assert.Single(writer.Messages);
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run("user", new[] { "change-password" });
 
-            Assert.Equal(writer.Messages.Count(), 2);
+            Assert.Equal(2, writer.Messages.Count());
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run("user", new[] { "change-name" });
 
-            Assert.Equal(writer.Messages.Count(), 2);
+            Assert.Equal(2, writer.Messages.Count());
         }
 
         [Fact]
@@ -51,7 +51,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run("user", new[] { "change-loginname" });
 
-            Assert.Equal(writer.Messages.Count(), 2);
+            Assert.Equal(2, writer.Messages.Count());
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run("user", new[] { "change-password", "0", "a" });
 
-            Assert.Equal(writer.Messages.Count(), 1);
+            Assert.Single(writer.Messages);
             userService.Received(1).GetByUsername(Arg.Any<string>());
         }
 
@@ -80,7 +80,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run("user", new[] { "change-name", "0", "b" });
 
-            Assert.Equal(writer.Messages.Count(), 1);
+            Assert.Single(writer.Messages);
             userService.Received(1).GetByUsername(Arg.Any<string>());
         }
         [Fact]
@@ -94,7 +94,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run("user", new[] { "change-loginname", "0", "c" });
 
-            Assert.Equal(writer.Messages.Count(), 1);
+            Assert.Single(writer.Messages);
             userService.Received(1).GetByUsername(Arg.Any<string>());
         }
         [Fact]
@@ -109,7 +109,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run("user", new[] { "change-password", "0", "ab" });
 
-            Assert.Equal(writer.Messages.Count(), 1);
+            Assert.Single(writer.Messages);
             userService.Received(1).SavePassword(user, "ab");
         }
 
@@ -126,7 +126,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run("user", new[] { "change-name", "a", "ab" });
 
-            Assert.Equal(writer.Messages.Count(), 1);
+            Assert.Single(writer.Messages);
             Assert.Equal("ab", user.Name);
             userService.Received(1).Save(user);
         }
@@ -145,7 +145,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run("user", new[] { "change-loginname", "a", "ab" });
 
-            Assert.Equal(writer.Messages.Count(), 1);
+            Assert.Single(writer.Messages);
             Assert.Equal("a", user.Name);
             Assert.Equal("ab", user.Username);
             userService.Received(1).Save(user);
