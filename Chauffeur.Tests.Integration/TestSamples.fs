@@ -169,3 +169,58 @@ let sampleDictionary = "<?xml version='1.0' encoding='UTF-8' standalone='no'?>
   </Languages>
   <DataTypes />
 </umbPackage>"
+
+let sampleDocType = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<DocumentType>
+  <Info>
+    <Name>Blog Post</Name>
+    <Alias>BlogPost</Alias>
+    <Icon>icon-edit</Icon>
+    <Thumbnail>folder.png</Thumbnail>
+    <Description></Description>
+    <AllowAtRoot>False</AllowAtRoot>
+    <IsListView>False</IsListView>
+    <Compositions />
+    <AllowedTemplates>
+      <Template>BlogPost</Template>
+    </AllowedTemplates>
+    <DefaultTemplate>BlogPost</DefaultTemplate>
+  </Info>
+  <Structure />
+  <GenericProperties>
+    <GenericProperty>
+      <Name>Content</Name>
+      <Alias>content</Alias>
+      <Type>Umbraco.Grid</Type>
+      <Definition>a3785f08-73d5-406b-855f-8e52805c22e2</Definition>
+      <Tab>Content</Tab>
+      <SortOrder>0</SortOrder>
+      <Mandatory>False</Mandatory>
+      <Validation></Validation>
+      <Description><![CDATA[]]></Description>
+    </GenericProperty>
+    <GenericProperty>
+      <Name>Introduction</Name>
+      <Alias>introduction</Alias>
+      <Type>Umbraco.TextboxMultiple</Type>
+      <Definition>c6bac0dd-4ab9-45b1-8e30-e4b619ee5da3</Definition>
+      <Tab>Introduction</Tab>
+      <SortOrder>0</SortOrder>
+      <Mandatory>False</Mandatory>
+      <Validation></Validation>
+      <Description><![CDATA[]]></Description>
+    </GenericProperty>
+  </GenericProperties>
+  <Tabs>
+    <Tab>
+      <Id>12</Id>
+      <Caption>Content</Caption>
+      <SortOrder>2</SortOrder>
+    </Tab>
+    <Tab>
+      <Id>13</Id>
+      <Caption>Introduction</Caption>
+      <SortOrder>1</SortOrder>
+    </Tab>
+  </Tabs>
+</DocumentType>"

@@ -7,6 +7,7 @@ open Chauffeur.Tests.Integration
 open Xunit
 open FsUnit.Xunit
 open TestHelpers
+open TestSamples
 open System
 
 type ``Importing document types``() =
@@ -41,7 +42,44 @@ type ``Importing document types``() =
     member x.``Will import a document type successfully``() =
         x.TextReader.AddCommand "Y"
         let run = x.Host.Run
-        let packageXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let filePath =
+            Path.Combine [| chauffeurFolder.FullName
+                            sprintf "%s.xml" doctypeName |]
+        File.WriteAllText(filePath, sampleDocType)
+        async {
+            let! contentTypeImportResponse = x.ImportDocType
+            x.TextWriter.Flush()
+            let! contentTypeInfoResponse = [| "ct"; "get"; "BlogPost" |]
+                                           |> run
+                                           |> Async.AwaitTask
+            let messages = x.TextWriter.Messages
+            messages |> should haveLength 6
+            let infoRow =
+                messages
+                |> List.rev
+                |> List.skip 1
+                |> List.head
+
+            let parts = infoRow.Split([| '\t' |], StringSplitOptions.RemoveEmptyEntries)
+            parts.[0] |> should equal "1060"
+            parts.[1] |> should equal "BlogPost"
+            parts.[2] |> should equal "Blog Post"
+            parts.[3] |> should equal "-1"
+        }
+        |> Async.RunSynchronously
+
+    [<Fact>]
+    member x.``Will import a document type successfully with updates``() =
+        x.TextReader.AddCommand "Y"
+        let run = x.Host.Run
+        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let filePath =
+            Path.Combine [| chauffeurFolder.FullName
+                            sprintf "%s.xml" doctypeName |]
+        File.WriteAllText(filePath, sampleDocType)
+
+        let sampleDocTypeWithUpdates = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <DocumentType>
   <Info>
     <Name>Blog Post</Name>
@@ -60,7 +98,7 @@ type ``Importing document types``() =
   <Structure />
   <GenericProperties>
     <GenericProperty>
-      <Name>Content</Name>
+      <Name>Content is updated</Name>
       <Alias>content</Alias>
       <Type>Umbraco.Grid</Type>
       <Definition>a3785f08-73d5-406b-855f-8e52805c22e2</Definition>
@@ -95,13 +133,25 @@ type ``Importing document types``() =
     </Tab>
   </Tabs>
 </DocumentType>"
-        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+
         let filePath =
             Path.Combine [| chauffeurFolder.FullName
-                            sprintf "%s.xml" doctypeName |]
-        File.WriteAllText(filePath, packageXml)
+                            sprintf "%s-updated.xml" doctypeName |]
+        File.WriteAllText(filePath, sampleDocTypeWithUpdates)
         async {
             let! contentTypeImportResponse = x.ImportDocType
+
+            let run = x.Host.Run
+            do! x.DatabaseLocation
+                |> x.TextWriter.WriteLineAsync
+                |> Async.AwaitTask
+            let! response = [| "install" |]
+                            |> run
+                            |> Async.AwaitTask
+            let! contentTypeImportResponseWithUpdates =
+                [| "ct"; "import"; sprintf "%s-updated" doctypeName |]
+                |> run
+                |> Async.AwaitTask
             x.TextWriter.Flush()
             let! contentTypeInfoResponse = [| "ct"; "get"; "BlogPost" |]
                                            |> run
@@ -110,14 +160,12 @@ type ``Importing document types``() =
             messages |> should haveLength 6
             let infoRow =
                 messages
-                |> List.rev
-                |> List.skip 1
+                |> List.filter (fun m -> m.Contains("content"))
                 |> List.head
 
             let parts = infoRow.Split([| '\t' |], StringSplitOptions.RemoveEmptyEntries)
-            parts.[0] |> should equal "1060"
-            parts.[1] |> should equal "BlogPost"
-            parts.[2] |> should equal "Blog Post"
-            parts.[3] |> should equal "-1"
+            parts.[0] |> should equal "50"
+            parts.[1] |> should equal "Content is updated"
+            parts.[2] |> should equal "content"
         }
         |> Async.RunSynchronously
