@@ -112,7 +112,7 @@ Target "CreateChauffeurPackage" (fun _ ->
             WorkingDir = packagingDir
             Version = nugetVersion
             ReleaseNotes = toLines releaseNotes.Notes
-            SymbolPackage = NugetSymbolPackage.Nuspec
+            SymbolPackage = NugetSymbolPackage.None
             AccessKey = getBuildParamOrDefault "nugetkey" ""
             Dependencies =
                 ["System.IO.Abstractions", "1.4.0.93"]
@@ -137,7 +137,7 @@ Target "CreateRunnerPackage" (fun _ ->
             WorkingDir = packagingRunnerDir
             Version = nugetVersion
             ReleaseNotes = toLines releaseNotes.Notes
-            SymbolPackage = NugetSymbolPackage.Nuspec
+            SymbolPackage = NugetSymbolPackage.None
             Dependencies =
                 ["Chauffeur", NormalizeVersion nugetVersion]
             AccessKey = getBuildParamOrDefault "nugetkey" ""
