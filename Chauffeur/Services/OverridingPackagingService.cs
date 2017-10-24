@@ -273,53 +273,13 @@ namespace Chauffeur.Services
 
                 foreach (var property in propertiesXml)
                 {
-                    var dataTypeDefinitionId = new Guid(property.Element("Definition").Value);
-                    var dataTypeDefinition = dataTypeService.GetDataTypeDefinitionById(dataTypeDefinitionId);
-
-                    var legacyPropertyEditorId = Guid.Empty;
-                    Guid.TryParse(property.Element("Type").Value, out legacyPropertyEditorId);
-                    var propertyEditorAlias = property.Element("Type").Value.Trim();
-                    var allDataTypes = dataTypeService.GetAllDataTypeDefinitions();
-                    if (dataTypeDefinition == null)
-                    {
-                        var dataTypeDefinitions = dataTypeService.GetDataTypeDefinitionByPropertyEditorAlias(propertyEditorAlias);
-                        if (dataTypeDefinitions != null && dataTypeDefinitions.Any())
-                            dataTypeDefinition = dataTypeDefinitions.FirstOrDefault();
-                    }
-                    else
-                    {
-#pragma warning disable CS0618 // Type or member is obsolete
-                        if (legacyPropertyEditorId != Guid.Empty && dataTypeDefinition.ControlId != legacyPropertyEditorId)
-#pragma warning restore CS0618 // Type or member is obsolete
-                        {
-#pragma warning disable CS0618 // Type or member is obsolete
-                            var dataTypeDefinitions2 = dataTypeService.GetDataTypeDefinitionByControlId(legacyPropertyEditorId);
-#pragma warning restore CS0618 // Type or member is obsolete
-                            if (dataTypeDefinitions2 != null && dataTypeDefinitions2.Any())
-                            {
-                                dataTypeDefinition = dataTypeDefinitions2.FirstOrDefault();
-                            }
-                        }
-                        else
-                        {
-                            if (dataTypeDefinition.PropertyEditorAlias != propertyEditorAlias)
-                            {
-                                var dataTypeDefinitions3 = dataTypeService.GetDataTypeDefinitionByPropertyEditorAlias(propertyEditorAlias);
-                                if (dataTypeDefinitions3 != null && dataTypeDefinitions3.Any())
-                                    dataTypeDefinition = dataTypeDefinitions3.FirstOrDefault();
-                            }
-                        }
-                    }
-
-                    if (dataTypeDefinition == null)
-                        dataTypeDefinition = dataTypeService.GetDataTypeDefinitionByPropertyEditorAlias("Umbraco.NoEdit").FirstOrDefault();
-
                     var sortOrder = 0;
                     var sortOrderElement = property.Element("SortOrder");
                     if (sortOrderElement != null)
                         int.TryParse(sortOrderElement.Value, out sortOrder);
 
                     var propertyType = contentType.PropertyTypes.First(pt => pt.Alias == property.Element("Alias").Value);
+                    var dataTypeDefinition = GetDataTypeDefinition(property);
                     propertyType.DataTypeDefinitionId = dataTypeDefinition.Id;
 
                     propertyType.Name = property.Element("Name").Value;
@@ -331,6 +291,50 @@ namespace Chauffeur.Services
 
                 contentTypeService.Save(contentType);
             }
+        }
+
+        private IDataTypeDefinition GetDataTypeDefinition(XElement property)
+        {
+            var dataTypeDefinitionId = new Guid(property.Element("Definition").Value);
+            var dataTypeDefinition = dataTypeService.GetDataTypeDefinitionById(dataTypeDefinitionId);
+
+            var legacyPropertyEditorId = Guid.Empty;
+            Guid.TryParse(property.Element("Type").Value, out legacyPropertyEditorId);
+            var propertyEditorAlias = property.Element("Type").Value.Trim();
+            if (dataTypeDefinition == null)
+            {
+                var dataTypeDefinitions = dataTypeService.GetDataTypeDefinitionByPropertyEditorAlias(propertyEditorAlias);
+                if (dataTypeDefinitions != null && dataTypeDefinitions.Any())
+                    dataTypeDefinition = dataTypeDefinitions.FirstOrDefault();
+            }
+            else
+            {
+#pragma warning disable CS0618 // Type or member is obsolete
+                if (legacyPropertyEditorId != Guid.Empty && dataTypeDefinition.ControlId != legacyPropertyEditorId)
+#pragma warning restore CS0618 // Type or member is obsolete
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    var dataTypeDefinitions2 = dataTypeService.GetDataTypeDefinitionByControlId(legacyPropertyEditorId);
+#pragma warning restore CS0618 // Type or member is obsolete
+                    if (dataTypeDefinitions2 != null && dataTypeDefinitions2.Any())
+                    {
+                        dataTypeDefinition = dataTypeDefinitions2.FirstOrDefault();
+                    }
+                }
+                else
+                {
+                    if (dataTypeDefinition.PropertyEditorAlias != propertyEditorAlias)
+                    {
+                        var dataTypeDefinitions3 = dataTypeService.GetDataTypeDefinitionByPropertyEditorAlias(propertyEditorAlias);
+                        if (dataTypeDefinitions3 != null && dataTypeDefinitions3.Any())
+                            dataTypeDefinition = dataTypeDefinitions3.FirstOrDefault();
+                    }
+                }
+            }
+
+            if (dataTypeDefinition == null)
+                dataTypeDefinition = dataTypeService.GetDataTypeDefinitionByPropertyEditorAlias("Umbraco.NoEdit").FirstOrDefault();
+            return dataTypeDefinition;
         }
     }
 }
