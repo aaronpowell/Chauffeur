@@ -31,7 +31,8 @@ namespace Chauffeur.DependencyBuilders
             container.Register(() => services.MemberGroupService);
             container.Register(() => services.MemberService);
             container.Register(() => services.MemberTypeService);
-            container.Register(() => new OverridingPackagingService(services.PackagingService, services.MacroService)).As<IPackagingService>();
+            container.Register(() => new OverridingPackagingService(services.PackagingService, services.MacroService, services.DataTypeService, services.ContentTypeService))
+                .As<IPackagingService>();
             container.Register(() => services.UserService);
         }
 

@@ -189,8 +189,8 @@ namespace Chauffeur.Deliverables
                 await Out.WriteLineFormattedAsync(
                     "\t{0}\t{1}\t{2}\t{3}\t{4}",
                     propertyType.Id,
-                    propertyType.Alias,
                     propertyType.Name,
+                    propertyType.Alias,
                     propertyType.Mandatory,
                     propertyType.PropertyEditorAlias
                 );

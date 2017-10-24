@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
-using Umbraco.Core.Events;
 using Umbraco.Core.Models;
 using Umbraco.Core.Services;
 
@@ -17,11 +14,19 @@ namespace Chauffeur.Services
     {
         private readonly IPackagingService realPackagingService;
         private readonly IMacroService macroService;
+        private readonly IDataTypeService dataTypeService;
+        private readonly IContentTypeService contentTypeService;
 
-        public OverridingPackagingService(IPackagingService realPackagingService, IMacroService macroService)
+        public OverridingPackagingService(
+            IPackagingService realPackagingService,
+            IMacroService macroService,
+            IDataTypeService dataTypeService,
+            IContentTypeService contentTypeService)
         {
             this.realPackagingService = realPackagingService;
             this.macroService = macroService;
+            this.dataTypeService = dataTypeService;
+            this.contentTypeService = contentTypeService;
         }
 
         public XElement Export(IMacro macro, bool raiseEvents = true)
@@ -101,7 +106,11 @@ namespace Chauffeur.Services
 
         public IEnumerable<IContentType> ImportContentTypes(XElement element, int userId = 0, bool raiseEvents = true)
         {
-            return realPackagingService.ImportContentTypes(element, userId, raiseEvents);
+            var contentTypes = ImportContentTypes(element, true, userId, raiseEvents);
+
+            PatchContentTypes(contentTypes, element);
+
+            return contentTypes;
         }
 
         public IEnumerable<IDataTypeDefinition> ImportDataTypeDefinitions(XElement element, int userId = 0, bool raiseEvents = true)
@@ -247,6 +256,81 @@ namespace Chauffeur.Services
         public string FetchPackageFile(Guid packageId, Version umbracoVersion, int userId)
         {
             return realPackagingService.FetchPackageFile(packageId, umbracoVersion, userId);
+        }
+
+        private void PatchContentTypes(IEnumerable<IContentType> contentTypes, XElement element)
+        {
+            var name = element.Name;
+
+            var docTypeXmlElements = name == "DocumentType" ? new[] { element } : element.Elements("DocumentType");
+
+            foreach (var xml in docTypeXmlElements)
+            {
+                var infoElement = xml.Element("Info");
+                var contentType = contentTypes.First(x => x.Alias == infoElement.Element("Alias").Value);
+
+                var propertiesXml = xml.Element("GenericProperties").Elements("GenericProperty");
+
+                foreach (var property in propertiesXml)
+                {
+                    var dataTypeDefinitionId = new Guid(property.Element("Definition").Value);
+                    var dataTypeDefinition = dataTypeService.GetDataTypeDefinitionById(dataTypeDefinitionId);
+
+                    var legacyPropertyEditorId = Guid.Empty;
+                    Guid.TryParse(property.Element("Type").Value, out legacyPropertyEditorId);
+                    var propertyEditorAlias = property.Element("Type").Value.Trim();
+                    var allDataTypes = dataTypeService.GetAllDataTypeDefinitions();
+                    if (dataTypeDefinition == null)
+                    {
+                        var dataTypeDefinitions = dataTypeService.GetDataTypeDefinitionByPropertyEditorAlias(propertyEditorAlias);
+                        if (dataTypeDefinitions != null && dataTypeDefinitions.Any())
+                            dataTypeDefinition = dataTypeDefinitions.FirstOrDefault();
+                    }
+                    else
+                    {
+#pragma warning disable CS0618 // Type or member is obsolete
+                        if (legacyPropertyEditorId != Guid.Empty && dataTypeDefinition.ControlId != legacyPropertyEditorId)
+#pragma warning restore CS0618 // Type or member is obsolete
+                        {
+#pragma warning disable CS0618 // Type or member is obsolete
+                            var dataTypeDefinitions2 = dataTypeService.GetDataTypeDefinitionByControlId(legacyPropertyEditorId);
+#pragma warning restore CS0618 // Type or member is obsolete
+                            if (dataTypeDefinitions2 != null && dataTypeDefinitions2.Any())
+                            {
+                                dataTypeDefinition = dataTypeDefinitions2.FirstOrDefault();
+                            }
+                        }
+                        else
+                        {
+                            if (dataTypeDefinition.PropertyEditorAlias != propertyEditorAlias)
+                            {
+                                var dataTypeDefinitions3 = dataTypeService.GetDataTypeDefinitionByPropertyEditorAlias(propertyEditorAlias);
+                                if (dataTypeDefinitions3 != null && dataTypeDefinitions3.Any())
+                                    dataTypeDefinition = dataTypeDefinitions3.FirstOrDefault();
+                            }
+                        }
+                    }
+
+                    if (dataTypeDefinition == null)
+                        dataTypeDefinition = dataTypeService.GetDataTypeDefinitionByPropertyEditorAlias("Umbraco.NoEdit").FirstOrDefault();
+
+                    var sortOrder = 0;
+                    var sortOrderElement = property.Element("SortOrder");
+                    if (sortOrderElement != null)
+                        int.TryParse(sortOrderElement.Value, out sortOrder);
+
+                    var propertyType = contentType.PropertyTypes.First(pt => pt.Alias == property.Element("Alias").Value);
+                    propertyType.DataTypeDefinitionId = dataTypeDefinition.Id;
+
+                    propertyType.Name = property.Element("Name").Value;
+                    propertyType.Description = (string)property.Element("Description");
+                    propertyType.Mandatory = (property.Element("Mandatory") != null && property.Element("Mandatory").Value.ToLowerInvariant().Equals("true"));
+                    propertyType.ValidationRegExp = (string)property.Element("Validation");
+                    propertyType.SortOrder = sortOrder;
+                }
+
+                contentTypeService.Save(contentType);
+            }
         }
     }
 }

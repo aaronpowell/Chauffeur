@@ -1,3 +1,6 @@
+## New in 0.12.0 (Unreleased)
+* Updating Content Type properties when importing (Issue [#55](https://github.com/aaronpowell/Chauffeur/issues/55))
+
 ## New in 0.11.0 (26/09/2017)
 * Allowing a custom connection string to be set via a command line switch (Issue [#52](https://github.com/aaronpowell/Chauffeur/issues/52))
 
