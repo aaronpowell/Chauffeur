@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -64,12 +65,26 @@ namespace Chauffeur.Deliverables
                     await Import(args.Skip(1).ToArray());
                     break;
 
+                case "remove":
+                    await Remove(args.Skip(1).ToArray());
+                    break;
+
                 default:
                     await Out.WriteLineFormattedAsync("The operation `{0}` is not supported", operation);
                     break;
             }
 
             return await base.Run(command, args);
+        }
+
+        private async Task Remove(string[] aliases)
+        {
+            var contentType = await Get(aliases, false);
+            if (contentType == null)
+                return;
+
+            contentTypeService.Delete(contentType);
+            await Out.WriteLineAsync($"Removed the content type '{aliases[0]}'");
         }
 
         private async Task Import(string[] args)

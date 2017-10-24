@@ -73,5 +73,27 @@ namespace Chauffeur.Tests.Deliverables
 
             service.Received().GetContentType(Arg.Any<string>());
         }
+
+        [Fact]
+        public async Task RemoveCommandWillCallRemoveMethod()
+        {
+            var service = Substitute.For<IContentTypeService>();
+            service.GetContentType(Arg.Any<string>()).Returns(Substitute.For<IContentType>());
+            service.Delete(Arg.Any<IContentType>());
+
+            var deliverable = new ContentTypeDeliverable(
+                null,
+                Substitute.For<TextWriter>(),
+                service,
+                null,
+                null,
+                null,
+                null
+            );
+
+            await deliverable.Run("", new[] { "remove", "alias" });
+
+            service.Received().Delete(Arg.Any<IContentType>());
+        }
     }
 }
