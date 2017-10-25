@@ -18,7 +18,7 @@ namespace Chauffeur.Tests.Deliverables
         public async Task ScaffoldWillSetupDeliveryFile()
         {
             var reader = Substitute.For<TextReader>();
-            reader.ReadLineAsync().Returns(Task.FromResult(""));
+            reader.ReadLineAsync().Returns(Task.FromResult(""), Task.FromResult(""), Task.FromResult("n"));
 
             var writer = new MockTextWriter();
             var fileSystem = new MockFileSystem();
@@ -29,7 +29,7 @@ namespace Chauffeur.Tests.Deliverables
                 return true;
             });
 
-            var deliverable = new ScaffoldDeliverable(reader, writer, settings, fileSystem);
+            var deliverable = new ScaffoldDeliverable(reader, writer, settings, fileSystem, null, null, null);
 
             await deliverable.Run("", new string[0]);
 
@@ -41,7 +41,7 @@ namespace Chauffeur.Tests.Deliverables
         public async Task DefaultDeliveryFillIncludeInstallAndChangePassword()
         {
             var reader = Substitute.For<TextReader>();
-            reader.ReadLineAsync().Returns(Task.FromResult(""));
+            reader.ReadLineAsync().Returns(Task.FromResult(""), Task.FromResult(""), Task.FromResult("n"));
 
             var writer = new MockTextWriter();
             var fileSystem = new MockFileSystem();
@@ -52,7 +52,7 @@ namespace Chauffeur.Tests.Deliverables
                 return true;
             });
 
-            var deliverable = new ScaffoldDeliverable(reader, writer, settings, fileSystem);
+            var deliverable = new ScaffoldDeliverable(reader, writer, settings, fileSystem, null, null, null);
 
             await deliverable.Run("", new string[0]);
 
