@@ -29,7 +29,16 @@ namespace Chauffeur.Tests.Deliverables
                 return true;
             });
 
-            var deliverable = new ScaffoldDeliverable(reader, writer, settings, fileSystem, null, null, null);
+            var deliverable = new ScaffoldDeliverable(
+                reader,
+                writer,
+                settings,
+                fileSystem,
+                null,
+                null,
+                null,
+                null,
+                null);
 
             await deliverable.Run("", new string[0]);
 
@@ -52,7 +61,16 @@ namespace Chauffeur.Tests.Deliverables
                 return true;
             });
 
-            var deliverable = new ScaffoldDeliverable(reader, writer, settings, fileSystem, null, null, null);
+            var deliverable = new ScaffoldDeliverable(
+                reader,
+                writer,
+                settings,
+                fileSystem,
+                null,
+                null,
+                null,
+                null,
+                null);
 
             await deliverable.Run("", new string[0]);
 

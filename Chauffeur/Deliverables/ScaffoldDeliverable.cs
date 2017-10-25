@@ -1,5 +1,4 @@
 ﻿using Chauffeur.Host;
-using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -17,6 +16,8 @@ namespace Chauffeur.Deliverables
         private readonly IContentTypeService contentTypeService;
         private readonly IDataTypeService dataTypeService;
         private readonly IPackagingService packagingService;
+        private readonly IFileService fileService;
+        private readonly IMacroService macroService;
 
         public ScaffoldDeliverable(
             TextReader reader,
@@ -25,6 +26,8 @@ namespace Chauffeur.Deliverables
             IFileSystem fileSystem,
             IContentTypeService contentTypeService,
             IDataTypeService dataTypeService,
+            IFileService fileService,
+            IMacroService macroService,
             IPackagingService packagingService) : base(reader, writer)
         {
             this.settings = settings;
@@ -32,6 +35,8 @@ namespace Chauffeur.Deliverables
             this.contentTypeService = contentTypeService;
             this.dataTypeService = dataTypeService;
             this.packagingService = packagingService;
+            this.fileService = fileService;
+            this.macroService = macroService;
         }
 
         public async Task Directions()
@@ -64,23 +69,48 @@ namespace Chauffeur.Deliverables
         {
             var contentTypes = contentTypeService.GetAllContentTypes();
             var dataTypes = dataTypeService.GetAllDataTypeDefinitions();
+            var templates = fileService.GetTemplates();
+            var styleSheets = fileService.GetStylesheets();
+            var macros = macroService.GetAll();
 
             var packageXml = new XDocument();
-            packageXml.Add(new XElement(
-                "umbPackage",
+            packageXml.Add(
                 new XElement(
-                    "DocumentTypes",
-                    contentTypes.Select(ct => packagingService.Export(ct, false))
+                    "umbPackage",
+                    new XElement(
+                        "DocumentTypes",
+                        contentTypes.Select(ct => packagingService.Export(ct, false))
+                    ),
+                    packagingService.Export(dataTypes, false),
+                    packagingService.Export(templates, false),
+                    packagingService.Export(macros, false),
+                    new XElement(
+                        "Stylesheets",
+                        styleSheets.Select(s =>
+                            new XElement(
+                                "Stylesheet",
+                                new XElement("Name", s.Alias),
+                                new XElement("FileName", s.Name),
+                                new XElement("Content", new XCData(s.Content)),
+                                new XElement(
+                                    "Properties",
+                                    s.Properties.Select(p =>
+                                        new XElement(
+                                            "Property",
+                                            new XElement("Name", p.Name),
+                                            new XElement("Alias", p.Alias),
+                                            new XElement("Value", p.Value)
+                                        )
+                                    )
+                                )
+                            )
+                        )
                     )
-                ),
-                new XElement(
-                    "DataTypes",
-                    dataTypes.Select(dt => packagingService.Export(dt, false))
                 )
             );
 
             settings.TryGetChauffeurDirectory(out string dir);
-            packageXml.Save(fileSystem.Path.Combine(dir, $"{name}.xml"));
+            fileSystem.File.WriteAllText(fileSystem.Path.Combine(dir, $"{name}.xml"), packageXml.ToString());
             await deliveryFileStream.WriteLineAsync($"package {name}");
         }
 
