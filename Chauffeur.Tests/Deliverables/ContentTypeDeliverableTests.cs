@@ -6,6 +6,7 @@ using Umbraco.Core.Models;
 using Umbraco.Core.Services;
 using Task = System.Threading.Tasks.Task;
 using Xunit;
+using System.Collections.Generic;
 
 namespace Chauffeur.Tests.Deliverables
 {
@@ -94,6 +95,31 @@ namespace Chauffeur.Tests.Deliverables
             await deliverable.Run("", new[] { "remove", "alias" });
 
             service.Received().Delete(Arg.Any<IContentType>());
+        }
+
+        [Fact]
+        public async Task RemovePropertyCommandWillRemoveAndSaveContentType()
+        {
+            var service = Substitute.For<IContentTypeService>();
+            var ct = Substitute.For<IContentType>();
+
+            service.GetContentType(Arg.Any<string>()).Returns(ct);
+            service.Save(Arg.Any<IContentType>());
+
+            var deliverable = new ContentTypeDeliverable(
+                null,
+                Substitute.For<TextWriter>(),
+                service,
+                null,
+                null,
+                null,
+                null
+            );
+
+            await deliverable.Run("", new[] { "remove-property", "alias", "property-alias" });
+
+            ct.Received(1).RemovePropertyType(Arg.Any<string>());
+            service.Received(1).Save(Arg.Is(ct));
         }
     }
 }

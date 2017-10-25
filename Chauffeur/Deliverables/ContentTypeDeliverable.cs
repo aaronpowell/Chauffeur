@@ -69,12 +69,38 @@ namespace Chauffeur.Deliverables
                     await Remove(args.Skip(1).ToArray());
                     break;
 
+                case "remove-property":
+                    await RemoveProperty(args.Skip(1).ToArray());
+                    break;
+
                 default:
                     await Out.WriteLineFormattedAsync("The operation `{0}` is not supported", operation);
                     break;
             }
 
             return await base.Run(command, args);
+        }
+
+        private async Task RemoveProperty(string[] args)
+        {
+            var contentType = await Get(args);
+            if (contentType == null)
+                return;
+
+            var propertyAliases = args.Skip(1);
+
+            if (!propertyAliases.Any())
+            {
+                await Out.WriteLineAsync("No property type aliases were provided");
+                return;
+            }
+
+            foreach (var propertyAlias in propertyAliases)
+                contentType.RemovePropertyType(propertyAlias);
+
+            contentTypeService.Save(contentType);
+
+            await Out.WriteLineAsync($"Removed the following property types: {string.Join(", ", args)}");
         }
 
         private async Task Remove(string[] aliases)

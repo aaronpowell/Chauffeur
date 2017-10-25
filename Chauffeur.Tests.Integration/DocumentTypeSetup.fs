@@ -192,3 +192,27 @@ type ``Importing document types``() =
             x.TextWriter.Messages|> should haveLength 1
         }
         |> Async.RunSynchronously
+
+    [<Fact>]
+    member x.``Can remove a document type property``() =
+        x.TextReader.AddCommand "Y"
+        let run = x.Host.Run
+        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let filePath =
+            Path.Combine [| chauffeurFolder.FullName
+                            sprintf "%s.xml" doctypeName |]
+        File.WriteAllText(filePath, sampleDocType)
+
+        async {
+            let! contentTypeImportResponse = x.ImportDocType
+            let! removeResponse = [|"ct"; "remove-property"; "BlogPost"; "introduction" |]
+                                    |> run
+                                    |> Async.AwaitTask
+            x.TextWriter.Flush()
+            let! contentTypeInfoResponse = [| "ct"; "get"; "BlogPost" |]
+                                           |> run
+                                           |> Async.AwaitTask
+            let messages = x.TextWriter.Messages
+            messages |> should haveLength 5
+        }
+        |> Async.RunSynchronously
