@@ -1,6 +1,6 @@
 # Chauffeur
 
-![Chauffeur Logo](./chauffeur_logo.svg)
+<img src="./chauffeur_logo.svg" style="width: 50px; height: 50px;" />
 
 Welcome to Chauffeur, deliverying changes to your Umbraco environment in style.
 
