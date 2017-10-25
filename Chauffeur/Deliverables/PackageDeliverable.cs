@@ -101,7 +101,7 @@ namespace Chauffeur.Deliverables
         {
             var pkg = info.Element("package");
 
-            if (pkg != null)
+            if (pkg == null)
                 return;
 
             var name = (string)pkg.Element("name");
