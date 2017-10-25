@@ -1,6 +1,7 @@
 ## New in 0.12.0 (Unreleased)
 * Updating Content Type properties when importing (Issue [#55](https://github.com/aaronpowell/Chauffeur/issues/55))
 * Adding ability to remove document types using the `content-type` deliverable (Issue [#57](https://github.com/aaronpowell/Chauffeur/issues/57))
+* Adding ability to remove document type properties using the `content-type` deliverable (Issue [#58](https://github.com/aaronpowell/Chauffeur/issues/58))
 
 ## New in 0.11.0 (26/09/2017)
 * Allowing a custom connection string to be set via a command line switch (Issue [#52](https://github.com/aaronpowell/Chauffeur/issues/52))
