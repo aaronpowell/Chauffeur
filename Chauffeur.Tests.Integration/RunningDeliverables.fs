@@ -7,6 +7,7 @@ open System.IO
 open FsUnit.Xunit
 open System.Data.SqlServerCe
 open System.Data
+open System
 
 let setupDelivery deliverableName steps dbLocation =
     let chauffeurFolder = getChauffeurFolder dbLocation
@@ -78,6 +79,16 @@ type ``Multi-step delivery``() =
     [<Fact>]
     member x.``Can run a delivery with multiple steps``() =
         setupDelivery "some.delivery" (sprintf "install y%sct get-all" System.Environment.NewLine) x.DatabaseLocation
+        async {
+            let! response = [| "delivery" |]
+                            |> x.Host.Run
+                            |> Async.AwaitTask
+            response |> should equal DeliverableResponse.Continue
+        }
+
+    [<Fact>]
+    member x.``Can run a delivery with multiple steps including comments``() =
+        setupDelivery "some.delivery" (sprintf "install y%s## this is a comment%sct get-all" Environment.NewLine Environment.NewLine) x.DatabaseLocation
         async {
             let! response = [| "delivery" |]
                             |> x.Host.Run

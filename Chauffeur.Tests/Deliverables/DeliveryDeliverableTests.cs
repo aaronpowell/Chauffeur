@@ -65,7 +65,7 @@ namespace Chauffeur.Tests.Deliverables
                 {@"c:\foo\bar.txt", new MockFileData("This is not a deliverable")}
             });
 
-            var deliverable = new DeliveryDeliverable(null, writer, dbSchema,  db, settings, fs, null, null);
+            var deliverable = new DeliveryDeliverable(null, writer, dbSchema, db, settings, fs, null, null);
 
             await deliverable.Run(null, new string[0]);
 
@@ -166,7 +166,7 @@ namespace Chauffeur.Tests.Deliverables
         [Fact]
         public async Task DatabaseError_WillStillAttemptFirstDeliverableThenCreateTableAgain()
         {
-            var ex =Substitute.For<DbException>();
+            var ex = Substitute.For<DbException>();
 
             var provider = Substitute.For<ISqlSyntaxProvider>();
             provider.Format(Arg.Any<ICollection<ForeignKeyDefinition>>()).Returns(new List<string>());
@@ -288,6 +288,45 @@ namespace Chauffeur.Tests.Deliverables
             host.Received(1)
                 .Run(Arg.Is<string[]>(x => x[0] == "foo baz pwd"))
                 .IgnoreAwaitForNSubstituteAssertion();
+        }
+
+        [Fact]
+        public async Task CommentsInDelivery_WillNotBeGivenToTheHost()
+        {
+            var provider = Substitute.For<ISqlSyntaxProvider>();
+            provider.DoesTableExist(Arg.Any<Database>(), Arg.Any<string>()).Returns(true);
+
+            var settings = Substitute.For<IChauffeurSettings>();
+            settings.TryGetChauffeurDirectory(out string s).Returns(x =>
+             {
+                 x[0] = @"c:\foo";
+                 return true;
+             });
+
+            var cmd = Substitute.For<IDbCommand>();
+            cmd.ExecuteScalar().Returns(1);
+            var conn = Substitute.For<IDbConnection>();
+            conn.CreateCommand().Returns(cmd);
+            var db = new Database(conn);
+
+            var writer = new MockTextWriter();
+
+            var deliverableScript = "## this is a comment\r\nfoo";
+            var fs = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                {@"c:\foo\bar.delivery", new MockFileData(deliverableScript)}
+            });
+
+            var host = Substitute.For<IChauffeurHost>();
+            host.Run(Arg.Any<string[]>()).Returns(Task.FromResult(DeliverableResponse.Continue));
+
+            var dbSchema = new DatabaseSchemaHelper(db, null, provider);
+
+            var deliverable = new DeliveryDeliverable(null, writer, dbSchema, db, settings, fs, host, provider);
+
+            await deliverable.Run(null, new string[0]);
+
+            host.Received(1).Run(Arg.Any<string[]>()).IgnoreAwaitForNSubstituteAssertion();
         }
     }
 }

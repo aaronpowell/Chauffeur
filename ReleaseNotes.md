@@ -3,6 +3,7 @@
 * Adding ability to remove document types using the `content-type` deliverable (Issue [#57](https://github.com/aaronpowell/Chauffeur/issues/57))
 * Adding ability to remove document type properties using the `content-type` deliverable (Issue [#58](https://github.com/aaronpowell/Chauffeur/issues/58))
 * Finally addressing Issue [#14](https://github.com/aaronpowell/Chauffeur/issues/14), we now have better formatting!
+* You can now add comments to a delivery using `##` at the start of a line (Issue [#20](https://github.com/aaronpowell/Chauffeur/issues/20))
 
 ## New in 0.11.0 (26/09/2017)
 * Allowing a custom connection string to be set via a command line switch (Issue [#52](https://github.com/aaronpowell/Chauffeur/issues/52))

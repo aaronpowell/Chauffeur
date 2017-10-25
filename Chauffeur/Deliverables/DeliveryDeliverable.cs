@@ -152,7 +152,8 @@ namespace Chauffeur.Deliverables
         {
             var instructions = fileSystem.File
                 .ReadAllLines(file.FullName)
-                .Where(x => !string.IsNullOrEmpty(x));
+                .Where(x => !string.IsNullOrEmpty(x))
+                .Where(x => !x.StartsWith("##"));
 
             var tracking = new ChauffeurDeliveryTable
             {
