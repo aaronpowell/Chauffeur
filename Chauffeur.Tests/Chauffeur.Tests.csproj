@@ -247,6 +247,7 @@
     <Compile Include="Deliverables\InstallDeliverableTests.cs" />
     <Compile Include="Deliverables\PackageDeliverableTests.cs" />
     <Compile Include="Deliverables\QuitDeliverableTests.cs" />
+    <Compile Include="Deliverables\ScaffoldDeliverableTests.cs" />
     <Compile Include="Deliverables\UnknownDeliverableTests.cs" />
     <Compile Include="Deliverables\UserDeliverableTests.cs" />
     <Compile Include="MockTextWriter.cs" />
