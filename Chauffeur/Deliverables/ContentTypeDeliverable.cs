@@ -214,28 +214,26 @@ namespace Chauffeur.Deliverables
 
         private async Task PrintContentType(IContentType contentType)
         {
-            await Out.WriteLineAsync("\tId\tAlias\tName\tParent Id");
-            await Out.WriteLineFormattedAsync(
-                  "\t{0}\t{1}\t{2}\t{3}",
+            await Out.WriteTableAsync(new
+            {
                 contentType.Id,
                 contentType.Alias,
                 contentType.Name,
                 contentType.ParentId
-            );
+            }, new Dictionary<string, string> { { "ParentId", "Parent Id" } });
 
-            await Out.WriteLineAsync("\tProperty Types");
-            await Out.WriteLineAsync("\tId\tName\tAlias\tMandatory\tProperty Editor Alias");
-            foreach (var propertyType in contentType.PropertyTypes)
-            {
-                await Out.WriteLineFormattedAsync(
-                    "\t{0}\t{1}\t{2}\t{3}\t{4}",
-                    propertyType.Id,
-                    propertyType.Name,
-                    propertyType.Alias,
-                    propertyType.Mandatory,
-                    propertyType.PropertyEditorAlias
-                );
-            }
+            await Out.WriteLineAsync("Property Types");
+
+            await Out.WriteTableAsync(contentType.PropertyTypes.Select(pt =>
+                new
+                {
+                    pt.Id,
+                    pt.Name,
+                    pt.Alias,
+                    Mandatory = pt.Mandatory ? "Yes" : "No",
+                    pt.PropertyEditorAlias
+                }
+            ), new Dictionary<string, string> { { "PropertyEditorAlias", "Property Editor Alias" } });
         }
 
         private async Task GetAll()
@@ -248,9 +246,7 @@ namespace Chauffeur.Deliverables
                 return;
             }
 
-            await Out.WriteLineAsync("\tId\tAlias\tName");
-            foreach (var type in types)
-                await Out.WriteLineFormattedAsync("\t{0}\t{1}\t{2}", type.Id, type.Alias, type.Name);
+            await Out.WriteTableAsync(types.Select(t => new { t.Id, t.Alias, t.Name }));
         }
 
         public async Task Directions()

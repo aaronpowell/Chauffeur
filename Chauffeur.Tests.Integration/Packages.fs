@@ -50,10 +50,10 @@ type ``Importing packages``() =
                 |> List.skip 1
                 |> List.head
 
-            let parts = infoRow.Split([| '\t' |], StringSplitOptions.RemoveEmptyEntries)
-            parts.[0] |> should not' (equal "1050")
-            parts.[1] |> should equal "richTextPage"
-            parts.[2] |> should equal "Rich Text Page"
-            parts.[3] |> should equal "-1"
+            let parts = infoRow.Split([| '|' |], StringSplitOptions.RemoveEmptyEntries)
+            parts.[0].Trim() |> should not' (equal "1050")
+            parts.[1].Trim() |> should equal "richTextPage"
+            parts.[2].Trim() |> should equal "Rich Text Page"
+            parts.[3].Trim() |> should equal "-1"
         }
         |> Async.RunSynchronously

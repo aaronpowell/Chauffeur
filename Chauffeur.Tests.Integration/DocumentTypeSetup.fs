@@ -61,11 +61,11 @@ type ``Importing document types``() =
                 |> List.skip 1
                 |> List.head
 
-            let parts = infoRow.Split([| '\t' |], StringSplitOptions.RemoveEmptyEntries)
-            parts.[0] |> should equal "1060"
-            parts.[1] |> should equal "BlogPost"
-            parts.[2] |> should equal "Blog Post"
-            parts.[3] |> should equal "-1"
+            let parts = infoRow.Split([| '|' |], StringSplitOptions.RemoveEmptyEntries)
+            parts.[0].Trim() |> should equal "1060"
+            parts.[1].Trim() |> should equal "BlogPost"
+            parts.[2].Trim() |> should equal "Blog Post"
+            parts.[3].Trim() |> should equal "-1"
         }
         |> Async.RunSynchronously
 
@@ -163,10 +163,10 @@ type ``Importing document types``() =
                 |> List.filter (fun m -> m.Contains("content"))
                 |> List.head
 
-            let parts = infoRow.Split([| '\t' |], StringSplitOptions.RemoveEmptyEntries)
-            parts.[0] |> should equal "50"
-            parts.[1] |> should equal "Content is updated"
-            parts.[2] |> should equal "content"
+            let parts = infoRow.Split([| '|' |], StringSplitOptions.RemoveEmptyEntries)
+            parts.[0].Trim() |> should equal "50"
+            parts.[1].Trim() |> should equal "Content is updated"
+            parts.[2].Trim() |> should equal "content"
         }
         |> Async.RunSynchronously
 
