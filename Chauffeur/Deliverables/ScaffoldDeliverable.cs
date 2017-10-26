@@ -62,6 +62,13 @@ namespace Chauffeur.Deliverables
                     await CreatePackage(deliveryFileStream, name);
             }
 
+            await Out.WriteLineAsync("Chauffeur is all setup and ready to go. To run your first delivery just run:");
+
+            if (includeInstall.ToLowerInvariant() == "y")
+                await Out.WriteLineAsync("./Chauffeur.Runner.exe delivery -p:adminpwd=MySuperSecretPassword!");
+            else
+                await Out.WriteLineAsync("./Chauffeur.Runner.exe delivery");
+
             return DeliverableResponse.Continue;
         }
 
