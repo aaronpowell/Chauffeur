@@ -1,4 +1,7 @@
-## New in 0.12.0 (Unreleased)
+## New in 0.12.1 (26/10/2017)
+* Fixed logo on NuGet packages
+
+## New in 0.12.0 (26/10/2017)
 * Updating Content Type properties when importing (Issue [#55](https://github.com/aaronpowell/Chauffeur/issues/55))
 * Adding ability to remove document types using the `content-type` deliverable (Issue [#57](https://github.com/aaronpowell/Chauffeur/issues/57))
 * Adding ability to remove document type properties using the `content-type` deliverable (Issue [#58](https://github.com/aaronpowell/Chauffeur/issues/58))

@@ -8,7 +8,7 @@
     <summary>@summary@</summary>
     <licenseUrl>https://github.com/aaronpowell/Chauffeur/blob/master/License.md</licenseUrl>
     <projectUrl>https://github.com/aaronpowell/Chauffeur/</projectUrl>
-    <iconUrl>https://github.com/aaronpowell/Chauffeur/blob/master/chauffeur_logo.svg</iconUrl>
+    <iconUrl>https://raw.githubusercontent.com/aaronpowell/Chauffeur/master/chauffeur_logo_for_nuget.png?sanitize=true</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>@description@</description>
     <releaseNotes>@releaseNotes@</releaseNotes>
