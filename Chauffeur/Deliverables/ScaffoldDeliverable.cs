@@ -47,7 +47,11 @@ namespace Chauffeur.Deliverables
 
         public async override Task<DeliverableResponse> Run(string command, string[] args)
         {
-            var (name, includeInstall) = await GetScaffoldSettings();
+            var useDefaults = args.Any() && args[0] == "default";
+
+            var (name, includeInstall) = useDefaults ?
+                GetScaffoldDefaultSettings() :
+                await GetScaffoldSettings();
             using (var deliveryFileStream = CreateDeliveryFile(name))
             {
                 if (includeInstall.ToLowerInvariant() == "y")
@@ -56,9 +60,14 @@ namespace Chauffeur.Deliverables
                     await deliveryFileStream.WriteLineAsync("user change-password admin $adminpwd$");
                 }
 
-                await Out.WriteAsync("Do you want to package your current instance (Y/n)? ");
-                var package = await In.ReadLineWithDefaultAsync("Y");
-                if (package.ToLowerInvariant() == "y")
+                if (!useDefaults)
+                {
+                    await Out.WriteAsync("Do you want to package your current instance (Y/n)? ");
+                    var package = await In.ReadLineWithDefaultAsync("Y");
+                    if (package.ToLowerInvariant() == "y")
+                        await CreatePackage(deliveryFileStream, name);
+                }
+                else
                     await CreatePackage(deliveryFileStream, name);
             }
 
@@ -141,5 +150,8 @@ namespace Chauffeur.Deliverables
 
             return (name, includeInstall);
         }
+
+        private (string name, string includeInstall) GetScaffoldDefaultSettings() =>
+            ("001-Setup", "Y");
     }
 }
