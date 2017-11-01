@@ -1,3 +1,6 @@
+## New in 0.12.2 (Unreleased)
+* Fixes issue #65 where a NuGet dependency was missing
+
 ## New in 0.12.1 (26/10/2017)
 * Fixed logo on NuGet packages
 
