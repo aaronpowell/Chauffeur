@@ -17,6 +17,7 @@
     <dependencies>
       <dependency id="UmbracoCms.Core" version="7.2.5" />
       <dependency id="System.IO.Abstractions" version="1.4.0.93" />
+      <dependency id="System.ValueTuple" version="4.4.0" />
     </dependencies>
   </metadata>
 </package>
