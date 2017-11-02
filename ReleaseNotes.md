@@ -1,4 +1,4 @@
-## New in 0.12.2 (Unreleased)
+## New in 0.12.2 (02/11/2017)
 * Fixes issue #65 where a NuGet dependency was missing
 
 ## New in 0.12.1 (26/10/2017)
