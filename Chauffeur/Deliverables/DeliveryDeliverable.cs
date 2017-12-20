@@ -92,6 +92,14 @@ namespace Chauffeur.Deliverables
                 .Select(arg => arg.Split('='))
                 .ToDictionary(arg => arg[0], arg => arg[1]);
 
+            var stopAtDeliverableParam = args.FirstOrDefault(arg => arg.StartsWith("-s:"));
+
+            if (stopAtDeliverableParam != null)
+            {
+                var stopDeliverableName = stopAtDeliverableParam.Replace("-s:", string.Empty);
+                allDeliveries = allDeliveries.TakeWhile(name => fileSystem.Path.GetFileName(name) != stopDeliverableName).ToArray();
+            }
+
             if (dbNotReady)
             {
                 try
