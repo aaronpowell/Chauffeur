@@ -252,6 +252,19 @@ namespace Chauffeur.Tests.Deliverables
 </umbPackage>";
         #endregion
 
+        #region
+        private const string filesXml = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no""?>
+<umbPackage>
+  <files>
+    <file>
+      <guid>foo.txt</guid>
+      <orgPath>/</orgPath>
+      <orgName>foo.txt</orgName>
+    </file>
+  </files>
+</umbPackage>";
+        #endregion
+
         [Fact]
         public async Task NoPackagesAbortsEarly()
         {
@@ -430,5 +443,34 @@ namespace Chauffeur.Tests.Deliverables
 
             packagingService.Received(1).ImportContentTypes(Arg.Any<XElement>());
         }
+
+        [Fact]
+        public async Task CanImportPackageWithFiles()
+        {
+            var writer = new MockTextWriter();
+            var settings = Substitute.For<IChauffeurSettings>();
+            const string siteRootPath = "C:\\SiteRoot";
+            settings.TryGetSiteRootDirectory(out string dir).Returns(x =>
+            {
+                x[0] = siteRootPath;
+                return true;
+            });
+            var fs = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { "C:\\Path\\Text.xml", new MockFileData(filesXml) },
+                { "C:\\Path\\foo.txt", new MockFileData("something") }
+            });
+            fs.AddDirectory(siteRootPath);
+
+            var package = new PackageDeliverable(null, writer, fs, settings, null, null);
+
+            await package.Run(null, new[] { "Text", "-f:C:\\Path" });
+
+            Assert.Collection(
+                fs.Directory.GetFiles(siteRootPath),
+                item => Assert.Equal("foo.txt", fs.Path.GetFileName(item))
+            );
+        }
+
     }
 }
