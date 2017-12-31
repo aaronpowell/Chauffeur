@@ -151,14 +151,18 @@ namespace Chauffeur.Deliverables
 
                 await Out.WriteLineAsync($"Copying {metadata.OriginalName} from package");
 
-                fileSystem.File.Copy(
-                    fileSystem.Path.Combine(packageFolder, metadata.PackageFilename),
-                    fileSystem.Path.Combine(
+                var destinationPath = fileSystem.Path.Combine(
                         siteRootDirectory,
                         // they use `/` to denote web root, but that'll break when just using fs.Copy, so normalise to just empty
-                        metadata.OriginalPath == "/" ? string.Empty : metadata.OriginalPath,
-                        metadata.OriginalName
-                    ),
+                        metadata.OriginalPath == "/" ? string.Empty : metadata.OriginalPath
+                    );
+
+                if (!fileSystem.Directory.Exists(destinationPath))
+                    fileSystem.Directory.CreateDirectory(destinationPath);
+
+                fileSystem.File.Copy(
+                    fileSystem.Path.Combine(packageFolder, metadata.PackageFilename),
+                    fileSystem.Path.Combine(destinationPath, metadata.OriginalName),
                     true
                 );
             }
