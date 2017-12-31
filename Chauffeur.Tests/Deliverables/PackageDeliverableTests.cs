@@ -405,5 +405,30 @@ namespace Chauffeur.Tests.Deliverables
 
             packagingService.Received(1).ImportMacros(Arg.Any<XElement>());
         }
+
+        [Fact]
+        public async Task CanOverrideTheDefaultLookupDirectory()
+        {
+            var writer = new MockTextWriter();
+            var settings = Substitute.For<IChauffeurSettings>();
+            settings.TryGetChauffeurDirectory(out string dir).Returns(x =>
+             {
+                 x[0] = "";
+                 return false;
+             });
+            var fs = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { "C:\\Path\\Text.xml", new MockFileData(multipleDocumentTypesXml) }
+            });
+
+            var packagingService = Substitute.For<IPackagingService>();
+            packagingService.ImportContentTypes(Arg.Any<XElement>()).Returns(Enumerable.Empty<IContentType>());
+
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>());
+
+            await package.Run(null, new[] { "Text", "-f:C:\\Path" });
+
+            packagingService.Received(1).ImportContentTypes(Arg.Any<XElement>());
+        }
     }
 }

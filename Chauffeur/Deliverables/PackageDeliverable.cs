@@ -39,17 +39,28 @@ namespace Chauffeur.Deliverables
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
         {
-            if (!args.Any())
+            var packages = args.Where(a => !a.StartsWith("-f:"));
+
+            if (!packages.Any())
             {
                 await Out.WriteLineAsync("No packages were provided, use `help package` to see usage");
                 return DeliverableResponse.Continue;
             }
 
             string chauffeurFolder;
-            if (!settings.TryGetChauffeurDirectory(out chauffeurFolder))
-                return DeliverableResponse.Continue;
 
-            var tasks = args.Select(arg => Unpack(arg, chauffeurFolder));
+            var overridePath = args.FirstOrDefault(a => a.StartsWith("-f:"));
+            if (overridePath != null)
+            {
+                chauffeurFolder = overridePath.Replace("-f:", string.Empty);
+            }
+            else
+            {
+                if (!settings.TryGetChauffeurDirectory(out chauffeurFolder))
+                    return DeliverableResponse.Continue;
+            }
+
+            var tasks = packages.Select(pkg => Unpack(pkg, chauffeurFolder));
             await Task.WhenAll(tasks);
 
             return DeliverableResponse.Continue;
