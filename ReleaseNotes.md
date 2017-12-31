@@ -1,3 +1,7 @@
+## New in 0.13.0 (Unreleased)
+* Added support for importing files via the package deliverable
+* Added ability to define a custom path for where a package resides in the package deliverable (intended to work with path importing)
+
 ## New in 0.12.2 (02/11/2017)
 * Fixes issue #65 where a NuGet dependency was missing
 
