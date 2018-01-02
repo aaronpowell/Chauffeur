@@ -154,7 +154,7 @@ namespace Chauffeur.Deliverables
                 var destinationPath = fileSystem.Path.Combine(
                         siteRootDirectory,
                         // they use `/` to denote web root, but that'll break when just using fs.Copy, so normalise to just empty
-                        metadata.OriginalPath == "/" ? string.Empty : metadata.OriginalPath
+                        metadata.OriginalPath == "/" ? string.Empty : metadata.OriginalPath.Replace("~", string.Empty)
                     );
 
                 if (!fileSystem.Directory.Exists(destinationPath))
