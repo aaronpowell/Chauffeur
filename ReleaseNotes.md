@@ -1,3 +1,6 @@
+## New in 0.12.3 (Unreleased)
+* Fixes #67 by hacking the assembly resolver
+
 ## New in 0.12.2 (02/11/2017)
 * Fixes issue #65 where a NuGet dependency was missing
 
