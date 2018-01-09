@@ -1,4 +1,4 @@
-## New in 0.12.3 (Unreleased)
+## New in 0.12.3 (2018/01/10)
 * Fixes #67 by hacking the assembly resolver
 
 ## New in 0.12.2 (02/11/2017)
