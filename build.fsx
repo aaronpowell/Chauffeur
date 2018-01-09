@@ -156,7 +156,7 @@ Target "Lint" (fun _ ->
 
 "Clean"
     =?> ("BuildVersion", isAppVeyorBuild)
-    ==> "Lint"
+    //==> "Lint"
     ==> "Build"
 
 "RestoreChauffeurPackages"
