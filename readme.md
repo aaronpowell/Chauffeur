@@ -2,6 +2,12 @@
 
 <img src="./chauffeur_logo.svg" width="50" />
 
+| Build type | Status | NuGet |
+| --- | --- | --- |
+| master | [![Build status](https://ci.appveyor.com/api/projects/status/py65p0vnrjb4m7sx/branch/master?svg=true)](https://ci.appveyor.com/project/aaronpowell/chauffeur-externalpackages/branch/master) | [![NuGet Badge](https://buildstats.info/nuget/Chauffeur)](https://www.nuget.org/packages/Chauffeur/) |
+| dev | [![Build status](https://ci.appveyor.com/api/projects/status/py65p0vnrjb4m7sx?svg=true)](https://ci.appveyor.com/project/aaronpowell/chauffeur-externalpackages) | [![NuGet Badge](https://buildstats.info/nuget/Chauffeur?includePreReleases=true)](https://www.nuget.org/packages/Chauffeur/) |
+
+
 Welcome to Chauffeur, deliverying changes to your Umbraco environment in style.
 
 ## Who is Chauffeur?
@@ -13,10 +19,6 @@ Chauffeur is developed for Umbraco 7.x as it is designed around the new Umbraco 
 # Getting Started
 
 To get started install Chauffeur and open up a command window and launch `Chauffeur.Runner.exe`, which is the entry point for Chauffeur. From the prompt you can get started running deliverables.
-
-# Build Status
-
-[![Build status](https://ci.appveyor.com/api/projects/status/py65p0vnrjb4m7sx)](https://ci.appveyor.com/project/aaronpowell/chauffeur)
 
 # Running Demo
 
