@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Chauffeur.Host;
@@ -160,11 +162,26 @@ namespace Chauffeur.Deliverables
                 if (!fileSystem.Directory.Exists(destinationPath))
                     fileSystem.Directory.CreateDirectory(destinationPath);
 
-                fileSystem.File.Copy(
-                    fileSystem.Path.Combine(packageFolder, metadata.PackageFilename),
-                    fileSystem.Path.Combine(destinationPath, metadata.OriginalName),
-                    true
-                );
+                var destFileName = fileSystem.Path.Combine(destinationPath, metadata.OriginalName);
+                try
+                {
+                    fileSystem.File.Copy(
+                                fileSystem.Path.Combine(packageFolder, metadata.PackageFilename),
+                                destFileName,
+                                true
+                            );
+                }
+                catch (IOException)
+                {
+                    await Out.WriteLineAsync($"Failed to copy a file to {destFileName} as it's locked by another process. You may need to do it manually");
+                }
+
+                if (fileSystem.Path.GetExtension(destFileName) == ".dll")
+                {
+                    await Out.WriteLineAsync($"Found a dll in the package named {metadata.OriginalName} and we'll try and load it into the current AppDomain");
+                    var assembly = Assembly.LoadFile(destFileName);
+                    AppDomain.CurrentDomain.Load(assembly.FullName);
+                }
             }
         }
 
