@@ -58,7 +58,11 @@ namespace Chauffeur.Deliverables
             switch (operation.ToLower())
             {
                 case "export":
-                    await ExportDataType(args.Skip(1));
+                    await Export(args.Skip(1));
+                    return DeliverableResponse.Continue;
+
+                case "import":
+                    await Import(args.Skip(1).ToArray());
                     return DeliverableResponse.Continue;
 
                 default:
@@ -67,7 +71,35 @@ namespace Chauffeur.Deliverables
             }
         }
 
-        private async Task ExportDataType(IEnumerable<string> dataTypes)
+        private async Task Import(string[] args)
+        {
+            if (!args.Any())
+            {
+                await Out.WriteLineAsync("No import target defined");
+                return;
+            }
+
+            var deliveryName = args[0].Trim();
+
+            string directory;
+            if (!settings.TryGetChauffeurDirectory(out directory))
+                return;
+
+            var file = fileSystem.Path.Combine(directory, deliveryName + ".xml");
+            if (!fileSystem.File.Exists(file))
+            {
+                await Out.WriteLineFormattedAsync("Unable to located the import script '{0}'", deliveryName);
+                return;
+            }
+
+            var xml = XDocument.Load(file);
+
+            packagingService.ImportDataTypeDefinitions(xml.Elements().First());
+
+            await Out.WriteLineFormattedAsync("Data Type Definitions have been imported");
+        }
+
+        private async Task Export(IEnumerable<string> dataTypes)
         {
             IEnumerable<IDataTypeDefinition> dataTypeDefinitions;
 
