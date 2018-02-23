@@ -88,6 +88,14 @@ namespace Chauffeur.Deliverables
 
             var @params = ParseParameterTokens(args, chauffeurDirectory);
 
+            var stopAtDeliverableParam = args.FirstOrDefault(arg => arg.StartsWith("-s:"));
+
+            if (stopAtDeliverableParam != null)
+            {
+                var stopDeliverableName = stopAtDeliverableParam.Replace("-s:", string.Empty);
+                allDeliveries = allDeliveries.TakeWhile(name => fileSystem.Path.GetFileName(name) != stopDeliverableName).ToArray();
+            }
+
             if (dbNotReady)
             {
                 try
