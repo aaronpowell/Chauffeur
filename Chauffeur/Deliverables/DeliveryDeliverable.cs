@@ -70,15 +70,14 @@ namespace Chauffeur.Deliverables
                 dbNotReady = true;
             }
 
-            string directory;
-            if (!settings.TryGetChauffeurDirectory(out directory))
+            if (!settings.TryGetChauffeurDirectory(out string chauffeurDirectory))
             {
                 await Out.WriteLineAsync("Error accessing the Chauffeur directory. Check your file system permissions");
                 return DeliverableResponse.Continue;
             }
 
             var allDeliveries = fileSystem.Directory
-                .GetFiles(directory, "*.delivery", SearchOption.TopDirectoryOnly)
+                .GetFiles(chauffeurDirectory, "*.delivery", SearchOption.TopDirectoryOnly)
                 .ToArray();
 
             if (!allDeliveries.Any())
@@ -87,10 +86,7 @@ namespace Chauffeur.Deliverables
                 return DeliverableResponse.Continue;
             }
 
-            var @params = args.Where(arg => arg.StartsWith("-p:"))
-                .Select(arg => arg.Replace("-p:", string.Empty))
-                .Select(arg => arg.Split('='))
-                .ToDictionary(arg => arg[0], arg => arg[1]);
+            var @params = ParseParameterTokens(args, chauffeurDirectory);
 
             if (dbNotReady)
             {
@@ -121,6 +117,26 @@ namespace Chauffeur.Deliverables
             await ProcessDeliveries(allDeliveries, @params);
 
             return DeliverableResponse.Continue;
+        }
+
+        private Dictionary<string, string> ParseParameterTokens(string[] args, string chauffeurDirectory)
+        {
+            var @params = args.Where(arg => arg.StartsWith("-p:"))
+                            .Select(arg => arg.Replace("-p:", string.Empty))
+                            .Select(arg => arg.Split('='))
+                            .ToDictionary(arg => arg[0], arg => arg[1]);
+
+            @params.Add("ChauffeurPath", chauffeurDirectory);
+
+            if (settings.TryGetSiteRootDirectory(out string siteRootDirectory))
+                @params.Add("WebsiteRootPath", siteRootDirectory);
+
+            if (settings.TryGetUmbracoDirectory(out string umbracoDirectory))
+                @params.Add("UmbracoPath", umbracoDirectory);
+
+            @params.Add("UmbracoVersion", settings.UmbracoVersion);
+
+            return @params;
         }
 
         private async Task ProcessDeliveries(string[] allDeliveries, IDictionary<string, string> @params)

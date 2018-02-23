@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Chauffeur.Host;
@@ -17,10 +18,25 @@ namespace Chauffeur.Deliverables
     [DeliverableAlias("pkg")]
     public sealed class PackageDeliverable : Deliverable
     {
+        private static string[] knownPackageElements = new[] {
+            "info",
+            "DataTypes",
+            "Templates",
+            "DocumentTypes",
+            "Macros",
+            "DocumentType",
+            "files"
+        };
+
         private readonly IFileSystem fileSystem;
         private readonly IChauffeurSettings settings;
         private readonly IPackagingService packagingService;
         private readonly IContentTypeService contentTypeService;
+
+        string ElementValue(XElement e, string name)
+        {
+            return (string)e.Element(name);
+        }
 
         public PackageDeliverable(
             TextReader reader,
@@ -39,17 +55,28 @@ namespace Chauffeur.Deliverables
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
         {
-            if (!args.Any())
+            var packages = args.Where(a => !a.StartsWith("-f:"));
+
+            if (!packages.Any())
             {
                 await Out.WriteLineAsync("No packages were provided, use `help package` to see usage");
                 return DeliverableResponse.Continue;
             }
 
             string chauffeurFolder;
-            if (!settings.TryGetChauffeurDirectory(out chauffeurFolder))
-                return DeliverableResponse.Continue;
 
-            var tasks = args.Select(arg => Unpack(arg, chauffeurFolder));
+            var overridePath = args.FirstOrDefault(a => a.StartsWith("-f:"));
+            if (overridePath != null)
+            {
+                chauffeurFolder = overridePath.Replace("-f:", string.Empty);
+            }
+            else
+            {
+                if (!settings.TryGetChauffeurDirectory(out chauffeurFolder))
+                    return DeliverableResponse.Continue;
+            }
+
+            var tasks = packages.Select(pkg => Unpack(pkg, chauffeurFolder));
             await Task.WhenAll(tasks);
 
             return DeliverableResponse.Continue;
@@ -67,32 +94,93 @@ namespace Chauffeur.Deliverables
             using (var stream = fileSystem.File.OpenRead(fileLocation))
             {
                 var xml = XDocument.Load(stream);
+                var root = xml.Root;
 
-                var info = xml.Root.Element("info");
+                var info = root.Element("info");
 
                 if (info != null)
                     await PrintInfo(info);
 
-                var element = xml.Root.Element("DataTypes");
+                var element = root.Element("DataTypes");
                 if (element != null)
                     await UnpackDataTypes(element.Elements("DataType"));
 
-                element = xml.Root.Element("Templates");
+                element = root.Element("Templates");
                 if (element != null)
                     await UnpackTemplates(element.Elements("Template"));
 
-                element = xml.Root.Element("Macros");
+                element = root.Element("Macros");
                 if (element != null)
                     await UnpackMacros(element.Elements("macro"));
 
-                element = xml.Root.Element("DocumentTypes");
+                element = root.Element("DocumentTypes");
                 if (element != null)
-                {
                     await UnpackDocumentTypes(element);
-                }
-                else if (xml.Root.Name == "DocumentType")
+                else if (root.Name == "DocumentType")
+                    await UnpackDocumentTypes(root);
+
+                element = root.Element("files");
+                if (element != null)
+                    await UnpackFiles(chauffeurFolder, element);
+
+                var unknownElements = root.Elements()
+                    .Select(x => x.Name)
+                    .Where(n => !knownPackageElements.Contains(n.LocalName));
+
+                if (unknownElements.Any())
                 {
-                    await UnpackDocumentTypes(xml.Root);
+                    await Out.WriteLineAsync("The following parts of the package weren't imported as their import isn't supported yet. Want it supported? Add an issue on GitHub or send a PR to include it!");
+                    foreach (var item in unknownElements)
+                        await Out.WriteLineAsync($"- {item}");
+                }
+            }
+        }
+
+        private async Task UnpackFiles(string packageFolder, XElement element)
+        {
+            var files = element.Elements();
+            if (!settings.TryGetSiteRootDirectory(out string siteRootDirectory))
+                return;
+
+            foreach (var file in files)
+            {
+                var metadata = new
+                {
+                    PackageFilename = ElementValue(file, "guid"),
+                    OriginalPath = ElementValue(file, "orgPath"),
+                    OriginalName = ElementValue(file, "orgName")
+                };
+
+                await Out.WriteLineAsync($"Copying {metadata.OriginalName} from package");
+
+                var destinationPath = fileSystem.Path.Combine(
+                        siteRootDirectory,
+                        // they use `/` to denote web root, but that'll break when just using fs.Copy, so normalise to just empty
+                        metadata.OriginalPath == "/" ? string.Empty : metadata.OriginalPath.Replace("~/", string.Empty)
+                    );
+
+                if (!fileSystem.Directory.Exists(destinationPath))
+                    fileSystem.Directory.CreateDirectory(destinationPath);
+
+                var destFileName = fileSystem.Path.Combine(destinationPath, metadata.OriginalName);
+                try
+                {
+                    fileSystem.File.Copy(
+                                fileSystem.Path.Combine(packageFolder, metadata.PackageFilename),
+                                destFileName,
+                                true
+                            );
+                }
+                catch (IOException)
+                {
+                    await Out.WriteLineAsync($"Failed to copy a file to {destFileName} as it's locked by another process. You may need to do it manually");
+                }
+
+                if (fileSystem.Path.GetExtension(destFileName) == ".dll")
+                {
+                    await Out.WriteLineAsync($"Found a dll in the package named {metadata.OriginalName} and we'll try and load it into the current AppDomain");
+                    var assembly = Assembly.LoadFile(destFileName);
+                    AppDomain.CurrentDomain.Load(assembly.FullName);
                 }
             }
         }
@@ -104,8 +192,8 @@ namespace Chauffeur.Deliverables
             if (pkg == null)
                 return;
 
-            var name = (string)pkg.Element("name");
-            var version = (string)pkg.Element("version");
+            var name = ElementValue(pkg, "name");
+            var version = ElementValue(pkg, "version");
 
             await Out.WriteLineFormattedAsync("Installing package {0} v{1}", name, version);
         }
@@ -124,7 +212,7 @@ namespace Chauffeur.Deliverables
         {
             foreach (var element in elements)
             {
-                var name = (string)element.Element("Name");
+                var name = ElementValue(element, "Name");
                 await Out.WriteLineFormattedAsync("Importing Template '{0}'", name);
                 packagingService.ImportTemplates(element);
             }
@@ -134,7 +222,7 @@ namespace Chauffeur.Deliverables
         {
             foreach (var element in elements)
             {
-                var name = (string)element.Element("name");
+                var name = ElementValue(element, "name");
                 await Out.WriteLineFormattedAsync("Importing Macro '{0}'", name);
                 packagingService.ImportMacros(element);
             }
