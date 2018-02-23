@@ -5,7 +5,7 @@ title: Welcome to Chauffeur
 
 # Chauffeur
 
-<img src="../chauffeur_logo.svg" width="50" />
+<img src="https://cdn.rawgit.com/aaronpowell/Chauffeur/79c5d812/chauffeur_logo.svg" width="50" />
 
 Welcome to Chauffeur, delivering changes to your Umbraco environment in style.
 
