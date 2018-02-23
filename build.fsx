@@ -139,7 +139,7 @@ Target "CreateRunnerPackage" (fun _ ->
             ReleaseNotes = toLines releaseNotes.Notes
             SymbolPackage = NugetSymbolPackage.Nuspec
             Dependencies =
-                ["Chauffeur", NormalizeVersion nugetVersion]
+                ["Chauffeur", nugetVersion]
             AccessKey = getBuildParamOrDefault "nugetkey" ""
             Publish = hasBuildParam "nugetkey" }) "Chauffeur.Runner/Chauffeur.Runner.nuspec"
 )
