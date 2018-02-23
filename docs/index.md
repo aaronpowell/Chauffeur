@@ -5,9 +5,9 @@ title: Welcome to Chauffeur
 
 # Chauffeur
 
-<img src="./chauffeur_logo.svg" width="50" />
+<img src="../chauffeur_logo.svg" width="50" />
 
-Welcome to Chauffeur, deliverying changes to your Umbraco environment in style.
+Welcome to Chauffeur, delivering changes to your Umbraco environment in style.
 
 ## Who is Chauffeur?
 

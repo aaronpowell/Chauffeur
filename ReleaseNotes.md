@@ -1,4 +1,4 @@
-## New in 1.0.0 (Unreleased)
+## New in 1.0.0 (2018/02/28)
 * Added support for importing files via the package deliverable
 * Added ability to define a custom path for where a package resides in the package deliverable (intended to work with path importing)
 
