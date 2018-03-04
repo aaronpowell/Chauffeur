@@ -1,3 +1,6 @@
+## New in 1.1.0 (Unreleased)
+* Making the text reader/writer extensions public so other devs can use them
+
 ## New in 1.0.0 (2018/02/28)
 * Added support for importing files via the package deliverable
 * Added ability to define a custom path for where a package resides in the package deliverable (intended to work with path importing)
