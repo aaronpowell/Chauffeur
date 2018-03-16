@@ -39,9 +39,10 @@ namespace Chauffeur.Host
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             var builders = assemblies
                 .Where(asm => !asm.IsDynamic)
-#if DEBUG
+                // Exclude VS Dll's that could be loaded when running from within VS (or a test runner)
+                .Where(asm => !asm.FullName.Contains("Microsoft.VisualStudio"))
+                // Exclude xunit, for when used under automation test scenarios
                 .Where(asm => !asm.FullName.Contains("xunit"))
-#endif
                 .SelectMany(a => a.GetExportedTypes())
                 .Where(t => t.IsClass)
                 .Where(t => typeof(IBuildDependencies).IsAssignableFrom(t))
