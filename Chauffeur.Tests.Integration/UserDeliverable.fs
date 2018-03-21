@@ -1,10 +1,9 @@
 ﻿module ``User Deliverable``
 
-open TestHelpers
 open Xunit
 open FsUnit.Xunit
-open Chauffeur
 open System.Data.SqlServerCe
+open Chauffeur.TestingTools
 
 let connStrings = System.Configuration.ConfigurationManager.ConnectionStrings
 

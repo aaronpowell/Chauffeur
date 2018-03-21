@@ -1,13 +1,14 @@
 ﻿module ``Running Deliverables``
 
 open Chauffeur
-open TestHelpers
 open Xunit
 open System.IO
 open FsUnit.Xunit
 open System.Data.SqlServerCe
 open System.Data
 open System
+open Chauffeur.TestingTools
+open Chauffeur.TestingTools.ChauffeurSetup
 
 let setupDelivery deliverableName steps dbLocation =
     let chauffeurFolder = getChauffeurFolder dbLocation

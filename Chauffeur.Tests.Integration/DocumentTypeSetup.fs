@@ -1,14 +1,12 @@
 ﻿module ``Document types``
 
 open System.IO
-open Chauffeur
-open Chauffeur.Host
-open Chauffeur.Tests.Integration
 open Xunit
 open FsUnit.Xunit
-open TestHelpers
 open TestSamples
 open System
+open Chauffeur.TestingTools
+open Chauffeur.TestingTools.ChauffeurSetup
 
 type ``Importing document types``() =
     inherit UmbracoHostTestBase()

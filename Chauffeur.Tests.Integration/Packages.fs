@@ -1,11 +1,12 @@
 ﻿module Packages
 
 open Xunit
-open TestHelpers
 open FsUnit.Xunit
 open System.IO
 open System
 open TestSamples
+open Chauffeur.TestingTools
+open Chauffeur.TestingTools.ChauffeurSetup
 
 type ``Importing packages``() =
     inherit UmbracoHostTestBase()

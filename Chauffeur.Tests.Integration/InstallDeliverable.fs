@@ -1,13 +1,11 @@
 ﻿module ``Install Deliverable``
 
-open System
 open System.Data.SqlServerCe
 open Chauffeur
-open Chauffeur.Host
-open Chauffeur.Tests.Integration
 open Xunit
 open FsUnit.Xunit
 open TestHelpers
+open Chauffeur.TestingTools
 
 let connStrings = System.Configuration.ConfigurationManager.ConnectionStrings
 
