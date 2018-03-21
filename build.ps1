@@ -15,7 +15,7 @@ $toolsDir = "tools"
 if ($Target -eq 'Setup') {
     $nuget = "$toolsDir\nuget.exe"
 
-    . $nuget "Install" "FAKE.Core" "-OutputDirectory" $toolsDir "-ExcludeVersion" -Version 4.63.0
+    . $nuget "Install" "FAKE.Core" "-OutputDirectory" $toolsDir "-ExcludeVersion" -Version 5.0.0-beta010 -Prerelease
     . $nuget "Install" "xunit.runner.console" "-OutputDirectory" $toolsDir "-ExcludeVersion" -Version 2.2.0
     . $nuget "Install" "FSharpLint.Fake" "-OutputDirectory" $toolsDir "-ExcludeVersion" -Version 0.7.6
 } else {
