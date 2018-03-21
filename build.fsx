@@ -22,9 +22,11 @@ let authors = ["Aaron Powell"]
 
 let chauffeurDir = "./Chauffeur/bin/"
 let chauffeurRunnerDir = "./Chauffeur.Runner/bin/"
+let chauffeurTestingToolsDir = "./Chauffeur.TestingTools/bin/"
 let packagingRoot = "./.packaging/"
 let packagingDir = packagingRoot @@ "chauffeur"
 let packagingRunnerDir = packagingRoot @@ "chauffeur.runner"
+let packagingTestingToolsDir = packagingRoot @@ "chauffeur.testingtools"
 let testDir = "./.testresults"
 let buildMode = environVarOrDefault "buildMode" "Release"
 let isAppVeyorBuild = not (isNull (environVar "APPVEYOR"))
@@ -34,6 +36,9 @@ let chauffeurDescription = chauffeurSummary
 
 let chauffeurRunnerSummary = "Chauffeur Runner is a CLI for executing Chauffeur deliverables against an Umbraco instance."
 let chauffeurRunnerDescription = chauffeurRunnerSummary
+
+let chauffeurTestingToolsSummary = "Chauffeur Testing Tools is a series of helpers for using Chauffeur to setup Umbraco for integration testing with Umbraco's API"
+let chauffeurTestingToolsDescription = chauffeurRunnerSummary
 
 let releaseNotes =
     File.read "ReleaseNotes.md"
@@ -62,15 +67,24 @@ Target.Create "AssemblyInfo" (fun _ ->
     let commitHash = Git.Information.getCurrentHash()
 
     let attributes =
-        [ Fake.DotNet.AssemblyInfo.Product projectName
-          Fake.DotNet.AssemblyInfo.Title "Chauffeur"
-          Fake.DotNet.AssemblyInfo.Version releaseNotes.AssemblyVersion
+        [ Fake.DotNet.AssemblyInfo.Version releaseNotes.AssemblyVersion
           Fake.DotNet.AssemblyInfo.FileVersion releaseNotes.AssemblyVersion
           Fake.DotNet.AssemblyInfo.InformationalVersion releaseNotes.AssemblyVersion
           Fake.DotNet.AssemblyInfo.ComVisible false
           Fake.DotNet.AssemblyInfo.Metadata("githash", commitHash) ]
 
     CreateCSharp "SolutionInfo.cs" attributes
+
+    let fsAttributes =
+        [ Fake.DotNet.AssemblyInfo.Product projectName
+          Fake.DotNet.AssemblyInfo.Title "Chauffeur.TestingTools"
+          Fake.DotNet.AssemblyInfo.Version releaseNotes.AssemblyVersion
+          Fake.DotNet.AssemblyInfo.FileVersion releaseNotes.AssemblyVersion
+          Fake.DotNet.AssemblyInfo.InformationalVersion releaseNotes.AssemblyVersion
+          Fake.DotNet.AssemblyInfo.ComVisible false
+          Fake.DotNet.AssemblyInfo.Metadata("githash", commitHash) ]
+
+    CreateFSharp "./Chauffeur.TestingTools/AssemblyInfo.fs" fsAttributes
 )
 
 Target.Create "Clean" (fun _ ->
@@ -79,6 +93,10 @@ Target.Create "Clean" (fun _ ->
 
 Target.Create "RestoreChauffeurPackages" (fun _ ->
     RestorePackage id "./Chauffeur/packages.config"
+)
+
+Target.Create "RestoreChauffeurTestingToolsPackages" (fun _ ->
+    RestorePackage id "./Chauffeur.TestingTools/packages.config"
 )
 
 Target.Create "RestoreChauffeurDemoPackages" (fun _ ->
@@ -161,7 +179,7 @@ Target.Create "CreateRunnerPackage" (fun _ ->
     NuGet (fun p ->
         {p with
             Authors = authors
-            Project = projectName
+            Project = (sprintf "%s.Runner" projectName)
             Description = chauffeurRunnerDescription
             OutputPath = packagingRoot
             Summary = chauffeurRunnerSummary
@@ -175,6 +193,32 @@ Target.Create "CreateRunnerPackage" (fun _ ->
             Publish = hasEnvironVar "nugetkey" }) "Chauffeur.Runner/Chauffeur.Runner.nuspec"
 )
 
+Target.Create "CreateTestingToolsPackage" (fun _ ->
+    let libDir = packagingTestingToolsDir @@ "lib/net45/"
+    Shell.CleanDirs [libDir]
+
+    Shell.CopyFile libDir (chauffeurTestingToolsDir @@ "Release/Chauffeur.TestingTools.dll")
+    Shell.CopyFiles packagingDir ["LICENSE.md"; "README.md"]
+
+
+    NuGet (fun p ->
+        {p with
+            Authors = authors
+            Project = (sprintf "%s.TestingTools" projectName)
+            Description = chauffeurTestingToolsDescription
+            OutputPath = packagingRoot
+            Summary = chauffeurTestingToolsSummary
+            WorkingDir = packagingTestingToolsDir
+            Version = nugetVersion
+            ReleaseNotes = String.toLines releaseNotes.Notes
+            SymbolPackage = NugetSymbolPackage.Nuspec
+            Dependencies =
+                [ "Chauffeur", nugetVersion
+                  "FSharp.Core", "4.3.4" ]
+            AccessKey = environVarOrDefault "nugetkey" ""
+            Publish = hasEnvironVar "nugetkey" }) "Chauffeur.TestingTools/Chauffeur.TestingTools.nuspec"
+)
+
 Target.Create "BuildVersion" (fun _ ->
     Process.Shell.Exec("appveyor", sprintf "UpdateBuild -Version \"%s\"" nugetVersion) |> ignore
 )
@@ -185,12 +229,16 @@ Target.Create "Lint" (fun _ ->
     !! "src/**/*.fsproj"
         |> Seq.iter (FSharpLint id))
 
+"AssemblyInfo"
+    ==> "Build"
+
 "Clean"
     =?> ("BuildVersion", isAppVeyorBuild)
     //==> "Lint"
     ==> "Build"
 
 "RestoreChauffeurPackages"
+    ==> "RestoreChauffeurTestingToolsPackages"
     ==> "RestoreChauffeurDemoPackages"
     ==> "RestoreChauffeurTestsPackages"
     ==> "Build"
@@ -204,6 +252,7 @@ Target.Create "Lint" (fun _ ->
 
 "CreateChauffeurPackage"
     ==> "CreateRunnerPackage"
+    ==> "CreateTestingToolsPackage"
     ==> "Package"
 
 Target.RunOrDefault "Default"

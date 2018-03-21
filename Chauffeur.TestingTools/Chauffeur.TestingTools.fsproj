@@ -57,6 +57,7 @@
     <Compile Include="MockTextReader.fs" />
     <Compile Include="UmbracoHostTestBase.fs" />
     <Content Include="packages.config" />
+    <None Include="Chauffeur.TestingTools.nuspec" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
@@ -69,8 +70,6 @@
     <Reference Include="System.ValueTuple">
       <Private>True</Private>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Chauffeur\Chauffeur.csproj">
       <Name>Chauffeur</Name>
       <Project>{003afae1-5879-4441-bcb8-669905d9e0b5}</Project>
