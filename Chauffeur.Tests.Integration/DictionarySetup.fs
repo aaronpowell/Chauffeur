@@ -45,7 +45,7 @@ type ``Importing dictionary items``() =
     member x.``Will import all the dictionary items from the package``() =
         x.TextReader.AddCommand "Y"
 
-        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
             Path.Combine [| chauffeurFolder.FullName
                             sprintf "%s.xml" dictionaryName |]
@@ -65,7 +65,7 @@ type ``Importing dictionary items``() =
     member x.``Will import dictionary data properly``() =
         x.TextReader.AddCommand "Y"
 
-        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
             Path.Combine [| chauffeurFolder.FullName
                             sprintf "%s.xml" dictionaryName |]

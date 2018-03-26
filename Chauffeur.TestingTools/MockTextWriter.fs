@@ -1,4 +1,4 @@
-﻿namespace Chauffeur.Tests.Integration
+﻿namespace Chauffeur.TestingTools
 open System.Diagnostics
 open System.IO
 open System.Threading.Tasks

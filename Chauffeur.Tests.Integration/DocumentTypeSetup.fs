@@ -40,7 +40,7 @@ type ``Importing document types``() =
     member x.``Will import a document type successfully``() =
         x.TextReader.AddCommand "Y"
         let run = x.Host.Run
-        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
             Path.Combine [| chauffeurFolder.FullName
                             sprintf "%s.xml" doctypeName |]
@@ -71,7 +71,7 @@ type ``Importing document types``() =
     member x.``Will import a document type successfully with updates``() =
         x.TextReader.AddCommand "Y"
         let run = x.Host.Run
-        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
             Path.Combine [| chauffeurFolder.FullName
                             sprintf "%s.xml" doctypeName |]
@@ -172,7 +172,7 @@ type ``Importing document types``() =
     member x.``Can remove a document type``() =
         x.TextReader.AddCommand "Y"
         let run = x.Host.Run
-        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
             Path.Combine [| chauffeurFolder.FullName
                             sprintf "%s.xml" doctypeName |]
@@ -195,7 +195,7 @@ type ``Importing document types``() =
     member x.``Can remove a document type property``() =
         x.TextReader.AddCommand "Y"
         let run = x.Host.Run
-        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
             Path.Combine [| chauffeurFolder.FullName
                             sprintf "%s.xml" doctypeName |]
