@@ -1,6 +1,7 @@
 ## New in 1.1.0 (Unreleased)
 * Making the text reader/writer extensions public so other devs can use them
 * Adding a new deliverable `delivery-tracking` that shows the tracking of your `*.delivery` files
+* Extracting the code for standing up the integration test host as a NuGet package
 
 ## New in 1.0.0 (2018/02/28)
 * Added support for importing files via the package deliverable
