@@ -20,3 +20,4 @@ To find out more refer to the following guides:
 * [Getting Started](getting-started.md)
 * [What is a Deliverable?](what-is-a-deliverable.md)
 * [Available Deliverables](available-deliverables.md)
+* [Using Chauffeur for Integration Testing](testing-tools.md)
