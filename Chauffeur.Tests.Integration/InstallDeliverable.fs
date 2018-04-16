@@ -33,7 +33,7 @@ type ``Successfully setup the database``() =
             do! x.DatabaseLocation
                 |> x.TextWriter.WriteLineAsync
                 |> Async.AwaitTask
-            let! response = [| "install" |]
+            let! _ = [| "install" |]
                             |> x.Host.Run
                             |> Async.AwaitTask
             use connection = new SqlCeConnection(connStrings.["umbracoDbDSN"].ConnectionString)

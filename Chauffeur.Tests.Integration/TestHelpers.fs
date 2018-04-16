@@ -46,5 +46,10 @@ let knownTables =
     "umbracoUser2app";
     "umbracoUser2NodeNotify";
     "umbracoUser2NodePermission";
+    "umbracoUser2UserGroup";
+    "umbracoUserGroup";
+    "umbracoUserGroup2App";
+    "umbracoUserGroup2NodePermission";
+    "umbracoUserStartNode";
     "umbracoUserType";
     "umbracoLock"]
