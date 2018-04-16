@@ -239,7 +239,6 @@
     <Compile Include="Deliverables\ChangeAliasDeliverable.cs" />
     <Compile Include="Deliverables\ScaffoldDeliverable.cs" />
     <Compile Include="Deliverables\SettingsDeliverable.cs" />
-    <Compile Include="Deliverables\UserCreateDeliverable.cs" />
     <Compile Include="Deliverables\UserDeliverable.cs" />
     <Compile Include="DependencyBuilders\BootManagerBuilder.cs" />
     <Compile Include="DependencyBuilders\ChauffeurSettingBuilder.cs" />
