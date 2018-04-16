@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
@@ -34,6 +33,7 @@ namespace Chauffeur.Host
             Container.RegisterFrom<ChauffeurSettingBuilder>();
             Container.RegisterFrom<FileSystemBuilder>();
             Container.RegisterFrom<SqlSyntaxProviderBuilder>();
+            Container.RegisterFrom<UserManagerBuilder>();
             Container.Register(() => Container).As<IContainer>();
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();

@@ -25,6 +25,8 @@ namespace Chauffeur.DependencyBuilders
             container.Register(() => services.ContentService);
             container.Register(() => services.ContentTypeService);
             container.Register(() => services.DataTypeService);
+            container.Register(() => services.EntityService);
+            container.Register(() => services.ExternalLoginService);
             container.Register(() => services.FileService);
             container.Register(() => services.MediaService);
             container.Register(() => services.MacroService);

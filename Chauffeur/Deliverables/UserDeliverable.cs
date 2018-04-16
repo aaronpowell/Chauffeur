@@ -2,7 +2,11 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using umbraco;
 using Umbraco.Core.Logging;
+using Umbraco.Core.Models.Identity;
+using Umbraco.Core.Models.Membership;
+using Umbraco.Core.Security;
 using Umbraco.Core.Services;
 
 namespace Chauffeur.Deliverables
@@ -12,14 +16,17 @@ namespace Chauffeur.Deliverables
     public sealed class UserDeliverable : Deliverable, IProvideDirections
     {
         private readonly IUserService userService;
+        private readonly BackOfficeUserManager<BackOfficeIdentityUser> userManager;
 
         public UserDeliverable(
             TextReader reader,
             TextWriter writer,
-            IUserService userService
+            IUserService userService,
+            BackOfficeUserManager<BackOfficeIdentityUser> userManager
         ) : base(reader, writer)
         {
             this.userService = userService;
+            this.userManager = userManager;
         }
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
@@ -46,10 +53,64 @@ namespace Chauffeur.Deliverables
                     await ChangeLoginName(args.Skip(1).ToArray());
                     return DeliverableResponse.Continue;
 
+                case "create-user":
+                    return await CreateUser(args.Skip(1).ToArray());
+
                 default:
                     await Out.WriteLineFormattedAsync("The user operation '{0}' is not supported", operation);
                     return DeliverableResponse.Continue;
             }
+        }
+
+        private async Task<DeliverableResponse> CreateUser(string[] args)
+        {
+            if (args.Length != 5)
+            {
+                await Out.WriteLineAsync("Please provide 5 arguments, name, username, email, password and groups. For more information see `help`");
+                return DeliverableResponse.Continue;
+            }
+
+            var name = args[0];
+            var username = args[1];
+            var email = args[2];
+            var password = args[3];
+            var groupNames = args[4];
+
+            var identity = BackOfficeIdentityUser.CreateNew(username, email, GlobalSettings.DefaultUILanguage);
+            identity.Name = name;
+
+            var result = await userManager.CreateAsync(identity);
+
+            if (!result.Succeeded)
+            {
+                await Out.WriteLineAsync("Error saving the user:");
+                foreach (var error in result.Errors)
+                    await Out.WriteLineAsync($"\t{error}");
+
+                return DeliverableResponse.FinishedWithError;
+            }
+
+            result = await userManager.AddPasswordAsync(identity.Id, password);
+            if (!result.Succeeded)
+            {
+                await Out.WriteLineAsync("Error saving the user password:");
+                foreach (var error in result.Errors)
+                    await Out.WriteLineAsync($"\t{error}");
+
+                return DeliverableResponse.FinishedWithError;
+            }
+
+            var user = userService.GetByEmail(email);
+            var groups = userService.GetUserGroupsByAlias(groupNames.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries));
+            foreach (var group in groups)
+            {
+                var rg = new ReadOnlyUserGroup(group.Id, group.Name, group.Icon, group.StartContentId, group.StartMediaId, group.Alias, group.AllowedSections, group.Permissions);
+                user.AddGroup(rg);
+            }
+            user.IsApproved = true;
+            userService.Save(user);
+
+            return DeliverableResponse.Continue;
         }
 
         private async Task ChangePassword(string[] args)

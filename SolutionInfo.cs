@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyCompany("Aaron Powell")]
-[assembly: AssemblyProduct("Chauffeur")]
 [assembly: AssemblyCopyright("Copyright � 2014 - 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

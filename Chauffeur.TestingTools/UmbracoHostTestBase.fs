@@ -6,6 +6,8 @@ open Chauffeur.Host
 
 module ChauffeurSetup =
     open System.Reflection
+    open System.Text.RegularExpressions
+
     let private cwd = FileInfo(Assembly.GetExecutingAssembly().Location).Directory.FullName
     let private dbFolder = "databases"
 
@@ -20,6 +22,24 @@ module ChauffeurSetup =
         AppDomain.CurrentDomain.SetData("DataDirectory", folderForRun)
 
         folderForRun
+
+    let private Log4NetAssemblyPattern = new Regex("log4net, Version=([\\d\\.]+?), Culture=neutral, PublicKeyToken=\\w+$", RegexOptions.Compiled)
+    let private Log4NetReplacement = "log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a"
+
+    let fixLog4Net = ResolveEventHandler(fun o args ->
+                        match (args.Name |> Log4NetAssemblyPattern.IsMatch) && args.Name <> Log4NetReplacement with
+                        | true -> Assembly.Load(Log4NetAssemblyPattern.Replace(args.Name, Log4NetReplacement))
+                        | false -> null
+                    )
+
+    AppDomain.CurrentDomain.add_AssemblyResolve fixLog4Net
+
+    let fixAutoMapper = ResolveEventHandler(fun o args -> 
+                            match args.Name.StartsWith("AutoMapper") && args.Name.EndsWith("PublicKeyToken=null") with
+                            | true -> Assembly.Load(args.Name.Replace(", PublicKeyToken=null", ", PublicKeyToken=be96cd2c38ef1005"))
+                            | false -> null
+                        )
+    AppDomain.CurrentDomain.add_AssemblyResolve fixAutoMapper
 
 [<AbstractClass>]
 type UmbracoHostTestBase() =
