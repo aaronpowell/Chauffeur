@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
@@ -104,8 +105,7 @@ namespace Chauffeur.Host
         {
             if (string.IsNullOrEmpty(command))
                 return DeliverableResponse.Continue;
-
-            var args = command.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            string[] args = ParseCommandline(command);
 
             var what = args[0].ToLower();
             args = args.Skip(1).ToArray();
@@ -136,6 +136,45 @@ namespace Chauffeur.Host
 
                 return DeliverableResponse.FinishedWithError;
             }
+        }
+
+        private static string[] ParseCommandline(string input)
+        {
+            var items = new List<string>();
+            var buffer = string.Empty;
+            var hold = false;
+
+            foreach (var s in input)
+            {
+                if (s == '"')
+                {
+                    if (hold)
+                    {
+                        items.Add(buffer);
+                        buffer = string.Empty;
+                        hold = false;
+                    }
+                    else
+                    {
+                        hold = true;
+                    }
+                    continue;
+                }
+
+                if (s == ' ' && !hold)
+                {
+                    if (buffer != string.Empty)
+                    {
+                        items.Add(buffer);
+                    }
+                    buffer = string.Empty;
+                    continue;
+                }
+
+                buffer += s;
+            }
+
+            return items.ToArray();
         }
 
         private async Task<string> Prompt()

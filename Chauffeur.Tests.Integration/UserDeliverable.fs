@@ -43,3 +43,45 @@ type ``Change password``() =
             |> ignore
         }
         |> Async.RunSynchronously
+
+type ``Create User``() as this =
+    inherit UmbracoHostTestBase()
+
+    let run input =
+        input
+        |> this.Host.Run
+        |> Async.AwaitTask
+
+    [<Fact>]
+    member _x.``Use created if their name doesn't have a space``() =
+        async {
+            let! _ = [|"install"; "y"|]
+                        |> run
+
+            let! _ = [| "user"; "create-user"; "Aaron"; "aaron"; "email@place.com"; "password!1"; "admin" |]
+                        |> run
+
+            use connection = new SqlCeConnection(connStrings.["umbracoDbDSN"].ConnectionString)
+            let cmd = new SqlCeCommand("SELECT COUNT(*) FROM [umbracoUser]", connection)
+
+            connection.Open()
+
+            cmd.ExecuteScalar() |> should equal 2
+        } |> Async.RunSynchronously
+
+    [<Fact>]
+    member _x.``User created with a multi-part name``() =
+        async {
+            let! _ = [|"install"; "y"|]
+                        |> run
+
+            let! _ = [| "user"; "create-user"; "\"Aaron Powell\""; "aaron"; "email@place.com"; "password!1"; "admin" |]
+                        |> run
+
+            use connection = new SqlCeConnection(connStrings.["umbracoDbDSN"].ConnectionString)
+            let cmd = new SqlCeCommand("SELECT COUNT(*) FROM [umbracoUser]", connection)
+
+            connection.Open()
+
+            cmd.ExecuteScalar() |> should equal 2
+        } |> Async.RunSynchronously
