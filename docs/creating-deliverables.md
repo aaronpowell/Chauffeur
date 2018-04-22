@@ -8,6 +8,7 @@ Creating a Deliverable is really quite simple, you need to do 3 things:
 * Create a .NET class that inherits from the `Deliverable` base class
 * Have a public constructor
 * Have a `DeliverableName` attribute
+  * The name must not contain a space
 
 ## Creating a class
 
