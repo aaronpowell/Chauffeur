@@ -1,3 +1,9 @@
+## New in 1.1.0 (29/06/2018)
+* Making the text reader/writer extensions public so other devs can use them
+* Adding a new deliverable `delivery-tracking` that shows the tracking of your `*.delivery` files
+* Extracting the code for standing up the integration test host as a NuGet package
+* Extending the `User` deliverable to use the `BackOfficeIdentity` and associated APIs, this also means you can now create users via Chauffeur
+
 ## New in 1.0.0 (2018/02/28)
 * Added support for importing files via the package deliverable
 * Added ability to define a custom path for where a package resides in the package deliverable (intended to work with path importing)

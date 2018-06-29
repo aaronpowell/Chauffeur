@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chauffeur.Tests", "Chauffeu
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chauffeur.Tests.Integration", "Chauffeur.Tests.Integration\Chauffeur.Tests.Integration.fsproj", "{29E97154-DA02-47DD-86F0-284C4AF7F877}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Chauffeur.TestingTools", "Chauffeur.TestingTools\Chauffeur.TestingTools.fsproj", "{27046DAD-CC87-4E05-959A-5FC93D6A5730}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,6 +60,10 @@ Global
 		{29E97154-DA02-47DD-86F0-284C4AF7F877}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29E97154-DA02-47DD-86F0-284C4AF7F877}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29E97154-DA02-47DD-86F0-284C4AF7F877}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27046DAD-CC87-4E05-959A-5FC93D6A5730}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27046DAD-CC87-4E05-959A-5FC93D6A5730}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27046DAD-CC87-4E05-959A-5FC93D6A5730}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27046DAD-CC87-4E05-959A-5FC93D6A5730}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

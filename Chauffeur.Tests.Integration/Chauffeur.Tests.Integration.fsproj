@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\xunit.runner.visualstudio.2.1.0\build\net20\xunit.runner.visualstudio.props" Condition="Exists('..\packages\xunit.runner.visualstudio.2.1.0\build\net20\xunit.runner.visualstudio.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -10,12 +10,11 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Chauffeur.Tests.Integration</RootNamespace>
     <AssemblyName>Chauffeur.Tests.Integration</AssemblyName>
+    <UseStandardResourceNames>true</UseStandardResourceNames>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
+    <TargetFSharpCoreVersion>4.4.3.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>Chauffeur.Tests.Integration</Name>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -42,12 +41,12 @@
   </PropertyGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '11.0'">
-      <PropertyGroup Condition="Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')">
+      <PropertyGroup Condition=" '$(FSharpTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets') ">
         <FSharpTargetsPath>$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
       </PropertyGroup>
     </When>
     <Otherwise>
-      <PropertyGroup Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets')">
+      <PropertyGroup Condition=" '$(FSharpTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets') ">
         <FSharpTargetsPath>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets</FSharpTargetsPath>
       </PropertyGroup>
     </Otherwise>
@@ -106,7 +105,6 @@
     <Content Include="config\404handlers.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Compile Include="MockIO.fs" />
     <Compile Include="TestSamples.fs" />
     <Compile Include="TestHelpers.fs" />
     <Compile Include="DictionarySetup.fs" />
@@ -127,7 +125,7 @@
       <HintPath>..\packages\AutoMapper.3.3.1\lib\net40\AutoMapper.Net4.dll</HintPath>
     </Reference>
     <Reference Include="businesslogic">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\businesslogic.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\businesslogic.dll</HintPath>
     </Reference>
     <Reference Include="ClientDependency.Core">
       <HintPath>..\packages\ClientDependency.1.9.2\lib\net45\ClientDependency.Core.dll</HintPath>
@@ -136,19 +134,19 @@
       <HintPath>..\packages\ClientDependency-Mvc5.1.8.0.0\lib\net45\ClientDependency.Core.Mvc.dll</HintPath>
     </Reference>
     <Reference Include="cms">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\cms.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\cms.dll</HintPath>
     </Reference>
     <Reference Include="controls">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\controls.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\controls.dll</HintPath>
     </Reference>
     <Reference Include="CookComputing.XmlRpcV2">
       <HintPath>..\packages\xmlrpcnet.2.5.0\lib\net20\CookComputing.XmlRpcV2.dll</HintPath>
     </Reference>
     <Reference Include="Examine">
-      <HintPath>..\packages\Examine.0.1.82\lib\net45\Examine.dll</HintPath>
+      <HintPath>..\packages\Examine.0.1.85\lib\net45\Examine.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.0.0.1\lib\net40\FSharp.Core.dll</HintPath>
+      <HintPath>..\packages\FSharp.Core.4.3.4\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="FsUnit.Xunit">
       <HintPath>..\packages\FsUnit.xUnit.1.4.1.0\lib\net45\FsUnit.Xunit.dll</HintPath>
@@ -166,10 +164,10 @@
       <HintPath>..\packages\ImageProcessor.Web.4.8.3\lib\net45\ImageProcessor.Web.dll</HintPath>
     </Reference>
     <Reference Include="interfaces">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\interfaces.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\interfaces.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\log4net.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\log4net.dll</HintPath>
     </Reference>
     <Reference Include="Log4Net.Async">
       <HintPath>..\packages\Log4Net.Async.2.0.4\lib\net40\Log4Net.Async.dll</HintPath>
@@ -181,7 +179,7 @@
       <HintPath>..\packages\Markdown.1.14.7\lib\net45\MarkdownSharp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ApplicationBlocks.Data">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\Microsoft.ApplicationBlocks.Data.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\Microsoft.ApplicationBlocks.Data.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Core">
       <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
@@ -196,19 +194,19 @@
       <HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.1.2.1\lib\net45\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin">
-      <HintPath>..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Owin.3.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Host.SystemWeb">
-      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.3.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.3.1.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Security">
-      <HintPath>..\packages\Microsoft.Owin.Security.3.0.1\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Owin.Security.3.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Security.Cookies">
-      <HintPath>..\packages\Microsoft.Owin.Security.Cookies.3.0.1\lib\net45\Microsoft.Owin.Security.Cookies.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Owin.Security.Cookies.3.1.0\lib\net45\Microsoft.Owin.Security.Cookies.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Security.OAuth">
-      <HintPath>..\packages\Microsoft.Owin.Security.OAuth.3.0.1\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Owin.Security.OAuth.3.1.0\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Web.Infrastructure">
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
@@ -233,17 +231,19 @@
       <HintPath>..\packages\semver.1.1.2\lib\net451\Semver.dll</HintPath>
     </Reference>
     <Reference Include="SQLCE4Umbraco">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\SQLCE4Umbraco.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\SQLCE4Umbraco.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.SqlServerCe">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\System.Data.SqlServerCe.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\System.Data.SqlServerCe.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Data.SqlServerCe.Entity">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\System.Data.SqlServerCe.Entity.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\System.Data.SqlServerCe.Entity.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.IO.Abstractions">
       <HintPath>..\packages\System.IO.Abstractions.1.4.0.93\lib\net35\System.IO.Abstractions.dll</HintPath>
@@ -253,6 +253,11 @@
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
     <Reference Include="System.Numerics" />
+    <ProjectReference Include="..\Chauffeur.TestingTools\Chauffeur.TestingTools.fsproj">
+      <Name>Chauffeur.TestingTools</Name>
+      <Project>{27046dad-cc87-4e05-959a-5fc93d6a5730}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Chauffeur\Chauffeur.csproj">
       <Name>Chauffeur</Name>
       <Project>{003afae1-5879-4441-bcb8-669905d9e0b5}</Project>
@@ -286,31 +291,31 @@
       <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
     <Reference Include="TidyNet">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\TidyNet.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\TidyNet.dll</HintPath>
     </Reference>
     <Reference Include="umbraco">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\umbraco.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\umbraco.dll</HintPath>
     </Reference>
     <Reference Include="Umbraco.Core">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\Umbraco.Core.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\Umbraco.Core.dll</HintPath>
     </Reference>
     <Reference Include="umbraco.DataLayer">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\umbraco.DataLayer.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\umbraco.DataLayer.dll</HintPath>
     </Reference>
     <Reference Include="umbraco.editorControls">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\umbraco.editorControls.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\umbraco.editorControls.dll</HintPath>
     </Reference>
     <Reference Include="umbraco.MacroEngines">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\umbraco.MacroEngines.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\umbraco.MacroEngines.dll</HintPath>
     </Reference>
     <Reference Include="umbraco.providers">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\umbraco.providers.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\umbraco.providers.dll</HintPath>
     </Reference>
     <Reference Include="Umbraco.Web.UI">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\Umbraco.Web.UI.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\Umbraco.Web.UI.dll</HintPath>
     </Reference>
     <Reference Include="UmbracoExamine">
-      <HintPath>..\packages\UmbracoCms.Core.7.6.1\lib\net45\UmbracoExamine.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\UmbracoExamine.dll</HintPath>
     </Reference>
     <Reference Include="UrlRewritingNet.UrlRewriter">
       <HintPath>..\packages\UrlRewritingNet.2.0.7\lib\UrlRewritingNet.UrlRewriter.dll</HintPath>

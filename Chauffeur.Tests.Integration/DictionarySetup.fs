@@ -1,15 +1,12 @@
 ﻿module ``Dictionary``
 
 open System.IO
-open Chauffeur
-open Chauffeur.Host
-open Chauffeur.Tests.Integration
 open Xunit
 open FsUnit.Xunit
-open TestHelpers
-open System
 open TestSamples
 open System.Data.SqlServerCe
+open Chauffeur.TestingTools
+open Chauffeur.TestingTools.ChauffeurSetup
 
 let connStrings = System.Configuration.ConfigurationManager.ConnectionStrings
 
@@ -48,7 +45,7 @@ type ``Importing dictionary items``() =
     member x.``Will import all the dictionary items from the package``() =
         x.TextReader.AddCommand "Y"
 
-        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
             Path.Combine [| chauffeurFolder.FullName
                             sprintf "%s.xml" dictionaryName |]
@@ -68,7 +65,7 @@ type ``Importing dictionary items``() =
     member x.``Will import dictionary data properly``() =
         x.TextReader.AddCommand "Y"
 
-        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
             Path.Combine [| chauffeurFolder.FullName
                             sprintf "%s.xml" dictionaryName |]

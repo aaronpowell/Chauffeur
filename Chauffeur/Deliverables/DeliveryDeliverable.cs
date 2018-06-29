@@ -239,7 +239,7 @@ namespace Chauffeur.Deliverables
 
     [TableName(DeliveryDeliverable.TableName)]
     [PrimaryKey("Id")]
-    class ChauffeurDeliveryTable
+    internal class ChauffeurDeliveryTable
     {
         [Column("Id")]
         [PrimaryKeyColumn(Name = "PK_id", IdentitySeed = 1)]

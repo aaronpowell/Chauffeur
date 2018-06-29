@@ -1,14 +1,12 @@
 ﻿module ``Document types``
 
 open System.IO
-open Chauffeur
-open Chauffeur.Host
-open Chauffeur.Tests.Integration
 open Xunit
 open FsUnit.Xunit
-open TestHelpers
 open TestSamples
 open System
+open Chauffeur.TestingTools
+open Chauffeur.TestingTools.ChauffeurSetup
 
 type ``Importing document types``() =
     inherit UmbracoHostTestBase()
@@ -42,7 +40,7 @@ type ``Importing document types``() =
     member x.``Will import a document type successfully``() =
         x.TextReader.AddCommand "Y"
         let run = x.Host.Run
-        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
             Path.Combine [| chauffeurFolder.FullName
                             sprintf "%s.xml" doctypeName |]
@@ -73,7 +71,7 @@ type ``Importing document types``() =
     member x.``Will import a document type successfully with updates``() =
         x.TextReader.AddCommand "Y"
         let run = x.Host.Run
-        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
             Path.Combine [| chauffeurFolder.FullName
                             sprintf "%s.xml" doctypeName |]
@@ -174,7 +172,7 @@ type ``Importing document types``() =
     member x.``Can remove a document type``() =
         x.TextReader.AddCommand "Y"
         let run = x.Host.Run
-        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
             Path.Combine [| chauffeurFolder.FullName
                             sprintf "%s.xml" doctypeName |]
@@ -197,7 +195,7 @@ type ``Importing document types``() =
     member x.``Can remove a document type property``() =
         x.TextReader.AddCommand "Y"
         let run = x.Host.Run
-        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
             Path.Combine [| chauffeurFolder.FullName
                             sprintf "%s.xml" doctypeName |]

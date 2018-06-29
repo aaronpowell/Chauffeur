@@ -1,13 +1,11 @@
 ﻿module ``Install Deliverable``
 
-open System
 open System.Data.SqlServerCe
 open Chauffeur
-open Chauffeur.Host
-open Chauffeur.Tests.Integration
 open Xunit
 open FsUnit.Xunit
 open TestHelpers
+open Chauffeur.TestingTools
 
 let connStrings = System.Configuration.ConfigurationManager.ConnectionStrings
 
@@ -35,7 +33,7 @@ type ``Successfully setup the database``() =
             do! x.DatabaseLocation
                 |> x.TextWriter.WriteLineAsync
                 |> Async.AwaitTask
-            let! response = [| "install" |]
+            let! _ = [| "install" |]
                             |> x.Host.Run
                             |> Async.AwaitTask
             use connection = new SqlCeConnection(connStrings.["umbracoDbDSN"].ConnectionString)

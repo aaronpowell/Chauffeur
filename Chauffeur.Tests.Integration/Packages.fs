@@ -1,11 +1,12 @@
 ﻿module Packages
 
 open Xunit
-open TestHelpers
 open FsUnit.Xunit
 open System.IO
 open System
 open TestSamples
+open Chauffeur.TestingTools
+open Chauffeur.TestingTools.ChauffeurSetup
 
 type ``Importing packages``() =
     inherit UmbracoHostTestBase()
@@ -30,7 +31,7 @@ type ``Importing packages``() =
     member x.``Can import composite document types``() =
         x.TextReader.AddCommand "Y"
         let run = x.Host.Run
-        let chauffeurFolder = getChauffeurFolder x.DatabaseLocation
+        let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
             Path.Combine [| chauffeurFolder.FullName
                             sprintf "%s.xml" packageName |]

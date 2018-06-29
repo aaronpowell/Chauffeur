@@ -21,3 +21,4 @@ To find out more refer to the following guides:
 * [What is a Deliverable?](what-is-a-deliverable.md)
 * [Available Deliverables](available-deliverables.md)
 * [Using Chauffeur in Continuous Delivery pipelines](chauffeur-cd.md)
+* [Using Chauffeur for Integration Testing](testing-tools.md)

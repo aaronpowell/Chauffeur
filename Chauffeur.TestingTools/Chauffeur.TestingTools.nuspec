@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Chauffeur.TestingTools</id>
+    <version>@build.number@</version>
+    <authors>@authors@</authors>
+    <owners>@authors@</owners>
+    <summary>@summary@</summary>
+    <licenseUrl>https://github.com/aaronpowell/Chauffeur/blob/master/License.md</licenseUrl>
+    <projectUrl>https://github.com/aaronpowell/Chauffeur/</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/aaronpowell/Chauffeur/master/chauffeur_logo_for_nuget.png?sanitize=true</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>@description@</description>
+    <releaseNotes>@releaseNotes@</releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>umbraco deployment</tags>
+    @dependencies@
+  </metadata>
+</package>
