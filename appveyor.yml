@@ -1,22 +1,32 @@
 version: 0.0.{build}
 image:
   - Visual Studio 2017
+
 pull_requests:
   do_not_increment_build_number: true
-test: off
-build_script:
+
+install:
   - ps: .\build.ps1 -Target Setup
+
+build_script:
   - ps: .\build.ps1 -Target Build
+
+test_script:
   - ps: .\build.ps1 -Target UnitTests
   - ps: .\build.ps1 -Target IntegrationTests
+
+before_deploy:
   - ps: .\build.ps1 -Target Package
+
 artifacts:
   - path: .packaging\*.nupkg
+
 deploy:
   provider: NuGet
   api_key:
     secure: ub5fXqjgRwLxbqwd8dulJcq40yk9Lw39ZkmTwb6ZZf8I7FThhU9dweBjIRqvQs6q
   artifact: /.*\.nupkg/
+
 environment:
   nuget_key:
     secure: ub5fXqjgRwLxbqwd8dulJcq40yk9Lw39ZkmTwb6ZZf8I7FThhU9dweBjIRqvQs6q
