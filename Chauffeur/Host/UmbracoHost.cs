@@ -138,7 +138,7 @@ namespace Chauffeur.Host
             }
         }
 
-        private static string[] ParseCommandline(string input)
+        internal static string[] ParseCommandline(string input)
         {
             var items = new List<string>();
             var buffer = string.Empty;
@@ -173,6 +173,9 @@ namespace Chauffeur.Host
 
                 buffer += s;
             }
+
+            if (buffer != string.Empty)
+                items.Add(buffer);
 
             return items.ToArray();
         }

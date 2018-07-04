@@ -1,4 +1,7 @@
-## New in 1.1.0 (29/06/2018)
+## New in 1.1.1 (2018/07/04)
+* Fixing bug [72](https://github.com/aaronpowell/Chauffeur/issues/72) which was caused be a broken commandline parser
+
+## New in 1.1.0 (2018/06/28)
 * Making the text reader/writer extensions public so other devs can use them
 * Adding a new deliverable `delivery-tracking` that shows the tracking of your `*.delivery` files
 * Extracting the code for standing up the integration test host as a NuGet package
