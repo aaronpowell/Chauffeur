@@ -18,14 +18,11 @@ test_script:
 before_deploy:
   - ps: .\build.ps1 -Target Package
 
-artifacts:
-  - path: .packaging\*.nupkg
-
 deploy:
   provider: NuGet
   api_key:
     secure: ub5fXqjgRwLxbqwd8dulJcq40yk9Lw39ZkmTwb6ZZf8I7FThhU9dweBjIRqvQs6q
-  artifact: /.*\.nupkg/
+  artifact: .packaging\*.nupkg
 
 environment:
   nuget_key:
