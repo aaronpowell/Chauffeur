@@ -1,3 +1,5 @@
+$env:buildMode = "Debug"
+
 .\build.ps1 -Target Setup
 .\build.ps1 -Target Build
 
