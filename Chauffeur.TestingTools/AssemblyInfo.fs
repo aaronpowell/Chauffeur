@@ -5,18 +5,18 @@ open System.Runtime.InteropServices
 
 [<assembly: AssemblyProductAttribute("Chauffeur")>]
 [<assembly: AssemblyTitleAttribute("Chauffeur.TestingTools")>]
-[<assembly: AssemblyVersionAttribute("1.1.0")>]
-[<assembly: AssemblyFileVersionAttribute("1.1.0")>]
-[<assembly: AssemblyInformationalVersionAttribute("1.1.0")>]
+[<assembly: AssemblyVersionAttribute("1.2.0")>]
+[<assembly: AssemblyFileVersionAttribute("1.2.0")>]
+[<assembly: AssemblyInformationalVersionAttribute("1.2.0")>]
 [<assembly: ComVisibleAttribute(false)>]
-[<assembly: AssemblyMetadataAttribute("githash","325180")>]
+[<assembly: AssemblyMetadataAttribute("githash","a7c900")>]
 do ()
 
 module internal AssemblyVersionInformation =
     let [<Literal>] AssemblyProduct = "Chauffeur"
     let [<Literal>] AssemblyTitle = "Chauffeur.TestingTools"
-    let [<Literal>] AssemblyVersion = "1.1.0"
-    let [<Literal>] AssemblyFileVersion = "1.1.0"
-    let [<Literal>] AssemblyInformationalVersion = "1.1.0"
+    let [<Literal>] AssemblyVersion = "1.2.0"
+    let [<Literal>] AssemblyFileVersion = "1.2.0"
+    let [<Literal>] AssemblyInformationalVersion = "1.2.0"
     let [<Literal>] ComVisible = false
-    let [<Literal>] AssemblyMetadata_githash = "325180"
+    let [<Literal>] AssemblyMetadata_githash = "a7c900"

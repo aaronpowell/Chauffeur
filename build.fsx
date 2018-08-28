@@ -148,7 +148,7 @@ Target.Create "CreateChauffeurPackage" (fun _ ->
     Shell.CleanDirs [libDir]
 
     Shell.CopyFile libDir (chauffeurDir @@ "Release/Chauffeur.dll")
-    Shell.CopyFiles packagingDir ["LICENSE.md"; "README.md"]
+    Shell.CopyFiles packagingDir ["License.md"; "readme.md"]
 
 
     NuGet (fun p ->
@@ -173,7 +173,7 @@ Target.Create "CreateRunnerPackage" (fun _ ->
     Shell.CleanDirs [libDir]
 
     Shell.CopyFile libDir (chauffeurRunnerDir @@ "Release/Chauffeur.Runner.exe")
-    Shell.CopyFiles packagingDir ["LICENSE.md"; "README.md"]
+    Shell.CopyFiles packagingDir ["License.md"; "readme.md"]
 
 
     NuGet (fun p ->
@@ -198,7 +198,7 @@ Target.Create "CreateTestingToolsPackage" (fun _ ->
     Shell.CleanDirs [libDir]
 
     Shell.CopyFile libDir (chauffeurTestingToolsDir @@ "Release/Chauffeur.TestingTools.dll")
-    Shell.CopyFiles packagingDir ["LICENSE.md"; "README.md"]
+    Shell.CopyFiles packagingDir ["License.md"; "readme.md"]
 
 
     NuGet (fun p ->

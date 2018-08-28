@@ -1,3 +1,6 @@
+## New in 1.2.0 (2018/08/28)
+* Merging PR [78](https://github.com/aaronpowell/Chauffeur/pull/78) to handle missing parameters properly
+
 ## New in 1.1.1 (2018/07/04)
 * Fixing bug [72](https://github.com/aaronpowell/Chauffeur/issues/72) which was caused be a broken commandline parser
 
