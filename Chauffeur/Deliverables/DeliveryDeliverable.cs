@@ -186,6 +186,13 @@ namespace Chauffeur.Deliverables
                 Hash = HashDelivery(file),
                 SignedFor = true
             };
+
+            if (!await AreAllParametersSpecified(instructions, @params))
+            {
+                tracking.SignedFor = false;
+                return tracking;
+            }
+
             foreach (var instruction in instructions)
             {
                 var result = await host.Run(new[] { replaceTokens(@params, instruction) });
@@ -216,6 +223,39 @@ namespace Chauffeur.Deliverables
 
             await Out.WriteLineAsync("Successfully created database table.");
             return true;
+        }
+
+        private async Task<bool> AreAllParametersSpecified(
+            IEnumerable<string> instructions,
+            IDictionary<string, string> @params)
+        {
+            var parameters = instructions
+                .SelectMany(x => GetInstructionParametersNames(x))
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+
+            var missingParameters = parameters.Except(@params.Keys).OrderBy(x => x).ToList();
+            if (missingParameters.Count != 0)
+            {
+                await Out.WriteLineAsync($"The following parameters have not been specified:");
+                foreach (var missingParameter in missingParameters)
+                {
+                    await Out.WriteLineAsync($" - {missingParameter}");
+                }
+
+                return false;
+            }
+
+            return true;
+
+            IEnumerable<string> GetInstructionParametersNames(string instruction)
+            {
+                return tokenRegex
+                    .Matches(instruction)
+                    .Cast<Match>()
+                    .Select(x => x.Groups[1].Value);
+            }
         }
 
         private static string HashDelivery(FileInfoBase file)
