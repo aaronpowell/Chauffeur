@@ -1,6 +1,6 @@
 #r @"tools/FAKE.Core/tools/FakeLib.dll"
-#r @"tools/Fake.Core.FakeVar/lib/net46/Fake.Core.FakeVar.dll"
 #r @"tools/Fake.Core.Context/lib/net46/Fake.Core.Context.dll"
+#r @"tools/Fake.Core.FakeVar/lib/net46/Fake.Core.FakeVar.dll"
 #r @"tools/Fake.Core.Environment/lib/net46/Fake.Core.Environment.dll"
 #r @"tools/Fake.Core.Process/lib/net46/Fake.Core.Process.dll"
 #r @"tools/Fake.Core.String/lib/net46/Fake.Core.String.dll"
