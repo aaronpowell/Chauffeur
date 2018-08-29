@@ -16,7 +16,7 @@ namespace Chauffeur.Runner
             {
                 var path = new FileInfo(Assembly.GetExecutingAssembly().Location).Directory.FullName;
 
-                var webConfigPath = Path.Combine(path, "..", "web.config");
+                var webConfigPath = Path.Combine(path, "..", "Web.config");
 
                 var domain = AppDomain.CreateDomain(
                     "umbraco-domain",
