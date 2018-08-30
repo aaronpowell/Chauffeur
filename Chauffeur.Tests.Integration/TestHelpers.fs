@@ -15,6 +15,7 @@ let knownTables =
     "cmsLanguageText";
     "cmsMacro";
     "cmsMacroProperty";
+    "cmsMedia";
     "cmsMember";
     "cmsMember2MemberGroup";
     "cmsMemberType";
@@ -50,6 +51,7 @@ let knownTables =
     "umbracoUserGroup";
     "umbracoUserGroup2App";
     "umbracoUserGroup2NodePermission";
+    "umbracoUserLogin";
     "umbracoUserStartNode";
     "umbracoUserType";
     "umbracoLock"]
