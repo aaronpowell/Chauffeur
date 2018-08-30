@@ -305,6 +305,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CustomStartup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
