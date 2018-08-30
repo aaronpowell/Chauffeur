@@ -7,20 +7,17 @@ open System
 open TestSamples
 open Chauffeur.TestingTools
 open Chauffeur.TestingTools.ChauffeurSetup
+open Umbraco.Core
 
 type ``Importing packages``() =
     inherit UmbracoHostTestBase()
     
-    let packageName = "package"
-    member private x.InstallPackage =
+    member private x.InstallPackage packageName =
         async {
             let run = x.Host.Run
             do! x.DatabaseLocation
                 |> x.TextWriter.WriteLineAsync
                 |> Async.AwaitTask
-            let! response = [| "install" |]
-                            |> run
-                            |> Async.AwaitTask
             return! [| "package"; packageName |]
                     |> run
                     |> Async.AwaitTask
@@ -29,18 +26,15 @@ type ``Importing packages``() =
 
     [<Fact>]
     member x.``Can import composite document types``() =
-        x.TextReader.AddCommand "Y"
+        let packageName = "package"
         let run = x.Host.Run
-        let chauffeurFolder = x.GetChauffeurFolder()
-        let filePath =
-            Path.Combine [| chauffeurFolder.FullName
-                            sprintf "%s.xml" packageName |]
-        File.WriteAllText(filePath, compositeDocTypeSample)
+        let _ = x.CreatePackage packageName compositeDocTypeSample
 
         async {
-            let! contentTypeImportResponse = x.InstallPackage
+            let _ = x.InstallUmbraco() |> Async.AwaitTask
+            let! _ = x.InstallPackage packageName
             x.TextWriter.Flush()
-            let! contentTypeInfoResponse = [| "ct"; "get"; "richTextPage" |]
+            let! _ = [| "ct"; "get"; "richTextPage" |]
                                            |> run
                                            |> Async.AwaitTask
             let messages = x.TextWriter.Messages
