@@ -224,3 +224,41 @@ let sampleDocType = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
     </Tab>
   </Tabs>
 </DocumentType>"
+
+let preValuesPackage = ("<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<umbPackage>
+  <files />
+  <info>
+  </info>
+  <DocumentTypes />
+  <Templates />
+  <Stylesheets />
+  <Macros />
+  <DictionaryItems />
+  <Languages />
+  <DataTypes>
+    <DataType Name='Articulate Cropper' Id='Umbraco.ImageCropper' Definition='c8f535ee-27b8-4d16-940d-d6c523851bb1' DatabaseType='Ntext'>
+      <PreValues>
+        <PreValue Id='65' Value='[{&quot;alias&quot;:&quot;blogPost&quot;,&quot;width&quot;:200,&quot;height&quot;:200},{&quot;alias&quot;:&quot;thumbnail&quot;,&quot;width&quot;:50,&quot;height&quot;:50},{&quot;alias&quot;:&quot;square&quot;,&quot;width&quot;:480,&quot;height&quot;:480},{&quot;alias&quot;:&quot;wide&quot;,&quot;width&quot;:1024,&quot;height&quot;:512}]' Alias='crops' SortOrder='0' />
+      </PreValues>
+    </DataType>
+  </DataTypes>
+</umbPackage>", "<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<umbPackage>
+  <files />
+  <info>
+  </info>
+  <DocumentTypes />
+  <Templates />
+  <Stylesheets />
+  <Macros />
+  <DictionaryItems />
+  <Languages />
+  <DataTypes>
+    <DataType Name='Articulate Cropper' Id='Umbraco.ImageCropper' Definition='c8f535ee-27b8-4d16-940d-d6c523851bb1' DatabaseType='Ntext'>
+      <PreValues>
+        <PreValue Id='71' Value='[&#xD;&#xA;  {&#xD;&#xA;    &quot;alias&quot;: &quot;blogPost&quot;,&#xD;&#xA;    &quot;width&quot;: 200,&#xD;&#xA;    &quot;height&quot;: 200&#xD;&#xA;  },&#xD;&#xA;  {&#xD;&#xA;    &quot;alias&quot;: &quot;thumbnail&quot;,&#xD;&#xA;    &quot;width&quot;: 50,&#xD;&#xA;    &quot;height&quot;: 50&#xD;&#xA;  },&#xD;&#xA;  {&#xD;&#xA;    &quot;width&quot;: 400,&#xD;&#xA;    &quot;height&quot;: 200,&#xD;&#xA;    &quot;alias&quot;: &quot;relatedPost&quot;&#xD;&#xA;  },&#xD;&#xA;  {&#xD;&#xA;    &quot;alias&quot;: &quot;postHeader&quot;,&#xD;&#xA;    &quot;width&quot;: 1600,&#xD;&#xA;    &quot;height&quot;: 400&#xD;&#xA;  }&#xD;&#xA;]' Alias='crops' SortOrder='0' />
+      </PreValues>
+    </DataType>
+  </DataTypes>
+</umbPackage>")

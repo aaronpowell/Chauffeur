@@ -52,3 +52,27 @@ type ``Importing packages``() =
             parts.[3].Trim() |> should equal "-1"
         }
         |> Async.RunSynchronously
+
+    [<Fact>]
+    member x.``Can import updates to Data Type PreValues``() =
+        let start, update = preValuesPackage
+
+        x.CreatePackage "01" start |> ignore
+        x.CreatePackage "02" update |> ignore
+
+        async {
+            let _ = x.InstallUmbraco() |> Async.AwaitTask
+
+            let dts = ApplicationContext.Current.Services.DataTypeService
+
+            let! _ = x.InstallPackage "01"
+            let startDataType = dts.GetDataTypeDefinitionByName("Articulate Cropper")
+            let startPreValues = dts.GetPreValuesByDataTypeId(startDataType.Id) |> Seq.head
+
+            let! _ = x.InstallPackage "02"
+            let updateDataType = dts.GetDataTypeDefinitionByName("Articulate Cropper")
+            let updatePreValues = dts.GetPreValuesByDataTypeId(updateDataType.Id) |> Seq.head
+
+            updatePreValues |> should not' (equal startPreValues)
+        }
+        |> Async.RunSynchronously
