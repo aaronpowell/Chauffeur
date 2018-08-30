@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Chauffeur.Host;
 
 namespace Chauffeur.Runner
@@ -42,6 +43,10 @@ namespace Chauffeur.Runner
                 }
 
                 domain.SetData("DataDirectory", Path.Combine(path, "..", "App_Data"));
+                domain.SetData(".appDomain", "From Domain");
+                domain.SetData(".appId", "From Domain");
+                Thread.GetDomain().SetData(".appDomain", "From Thread");
+                Thread.GetDomain().SetData(".appId", "From Thread");
 
                 var thisAssembly = new FileInfo(Assembly.GetExecutingAssembly().Location);
                 domain.ExecuteAssembly(thisAssembly.FullName, args);
