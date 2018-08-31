@@ -51,12 +51,46 @@ namespace Chauffeur.Deliverables
                     await DisplayAvailableDeliverables();
                     break;
 
+                case "status":
+                    await DisplayStatus(args);
+                    break;
+
                 default:
                     await Out.WriteLineFormattedAsync("The operation `{0}` is not supported", operation);
                     break;
             }
 
             return DeliverableResponse.Continue;
+        }
+
+        private async Task DisplayStatus(string[] args)
+        {
+            if (!args.Any())
+            {
+                await Out.WriteLineAsync("No deliveries provided to check the status of");
+                return;
+            }
+
+            var deliveryNames = args.Select(s => s.EndsWith(".delivery") ? s : s + ".delivery");
+
+            var sql = new Sql()
+                .From<ChauffeurDeliveryTable>(sqlSyntax)
+                .Where<ChauffeurDeliveryTable>(d => deliveryNames.Contains(d.Name), sqlSyntax);
+
+            var results = database.Fetch<ChauffeurDeliveryTable>(sql);
+            if (results.Count == 0)
+                await Out.WriteLineAsync("None of the specified deliveries have been run.");
+            else
+            {
+                await Out.WriteTableAsync(
+                    results.Select(d => new
+                    {
+                        d.Name,
+                        Status = d.SignedFor ? "Signed For" : "Unknown",
+                        Date = d.ExecutionDate.ToString("yyy-MM-dd hh:ss")
+                    })
+                );
+            }
         }
 
         private async Task DisplayAvailableDeliverables()
