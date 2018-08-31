@@ -262,3 +262,23 @@ let preValuesPackage = ("<?xml version='1.0' encoding='UTF-8' standalone='no'?>
     </DataType>
   </DataTypes>
 </umbPackage>")
+
+let filesPackage = sprintf "<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<umbPackage>
+  <files>
+    <file>
+      <guid>454ccf67-8ffe-493c-b6b0-ab1c5f8554d0_foo.css</guid>
+      <orgPath>%scss</orgPath>
+      <orgName>foo.css</orgName>
+    </file>
+  </files>
+  <info>
+  </info>
+  <DocumentTypes />
+  <Templates />
+  <Stylesheets />
+  <Macros />
+  <DictionaryItems />
+  <Languages />
+  <DataTypes />
+</umbPackage>"
