@@ -131,7 +131,7 @@ Target.Create "UnitTests" (fun _ ->
 )
 
 Target.Create "EnsureSqlExpressAssemblies" (fun _ ->
-    Shell.CopyDir (sprintf "./Chauffeur.Tests.Integration/bin/%s" buildMode) "packages/UmbracoCms.7.7.0/UmbracoFiles/bin" (fun x -> true)
+    Shell.CopyDir (sprintf "./Chauffeur.Tests.Integration/bin/%s" buildMode) "packages/UmbracoCms.7.8.0/UmbracoFiles/bin" (fun x -> true)
 )
 
 Target.Create "CleanXUnitVSRunner" (fun _ ->

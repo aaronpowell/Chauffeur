@@ -269,7 +269,7 @@ namespace Chauffeur.Tests.Deliverables
         public async Task NoPackagesAbortsEarly()
         {
             var writer = Substitute.ForPartsOf<TextWriter>();
-            var package = new PackageDeliverable(null, writer, null, null, null, null);
+            var package = new PackageDeliverable(null, writer, null, null, null, null, null);
 
             await package.Run(null, new string[0]);
 
@@ -287,7 +287,7 @@ namespace Chauffeur.Tests.Deliverables
                 x[0] = "";
                 return true;
             });
-            var package = new PackageDeliverable(null, writer, new MockFileSystem(), settings, null, null);
+            var package = new PackageDeliverable(null, writer, new MockFileSystem(), settings, null, null, null);
 
             await package.Run(null, new[] { "Test" });
 
@@ -312,7 +312,7 @@ namespace Chauffeur.Tests.Deliverables
             var packagingService = Substitute.For<IPackagingService>();
             packagingService.ImportContentTypes(Arg.Any<XElement>()).Returns(Enumerable.Empty<IContentType>());
 
-            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>());
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>(), null);
 
             await package.Run(null, new[] { "Text" });
 
@@ -337,7 +337,7 @@ namespace Chauffeur.Tests.Deliverables
             var packagingService = Substitute.For<IPackagingService>();
             packagingService.ImportContentTypes(Arg.Any<XElement>()).Returns(Enumerable.Empty<IContentType>());
 
-            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>());
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>(), null);
 
             await package.Run(null, new[] { "Text" });
 
@@ -362,7 +362,7 @@ namespace Chauffeur.Tests.Deliverables
             var packagingService = Substitute.For<IPackagingService>();
             packagingService.ImportDataTypeDefinitions(Arg.Any<XElement>()).Returns(Enumerable.Empty<IDataTypeDefinition>());
 
-            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>());
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>(), null);
 
             await package.Run(null, new[] { "Text" });
 
@@ -387,7 +387,7 @@ namespace Chauffeur.Tests.Deliverables
             var packagingService = Substitute.For<IPackagingService>();
             packagingService.ImportTemplates(Arg.Any<XElement>()).Returns(Enumerable.Empty<ITemplate>());
 
-            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>());
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>(), null);
 
             await package.Run(null, new[] { "Text" });
 
@@ -412,7 +412,7 @@ namespace Chauffeur.Tests.Deliverables
             var packagingService = Substitute.For<IPackagingService>();
             packagingService.ImportMacros(Arg.Any<XElement>()).Returns(Enumerable.Empty<IMacro>());
 
-            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>());
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>(), null);
 
             await package.Run(null, new[] { "Text" });
 
@@ -437,7 +437,7 @@ namespace Chauffeur.Tests.Deliverables
             var packagingService = Substitute.For<IPackagingService>();
             packagingService.ImportContentTypes(Arg.Any<XElement>()).Returns(Enumerable.Empty<IContentType>());
 
-            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>());
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>(), null);
 
             await package.Run(null, new[] { "Text", "-f:C:\\Path" });
 
@@ -462,7 +462,7 @@ namespace Chauffeur.Tests.Deliverables
             });
             fs.AddDirectory(siteRootPath);
 
-            var package = new PackageDeliverable(null, writer, fs, settings, null, null);
+            var package = new PackageDeliverable(null, writer, fs, settings, null, null, null);
 
             await package.Run(null, new[] { "Text", "-f:C:\\Path" });
 

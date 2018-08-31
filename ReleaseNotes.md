@@ -1,3 +1,9 @@
+## New in 1.3.0 (Unreleased)
+* Updated the minimum Umbraco version to 7.8.0
+* Implementing a solution to better support deploying with Azure AppServices (issue [79](https://github.com/aaronpowell/Chauffeur/issues/79))
+* Added a feature to `Chauffeur.TestingTools` to allow you to create a package easily
+* Fixing [81](https://github.com/aaronpowell/Chauffeur/issues/81), where DataType PreValues aren't updated on package run
+
 ## New in 1.2.0 (2018/08/28)
 * Merging PR [78](https://github.com/aaronpowell/Chauffeur/pull/78) to handle missing parameters properly
 
