@@ -88,6 +88,15 @@ type UmbracoHostTestBase() =
         | true -> DirectoryInfo chauffeurFolder
         | false -> Directory.CreateDirectory chauffeurFolder
 
+    member x.CreatePackage packageName packageContents =
+        let chauffeurFolder = x.GetChauffeurFolder()
+        let packageFilename = sprintf "%s.xml" packageName
+        let filePath =
+            Path.Combine [| chauffeurFolder.FullName
+                            packageFilename |]
+        File.WriteAllText(filePath, packageContents)
+        packageFilename
+
     interface IDisposable with
         member x.Dispose() =
             writer.Dispose()

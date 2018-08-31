@@ -32,6 +32,7 @@ namespace Chauffeur.Deliverables
         private readonly IChauffeurSettings settings;
         private readonly IPackagingService packagingService;
         private readonly IContentTypeService contentTypeService;
+        private readonly IDataTypeService dataTypeService;
 
         string ElementValue(XElement e, string name)
         {
@@ -44,13 +45,15 @@ namespace Chauffeur.Deliverables
             IFileSystem fileSystem,
             IChauffeurSettings settings,
             IPackagingService packagingService,
-            IContentTypeService contentTypeService)
+            IContentTypeService contentTypeService,
+            IDataTypeService dataTypeService)
             : base(reader, writer)
         {
             this.fileSystem = fileSystem;
             this.settings = settings;
             this.packagingService = packagingService;
             this.contentTypeService = contentTypeService;
+            this.dataTypeService = dataTypeService;
         }
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
@@ -205,6 +208,25 @@ namespace Chauffeur.Deliverables
                 var name = (string)element.Attribute("Name");
                 await Out.WriteLineFormattedAsync("Importing DataType '{0}'", name);
                 packagingService.ImportDataTypeDefinitions(new XElement("DataTypes", element));
+
+                var preValues = element.Element("PreValues");
+
+                if (preValues != null)
+                {
+                    var pv = preValues.Elements("PreValue");
+
+                    var dataType = dataTypeService.GetDataTypeDefinitionById(Guid.Parse(element.Attribute("Definition").Value));
+
+                    dataTypeService.SavePreValues(
+                        dataType,
+                        pv.Select(xml => new
+                        {
+                            Alias = xml.Attribute("Alias").Value,
+                            xml.Attribute("Value").Value
+                        })
+                        .ToDictionary(x => x.Alias, x => new PreValue(x.Value))
+                    );
+                }
             }
         }
 
