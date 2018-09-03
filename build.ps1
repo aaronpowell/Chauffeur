@@ -8,16 +8,14 @@ param(
     $Target
 )
 
-'Build starting'
-
-$toolsDir = "tools"
+$fakeDir = ".fake"
 
 if ($Target -eq 'Setup') {
+    $toolsDir = "tools"
     $nuget = "$toolsDir\nuget.exe"
-
-    . $nuget "Install" "FAKE.Core" "-OutputDirectory" $toolsDir "-ExcludeVersion" -Version 5.0.0-beta010 -Prerelease
     . $nuget "Install" "xunit.runner.console" "-OutputDirectory" $toolsDir "-ExcludeVersion" -Version 2.2.0
-    . $nuget "Install" "FSharpLint.Fake" "-OutputDirectory" $toolsDir "-ExcludeVersion" -Version 0.7.6
+    . $nuget "Install" OpenCover -Version 4.6.519 -ExcludeVersion "-OutputDirectory" $toolsDir
+    dotnet tool install fake-cli --tool-path ./$fakeDir
 } else {
-    . "$toolsDir\FAKE.Core\tools\Fake.exe" "build.fsx" "target=$Target"
+    . "$fakeDir/fake.exe" run ./build.fsx target $Target
 }

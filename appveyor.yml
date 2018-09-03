@@ -18,6 +18,14 @@ test_script:
   - ps: .\build.ps1 -Target UnitTests
   - ps: .\build.ps1 -Target IntegrationTests
 
+after_test:
+  # Upload coverage report to codecov
+  - ps: |
+      $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
+      Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
+      bash codecov.sh -f .testresults/unit-tests.xml
+      bash codecov.sh -f .testresults/integration-tests.xml
+
 artifacts:
   - path: .packaging\*.nupkg
 
