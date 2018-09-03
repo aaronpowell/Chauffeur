@@ -3,9 +3,9 @@
 open System
 open System.IO
 open Chauffeur.Host
+open System.Reflection
 
 module ChauffeurSetup =
-    open System.Reflection
     open System.Text.RegularExpressions
 
     let private cwd = FileInfo(Assembly.GetExecutingAssembly().Location).Directory.FullName
@@ -81,7 +81,7 @@ type UmbracoHostTestBase() =
     /// Gets the path on disk that Chauffeur would look for packages/delivery/etc. files within.
     /// This is the path that Chauffeur will resolve from its settings API internally.
     /// </summary>
-    member x.GetChauffeurFolder() =
+    member __.GetChauffeurFolder() =
         let chauffeurFolder = Path.Combine [| dbFolder; "Chauffeur" |]
 
         match (Directory.Exists chauffeurFolder) with
@@ -96,6 +96,11 @@ type UmbracoHostTestBase() =
                             packageFilename |]
         File.WriteAllText(filePath, packageContents)
         packageFilename
+
+    member __.GetSiteRootFolder() =
+        let asm = Assembly.GetAssembly(host.GetType())
+        let dir = (new FileInfo(asm.Location)).Directory.FullName
+        Path.Combine(dir, "..")
 
     interface IDisposable with
         member x.Dispose() =
