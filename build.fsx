@@ -132,7 +132,7 @@ Target.create "UnitTests" (fun _ ->
                             Output = testDir @@ "unit-tests.xml"
                             Register = RegisterUser
                     })
-                    (assemblies.Includes |> String.concat " " )
+                    (sprintf "%s -noshadow" (assemblies.Includes |> String.concat " " ))
 )
 
 Target.create "EnsureSqlExpressAssemblies" (fun _ ->
