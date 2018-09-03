@@ -1,4 +1,4 @@
-## New in 1.3.0 (Unreleased)
+## New in 1.3.0 (2018/09/04)
 * Updated the minimum Umbraco version to 7.8.0
 * Implementing a solution to better support deploying with Azure AppServices (issue [79](https://github.com/aaronpowell/Chauffeur/issues/79))
 * Added a feature to `Chauffeur.TestingTools` to allow you to create a package easily
