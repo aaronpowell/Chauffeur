@@ -76,3 +76,49 @@ type ``Importing packages``() =
             updatePreValues |> should not' (equal startPreValues)
         }
         |> Async.RunSynchronously
+
+    [<Fact>]
+    member x.``Importing files a leading /``() =
+        x.CreatePackage "01" (filesPackage "/") |> ignore
+
+        let chauffeurFolder = x.GetChauffeurFolder()
+        let packageFilename = "454ccf67-8ffe-493c-b6b0-ab1c5f8554d0_foo.css"
+        let filePath =
+            Path.Combine [| chauffeurFolder.FullName
+                            packageFilename |]
+        File.WriteAllText(filePath, "h1 { font-family: 'Comic Sans MS'; }")
+
+        async {
+            let _ = x.InstallUmbraco() |> Async.AwaitTask
+            let! _ = x.InstallPackage "01"
+
+            Path.Combine [| x.GetSiteRootFolder()
+                            "css"
+                            "foo.css" |]
+            |> File.Exists
+            |> should equal true
+        }
+        |> Async.RunSynchronously
+
+    [<Fact>]
+    member x.``Importing files a leading ~/``() =
+        x.CreatePackage "01" (filesPackage "~/") |> ignore
+
+        let chauffeurFolder = x.GetChauffeurFolder()
+        let packageFilename = "454ccf67-8ffe-493c-b6b0-ab1c5f8554d0_foo.css"
+        let filePath =
+            Path.Combine [| chauffeurFolder.FullName
+                            packageFilename |]
+        File.WriteAllText(filePath, "h1 { font-family: 'Comic Sans MS'; }")
+
+        async {
+            let _ = x.InstallUmbraco() |> Async.AwaitTask
+            let! _ = x.InstallPackage "01"
+
+            Path.Combine [| x.GetSiteRootFolder()
+                            "css"
+                            "foo.css" |]
+            |> File.Exists
+            |> should equal true
+        }
+        |> Async.RunSynchronously
