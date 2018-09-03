@@ -1,0 +1,14 @@
+// [ FAKE GROUP ]
+group Build
+    source https://api.nuget.org/v3/index.json
+    nuget Fake.DotNet.Cli
+    nuget Fake.IO.FileSystem
+    nuget Fake.Core.Target
+    nuget Fake.Core.Environment
+    nuget Fake.DotNet.Testing.XUnit2
+    nuget Fake.DotNet.NuGet
+    nuget Fake.Core.ReleaseNotes
+    nuget Fake.DotNet.AssemblyInfoFile
+    nuget Fake.Tools.Git
+    nuget Fake.DotNet.MSBuild
+    nuget xunit.runner.console

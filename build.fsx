@@ -1,16 +1,4 @@
-#r @"tools/FAKE.Core/tools/FakeLib.dll"
-#r @"tools/Fake.Core.Context/lib/net46/Fake.Core.Context.dll"
-#r @"tools/Fake.Core.FakeVar/lib/net46/Fake.Core.FakeVar.dll"
-#r @"tools/Fake.Core.Environment/lib/net46/Fake.Core.Environment.dll"
-#r @"tools/Fake.Core.Process/lib/net46/Fake.Core.Process.dll"
-#r @"tools/Fake.Core.String/lib/net46/Fake.Core.String.dll"
-#r @"tools/Fake.Core.Trace/lib/net46/Fake.Core.Trace.dll"
-#r @"tools/Fake.DotNet.AssemblyInfoFile/lib/net46/Fake.DotNet.AssemblyInfoFile.dll"
-#r @"tools/Fake.IO.FileSystem/lib/net46/Fake.IO.FileSystem.dll"
-#r @"tools/Fake.Testing.Common/lib/net46/Fake.Testing.Common.dll"
-#r @"tools/Fake.DotNet.Testing.XUnit2/lib/net46/Fake.DotNet.Testing.XUnit2.dll"
-#r @"tools/FSharpLint.Fake/tools/FSharpLint.Core.dll"
-#r @"tools/FSharpLint.Fake/tools/FSharpLint.Fake.dll"
+#load "./.fake/build.fsx/intellisense.fsx"
 
 open Fake.Core
 open Fake.Core.TargetOperators
@@ -22,7 +10,6 @@ open Fake.IO.Globbing.Operators
 open Fake.IO
 open Fake.IO.FileSystemOperators
 open Fake.Tools
-open FSharpLint.Fake
 
 Environment.setEnvironVar "VisualStudioVersion" "15.0"
 
@@ -139,7 +126,7 @@ Target.create "UnitTests" (fun _ ->
 )
 
 Target.create "EnsureSqlExpressAssemblies" (fun _ ->
-    Shell.copyDir (sprintf "./Chauffeur.Tests.Integration/bin/%s" buildMode) "packages/UmbracoCms.7.7.0/UmbracoFiles/bin" (fun x -> true)
+    Shell.copyDir (sprintf "./Chauffeur.Tests.Integration/bin/%s" buildMode) "packages/UmbracoCms.7.7.0/UmbracoFiles/bin" (fun _ -> true)
 )
 
 Target.create "CleanXUnitVSRunner" (fun _ ->
@@ -231,16 +218,11 @@ Target.create "BuildVersion" (fun _ ->
 
 Target.create "Package" ignore
 
-Target.create "Lint" (fun _ ->
-    !! "src/**/*.fsproj"
-        |> Seq.iter (FSharpLint id))
-
 "AssemblyInfo"
     ==> "Build"
 
 "Clean"
     =?> ("BuildVersion", isAppVeyorBuild)
-    //==> "Lint"
     ==> "Build"
 
 "RestoreChauffeurPackages"
@@ -249,7 +231,7 @@ Target.create "Lint" (fun _ ->
     ==> "RestoreChauffeurTestsPackages"
     ==> "Build"
 
-"UnitTests"
+"Build"
     ==> "Default"
 
 "EnsureSqlExpressAssemblies"

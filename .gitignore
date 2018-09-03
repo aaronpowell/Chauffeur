@@ -30,5 +30,7 @@ tools
 .vs
 .testresults
 .fake
+paket-files
+.paket
 
 Chauffeur.Tests.Integration/Views
