@@ -147,7 +147,7 @@ Target.create "CleanXUnitVSRunner" (fun _ ->
 Target.create "IntegrationTests" (fun _ ->
     OpenCover.getVersion (Some (fun p -> { p with ExePath = "./tools/OpenCover/tools/OpenCover.Console.exe" }))
 
-    let assemblies = !! (sprintf "./Chauffeur.Tests.Integration/bin/%s/**/Chauffeur.Tests.Integration.dll" buildMode)
+    let assemblies = !! (sprintf "./Chauffeur.Tests.Integration/bin/%s/Chauffeur.Tests.Integration.dll" buildMode)
     OpenCover.run (fun p ->
                     { p with
                             ExePath = "./tools/OpenCover/tools/OpenCover.Console.exe"
