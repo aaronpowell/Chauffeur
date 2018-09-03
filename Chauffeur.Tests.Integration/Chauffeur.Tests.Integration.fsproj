@@ -125,26 +125,31 @@
       <HintPath>..\packages\AutoMapper.3.3.1\lib\net40\AutoMapper.Net4.dll</HintPath>
     </Reference>
     <Reference Include="businesslogic">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\businesslogic.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\businesslogic.dll</HintPath>
     </Reference>
+    <Reference Include="businesslogic" />
     <Reference Include="ClientDependency.Core">
-      <HintPath>..\packages\ClientDependency.1.9.2\lib\net45\ClientDependency.Core.dll</HintPath>
+      <HintPath>..\packages\ClientDependency.1.9.6\lib\net45\ClientDependency.Core.dll</HintPath>
     </Reference>
+    <Reference Include="ClientDependency.Core" />
     <Reference Include="ClientDependency.Core.Mvc">
       <HintPath>..\packages\ClientDependency-Mvc5.1.8.0.0\lib\net45\ClientDependency.Core.Mvc.dll</HintPath>
     </Reference>
     <Reference Include="cms">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\cms.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\cms.dll</HintPath>
     </Reference>
+    <Reference Include="cms" />
     <Reference Include="controls">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\controls.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\controls.dll</HintPath>
     </Reference>
+    <Reference Include="controls" />
     <Reference Include="CookComputing.XmlRpcV2">
       <HintPath>..\packages\xmlrpcnet.2.5.0\lib\net20\CookComputing.XmlRpcV2.dll</HintPath>
     </Reference>
     <Reference Include="Examine">
-      <HintPath>..\packages\Examine.0.1.85\lib\net45\Examine.dll</HintPath>
+      <HintPath>..\packages\Examine.0.1.89\lib\net45\Examine.dll</HintPath>
     </Reference>
+    <Reference Include="Examine" />
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.3.4\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
@@ -158,17 +163,21 @@
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="ImageProcessor">
-      <HintPath>..\packages\ImageProcessor.2.5.3\lib\net45\ImageProcessor.dll</HintPath>
+      <HintPath>..\packages\ImageProcessor.2.5.6\lib\net45\ImageProcessor.dll</HintPath>
     </Reference>
+    <Reference Include="ImageProcessor" />
     <Reference Include="ImageProcessor.Web">
-      <HintPath>..\packages\ImageProcessor.Web.4.8.3\lib\net45\ImageProcessor.Web.dll</HintPath>
+      <HintPath>..\packages\ImageProcessor.Web.4.8.7\lib\net45\ImageProcessor.Web.dll</HintPath>
     </Reference>
+    <Reference Include="ImageProcessor.Web" />
     <Reference Include="interfaces">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\interfaces.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\interfaces.dll</HintPath>
     </Reference>
+    <Reference Include="interfaces" />
     <Reference Include="log4net">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\log4net.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="log4net" />
     <Reference Include="Log4Net.Async">
       <HintPath>..\packages\Log4Net.Async.2.0.4\lib\net40\Log4Net.Async.dll</HintPath>
     </Reference>
@@ -179,8 +188,9 @@
       <HintPath>..\packages\Markdown.1.14.7\lib\net45\MarkdownSharp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ApplicationBlocks.Data">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\Microsoft.ApplicationBlocks.Data.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\Microsoft.ApplicationBlocks.Data.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.ApplicationBlocks.Data" />
     <Reference Include="Microsoft.AspNet.Identity.Core">
       <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
     </Reference>
@@ -191,8 +201,9 @@
       <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.2.1\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.IO.RecyclableMemoryStream">
-      <HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.1.2.1\lib\net45\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
+      <HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.1.2.2\lib\net45\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.IO.RecyclableMemoryStream" />
     <Reference Include="Microsoft.Owin">
       <HintPath>..\packages\Microsoft.Owin.3.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
@@ -231,20 +242,23 @@
       <HintPath>..\packages\semver.1.1.2\lib\net451\Semver.dll</HintPath>
     </Reference>
     <Reference Include="SQLCE4Umbraco">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\SQLCE4Umbraco.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\SQLCE4Umbraco.dll</HintPath>
     </Reference>
+    <Reference Include="SQLCE4Umbraco" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.SqlServerCe">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\System.Data.SqlServerCe.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\System.Data.SqlServerCe.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Data.SqlServerCe" />
     <Reference Include="System.Data.SqlServerCe.Entity">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\System.Data.SqlServerCe.Entity.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\System.Data.SqlServerCe.Entity.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Data.SqlServerCe.Entity" />
     <Reference Include="System.IO.Abstractions">
       <HintPath>..\packages\System.IO.Abstractions.1.4.0.93\lib\net35\System.IO.Abstractions.dll</HintPath>
     </Reference>
@@ -291,32 +305,41 @@
       <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
     <Reference Include="TidyNet">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\TidyNet.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\TidyNet.dll</HintPath>
     </Reference>
+    <Reference Include="TidyNet" />
     <Reference Include="umbraco">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\umbraco.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\umbraco.dll</HintPath>
     </Reference>
+    <Reference Include="umbraco" />
     <Reference Include="Umbraco.Core">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\Umbraco.Core.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\Umbraco.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Umbraco.Core" />
     <Reference Include="umbraco.DataLayer">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\umbraco.DataLayer.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\umbraco.DataLayer.dll</HintPath>
     </Reference>
+    <Reference Include="umbraco.DataLayer" />
     <Reference Include="umbraco.editorControls">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\umbraco.editorControls.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\umbraco.editorControls.dll</HintPath>
     </Reference>
+    <Reference Include="umbraco.editorControls" />
     <Reference Include="umbraco.MacroEngines">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\umbraco.MacroEngines.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\umbraco.MacroEngines.dll</HintPath>
     </Reference>
+    <Reference Include="umbraco.MacroEngines" />
     <Reference Include="umbraco.providers">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\umbraco.providers.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\umbraco.providers.dll</HintPath>
     </Reference>
+    <Reference Include="umbraco.providers" />
     <Reference Include="Umbraco.Web.UI">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\Umbraco.Web.UI.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\Umbraco.Web.UI.dll</HintPath>
     </Reference>
+    <Reference Include="Umbraco.Web.UI" />
     <Reference Include="UmbracoExamine">
-      <HintPath>..\packages\UmbracoCms.Core.7.7.0\lib\net45\UmbracoExamine.dll</HintPath>
+      <HintPath>..\packages\UmbracoCms.Core.7.8.0\lib\net45\UmbracoExamine.dll</HintPath>
     </Reference>
+    <Reference Include="UmbracoExamine" />
     <Reference Include="UrlRewritingNet.UrlRewriter">
       <HintPath>..\packages\UrlRewritingNet.2.0.7\lib\UrlRewritingNet.UrlRewriter.dll</HintPath>
     </Reference>
