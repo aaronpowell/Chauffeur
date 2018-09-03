@@ -9,7 +9,7 @@ open System.Runtime.InteropServices
 [<assembly: AssemblyFileVersionAttribute("1.2.0")>]
 [<assembly: AssemblyInformationalVersionAttribute("1.2.0")>]
 [<assembly: ComVisibleAttribute(false)>]
-[<assembly: AssemblyMetadataAttribute("githash","7a3330")>]
+[<assembly: AssemblyMetadataAttribute("githash","29918e")>]
 do ()
 
 module internal AssemblyVersionInformation =
@@ -19,4 +19,4 @@ module internal AssemblyVersionInformation =
     let [<Literal>] AssemblyFileVersion = "1.2.0"
     let [<Literal>] AssemblyInformationalVersion = "1.2.0"
     let [<Literal>] ComVisible = false
-    let [<Literal>] AssemblyMetadata_githash = "7a3330"
+    let [<Literal>] AssemblyMetadata_githash = "29918e"

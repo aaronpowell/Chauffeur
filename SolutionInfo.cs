@@ -7,13 +7,13 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("1.2.0")]
 [assembly: AssemblyInformationalVersion("1.2.0")]
 [assembly: ComVisible(false)]
-[assembly: AssemblyMetadata("githash","7a3330")]
+[assembly: AssemblyMetadata("githash","29918e")]
 namespace System {
     internal static class AssemblyVersionInformation {
         internal const System.String AssemblyVersion = "1.2.0";
         internal const System.String AssemblyFileVersion = "1.2.0";
         internal const System.String AssemblyInformationalVersion = "1.2.0";
         internal const System.Boolean ComVisible = false;
-        internal const System.String AssemblyMetadata_githash = "7a3330";
+        internal const System.String AssemblyMetadata_githash = "29918e";
     }
 }

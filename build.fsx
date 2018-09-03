@@ -6,6 +6,7 @@ open Fake.DotNet
 open Fake.DotNet.NuGet
 open Fake.DotNet.NuGet.NuGet
 open Fake.DotNet.Testing
+open Fake.DotNet.Testing.OpenCover
 open Fake.IO.Globbing.Operators
 open Fake.IO
 open Fake.IO.FileSystemOperators
@@ -121,8 +122,17 @@ Target.create "Build" (fun _ ->
 )
 
 Target.create "UnitTests" (fun _ ->
-    !! (sprintf "./Chauffeur.Tests/bin/%s/**/Chauffeur.Tests.dll" buildMode)
-    |> XUnit2.run (fun p -> { p with HtmlOutputPath = Some (testDir @@ "xunit.html") })
+    OpenCover.getVersion (Some (fun p -> { p with ExePath = "./tools/OpenCover/tools/OpenCover.Console.exe" }))
+
+    let assemblies = !! (sprintf "./Chauffeur.Tests/bin/%s/Chauffeur.Tests.dll" buildMode)
+    OpenCover.run (fun p ->
+                    { p with
+                            ExePath = "./tools/OpenCover/tools/OpenCover.Console.exe"
+                            TestRunnerExePath = "./tools/xunit.runner.console/tools/xunit.console.exe"
+                            Output = testDir @@ "unit-tests.xml"
+                            Register = RegisterUser
+                    })
+                    (assemblies.Includes |> String.concat " " )
 )
 
 Target.create "EnsureSqlExpressAssemblies" (fun _ ->
