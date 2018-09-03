@@ -131,6 +131,7 @@ Target.create "UnitTests" (fun _ ->
                             TestRunnerExePath = "./tools/xunit.runner.console/tools/xunit.console.exe"
                             Output = testDir @@ "unit-tests.xml"
                             Register = RegisterUser
+                            Filter = "+[Chauffeur*]* -[Chauffeur.Tests*]*"
                     })
                     (sprintf "%s -noshadow" (assemblies.Includes |> String.concat " " ))
 )
@@ -144,8 +145,18 @@ Target.create "CleanXUnitVSRunner" (fun _ ->
 )
 
 Target.create "IntegrationTests" (fun _ ->
-    !! (sprintf "./Chauffeur.Tests.Integration/bin/%s/**/Chauffeur.Tests.Integration.dll" buildMode)
-    |> XUnit2.run (fun p -> { p with HtmlOutputPath = Some (testDir @@ "xunit-integration.html") })
+    OpenCover.getVersion (Some (fun p -> { p with ExePath = "./tools/OpenCover/tools/OpenCover.Console.exe" }))
+
+    let assemblies = !! (sprintf "./Chauffeur.Tests.Integration/bin/%s/**/Chauffeur.Tests.Integration.dll" buildMode)
+    OpenCover.run (fun p ->
+                    { p with
+                            ExePath = "./tools/OpenCover/tools/OpenCover.Console.exe"
+                            TestRunnerExePath = "./tools/xunit.runner.console/tools/xunit.console.exe"
+                            Output = testDir @@ "integration-tests.xml"
+                            Register = RegisterUser
+                            Filter = "+[Chauffeur*]* -[Chauffeur.Tests*]*"
+                    })
+                    (sprintf "%s -noshadow" (assemblies.Includes |> String.concat " " ))
 )
 
 Target.create "CreateChauffeurPackage" (fun _ ->
