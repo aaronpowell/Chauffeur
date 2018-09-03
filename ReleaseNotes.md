@@ -4,6 +4,8 @@
 * Added a feature to `Chauffeur.TestingTools` to allow you to create a package easily
 * Fixing [81](https://github.com/aaronpowell/Chauffeur/issues/81), where DataType PreValues aren't updated on package run
 * Fixing [77](https://github.com/aaronpowell/Chauffeur/issues/77), handling leading `/` on file paths when importing
+* Updated build process to use FAKE 5 and paket for dependencies
+* Added code coverage reports via [codecov](https://codecov.io/gh/aaronpowell/chauffeur)
 
 ## New in 1.2.0 (2018/08/28)
 * Merging PR [78](https://github.com/aaronpowell/Chauffeur/pull/78) to handle missing parameters properly
