@@ -152,3 +152,30 @@ type ``Deliveries with parameters``() =
             rows.[0] |> asserter "001-install.delivery"
         }
         |> Async.RunSynchronously
+
+type ``Checking delivery status``() =
+    inherit UmbracoHostTestBase()
+    let setupInstallDelivery = setupDelivery "001-install.delivery" "install y"
+
+    [<Fact>]
+    member x.``Can check the status of a deliverable``() =
+        x.GetChauffeurFolder() |> setupInstallDelivery
+        async {
+            let! _ = [| "delivery" |]
+                            |> x.Host.Run
+                            |> Async.AwaitTask
+
+            x.TextWriter.Flush()
+
+            let! _ = [| "delivery-tracking"
+                        "status"
+                        "001-install" |]
+                     |> x.Host.Run
+                     |> Async.AwaitTask
+
+            let msgs = x.TextWriter.Messages
+
+            msgs |> should haveLength 2
+            msgs.[0] |> should startWith "001-install"
+        }
+        |> Async.RunSynchronously

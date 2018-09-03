@@ -52,7 +52,7 @@ namespace Chauffeur.Deliverables
                     break;
 
                 case "status":
-                    await DisplayStatus(args);
+                    await DisplayStatus(args.Skip(1));
                     break;
 
                 default:
@@ -63,7 +63,7 @@ namespace Chauffeur.Deliverables
             return DeliverableResponse.Continue;
         }
 
-        private async Task DisplayStatus(string[] args)
+        private async Task DisplayStatus(IEnumerable<string> args)
         {
             if (!args.Any())
             {
