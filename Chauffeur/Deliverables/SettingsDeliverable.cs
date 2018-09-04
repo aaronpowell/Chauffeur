@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Chauffeur.Host;
 
@@ -16,24 +18,32 @@ namespace Chauffeur.Deliverables
 
         public async override Task<DeliverableResponse> Run(string command, string[] args)
         {
+            var dic = new Dictionary<string, string>();
+
             string path;
 
             if (settings.TryGetSiteRootDirectory(out path))
-                await Out.WriteLineFormattedAsync("Site root directory: {0}", path);
+                dic.Add("Site Root", path);
             else
-                await Out.WriteLineAsync("Unable to locate the site root directory");
+                dic.Add("Site Root", "Failed to access");
 
             if (settings.TryGetUmbracoDirectory(out path))
-                await Out.WriteLineFormattedAsync("Umbraco directory: {0}", path);
+                dic.Add("Umbraco Directory", path);
             else
-                await Out.WriteLineAsync("Unable to locate the Umbraco directory");
+                dic.Add("Umbraco Directory", "Failed to access");
 
             if (settings.TryGetChauffeurDirectory(out path))
-                await Out.WriteLineFormattedAsync("Chauffeur directory: {0}", path);
+                dic.Add("Chauffeur Directory", path);
             else
-                await Out.WriteLineAsync("Unable to locate the Chauffeur directory");
+                dic.Add("Chauffeur Directory", "Failed to access");
 
-            await Out.WriteLineFormattedAsync("Connection string: {0}", settings.ConnectionString);
+            dic.Add("Connection String", settings.ConnectionString.ConnectionString);
+
+            await Out.WriteTableAsync(dic.Keys.Select(key => new
+            {
+                Setting = key,
+                Value = dic[key]
+            }));
 
             return DeliverableResponse.Continue;
         }
