@@ -11,5 +11,4 @@ group Build
     nuget Fake.DotNet.AssemblyInfoFile
     nuget Fake.Tools.Git
     nuget Fake.DotNet.MSBuild
-    nuget xunit.runner.console
     nuget Fake.DotNet.Testing.OpenCover
