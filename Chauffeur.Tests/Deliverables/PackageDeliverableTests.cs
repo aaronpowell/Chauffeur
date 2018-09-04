@@ -362,7 +362,7 @@ namespace Chauffeur.Tests.Deliverables
             var packagingService = Substitute.For<IPackagingService>();
             packagingService.ImportDataTypeDefinitions(Arg.Any<XElement>()).Returns(Enumerable.Empty<IDataTypeDefinition>());
 
-            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>(), null);
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>(), Substitute.For<IDataTypeService>());
 
             await package.Run(null, new[] { "Text" });
 

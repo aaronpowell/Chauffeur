@@ -38,7 +38,7 @@ namespace Chauffeur.Deliverables
             }
 
             await Out.WriteLineFormattedAsync(
-                "The command '{0}' doesn't implement help, you best contact the author",
+                "The deliverable '{0}' doesn't implement help, you best contact the author",
                 command
             );
         }
