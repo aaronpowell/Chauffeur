@@ -25,7 +25,7 @@ let packagingRunnerDir = packagingRoot @@ "chauffeur.runner"
 let packagingTestingToolsDir = packagingRoot @@ "chauffeur.testingtools"
 let testDir = "./.testresults"
 let buildMode = Environment.environVarOrDefault "buildMode" "Release"
-let isAppVeyorBuild = not (isNull (Environment.environVar "APPVEYOR"))
+let isCIBuild = not (isNull (Environment.environVar "AGENT_ID"))
 let projectName = "Chauffeur"
 let chauffeurSummary = "Chauffeur is a tool for helping with delivering changes to an Umbraco instance."
 let chauffeurDescription = chauffeurSummary
@@ -47,13 +47,13 @@ let trimBranchName (branch: string) =
 
     trimmed.Replace(".", "")
 
-let prv = match Environment.environVar "APPVEYOR_REPO_BRANCH" with
+let prv = match Environment.environVar "BUILD_SOURCEBRANCHNAME" with
             | null -> ""
             | "master" -> ""
             | branch -> sprintf "-%s%s" (trimBranchName branch) (
-                            match Environment.environVar "APPVEYOR_BUILD_NUMBER" with
+                            match Environment.environVar "BUILD_BUILDNUMBER" with
                             | null -> ""
-                            | _ -> sprintf "-%s" (Environment.environVar "APPVEYOR_BUILD_NUMBER")
+                            | _ -> sprintf "-%s" (Environment.environVar "BUILD_BUILDNUMBER")
                             )
 let nugetVersion = sprintf "%d.%d.%d%s" releaseNotes.SemVer.Major releaseNotes.SemVer.Minor releaseNotes.SemVer.Patch prv
 
@@ -115,7 +115,7 @@ Target.create "Build" (fun _ ->
                         "Optimize", "True"
                         "DebugSymbols", "True"
                     ] }
-        if isAppVeyorBuild then p
+        if isCIBuild then p
         else { p with ToolPath = "C:\Program Files (x86)\Microsoft Visual Studio\Preview\Enterprise\MSBuild\15.0\Bin\msbuild.exe" }
 
     MSBuild.build setParams "./Chauffeur.sln"
@@ -233,17 +233,12 @@ Target.create "CreateTestingToolsPackage" (fun _ ->
             Publish = Environment.hasEnvironVar "nugetkey" }) "Chauffeur.TestingTools/Chauffeur.TestingTools.nuspec"
 )
 
-Target.create "BuildVersion" (fun _ ->
-    Shell.Exec("appveyor", sprintf "UpdateBuild -Version \"%s\"" nugetVersion) |> ignore
-)
-
 Target.create "Package" ignore
 
 "AssemblyInfo"
     ==> "Build"
 
 "Clean"
-    =?> ("BuildVersion", isAppVeyorBuild)
     ==> "Build"
 
 "RestoreChauffeurPackages"
