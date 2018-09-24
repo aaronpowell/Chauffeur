@@ -16,6 +16,7 @@ if ($Target -eq 'Setup') {
     . $nuget "Install" "xunit.runner.console" "-OutputDirectory" $toolsDir "-ExcludeVersion" -Version 2.2.0
     . $nuget "Install" OpenCover -Version 4.6.519 -ExcludeVersion "-OutputDirectory" $toolsDir
     . $nuget "Install" Codecov -Version 1.1.0  -ExcludeVersion "-OutputDirectory" $toolsDir
+    . $nuget "Install" OpenCoverToCoberturaConverter -Version 0.3.4 -ExcludeVersion "-OutputDirectory" $toolsDir
     dotnet tool install fake-cli --tool-path ./$fakeDir
 } else {
     . "$fakeDir/fake.exe" run ./build.fsx target $Target

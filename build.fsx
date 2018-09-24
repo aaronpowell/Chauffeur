@@ -57,6 +57,21 @@ let prv = match Environment.environVar "BUILD_SOURCEBRANCHNAME" with
                             )
 let nugetVersion = sprintf "%d.%d.%d%s" releaseNotes.SemVer.Major releaseNotes.SemVer.Minor releaseNotes.SemVer.Patch prv
 
+
+let openCoverToCobertura filename =
+    let result = Process.execWithResult (fun info -> 
+                    { info with 
+                        FileName = "./tools/OpenCoverToCoberturaConverter/tools/OpenCoverToCoberturaConverter.exe"
+                        WorkingDirectory = testDir
+                        Arguments = sprintf "-input:%s -output:parsed-%s" filename filename }
+                 ) (System.TimeSpan.FromMinutes 15.)
+
+    if result.ExitCode <> 0 then
+        let errors = System.String.Join(System.Environment.NewLine,result.Errors)
+        printfn "%s" <| System.String.Join(System.Environment.NewLine,result.Messages)
+        failwithf "FAKE Process exited with %d: %s" result.ExitCode errors
+    printfn "%s" <| System.String.Join(System.Environment.NewLine,result.Messages)
+
 Target.create "Default" ignore
 
 Target.create "AssemblyInfo" (fun _ ->
@@ -125,15 +140,18 @@ Target.create "UnitTests" (fun _ ->
     OpenCover.getVersion (Some (fun p -> { p with ExePath = "./tools/OpenCover/tools/OpenCover.Console.exe" }))
 
     let assemblies = !! (sprintf "./Chauffeur.Tests/bin/%s/Chauffeur.Tests.dll" buildMode)
+    let filename = "unit-tests.xml"
     OpenCover.run (fun p ->
                     { p with
                             ExePath = "./tools/OpenCover/tools/OpenCover.Console.exe"
                             TestRunnerExePath = "./tools/xunit.runner.console/tools/xunit.console.exe"
-                            Output = testDir @@ "unit-tests.xml"
+                            Output = testDir @@ filename
                             Register = RegisterUser
                             Filter = "+[Chauffeur*]* -[Chauffeur.Tests*]*"
                     })
                     (sprintf "%s -noshadow" (assemblies.Includes |> String.concat " " ))
+
+    openCoverToCobertura filename
 )
 
 Target.create "EnsureSqlExpressAssemblies" (fun _ ->
@@ -147,16 +165,19 @@ Target.create "CleanXUnitVSRunner" (fun _ ->
 Target.create "IntegrationTests" (fun _ ->
     OpenCover.getVersion (Some (fun p -> { p with ExePath = "./tools/OpenCover/tools/OpenCover.Console.exe" }))
 
+    let filename = "integration-tests.xml"
     let assemblies = !! (sprintf "./Chauffeur.Tests.Integration/bin/%s/Chauffeur.Tests.Integration.dll" buildMode)
     OpenCover.run (fun p ->
                     { p with
                             ExePath = "./tools/OpenCover/tools/OpenCover.Console.exe"
                             TestRunnerExePath = "./tools/xunit.runner.console/tools/xunit.console.exe"
-                            Output = testDir @@ "integration-tests.xml"
+                            Output = testDir @@ filename
                             Register = RegisterUser
                             Filter = "+[Chauffeur*]* -[Chauffeur.Tests*]*"
                     })
                     (sprintf "%s -noshadow" (assemblies.Includes |> String.concat " " ))
+
+    openCoverToCobertura filename
 )
 
 Target.create "CreateChauffeurPackage" (fun _ ->
