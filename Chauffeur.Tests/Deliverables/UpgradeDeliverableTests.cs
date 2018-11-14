@@ -12,14 +12,14 @@ namespace Chauffeur.Tests.Deliverables
         public async Task NoMigrationEntries_WillWarnAndExit()
         {
             var writer = new MockTextWriter();
-	        var migrationEntryService = Substitute.For<IMigrationEntryService>();
+            var migrationEntryService = Substitute.For<IMigrationEntryService>();
 
             var deliverable = new UpgradeDeliverable(null, writer, null, migrationEntryService);
 
             var response = await deliverable.Run(null, null);
 
             Assert.Single(writer.Messages);
-			Assert.Equal(DeliverableResponse.FinishedWithError,response);
+            Assert.Equal(DeliverableResponse.FinishedWithError, response);
         }
     }
 }
