@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Semver;
@@ -32,50 +31,45 @@ namespace Chauffeur.Deliverables
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
         {
-            try
+            if (!TryFindCurrentDbVersion(out var currentVersion))
             {
-                var currentVersion = FindCurrentDbVersion();
-                var targetVersion = UmbracoVersion.GetSemanticVersion();
-
-                if (currentVersion == targetVersion)
-                {
-                    await Out.WriteLineAsync($"Version is up to date {currentVersion} no work todo");
-                    return DeliverableResponse.FinishedWithError;
-                }
-
-                await Out.WriteLineAsync($"Upgrading from {currentVersion} to {targetVersion}");
-                var upgraded = upgrader.Upgrade(currentVersion, targetVersion);
-
-                if (upgraded == false)
-                {
-                    await base.Out.WriteLineAsync("Upgrading failed, see log for full details");
-                    return DeliverableResponse.FinishedWithError;
-                }
-
-                await base.Out.WriteLineAsync("Upgrading completed");
-                return DeliverableResponse.Continue;
-            }
-            catch (NoConfiguredVersionException)
-            {
-                await base.Out.WriteLineAsync("Can't upgrade as there is no configured version");
+                await Out.WriteLineAsync("Can't upgrade as there is no configured version");
                 return DeliverableResponse.FinishedWithError;
             }
+
+            var targetVersion = UmbracoVersion.GetSemanticVersion();
+
+            if (currentVersion == targetVersion)
+            {
+                await Out.WriteLineAsync($"Version is up to date {currentVersion} no work todo");
+                return DeliverableResponse.FinishedWithError;
+            }
+
+            await Out.WriteLineAsync($"Upgrading from {currentVersion} to {targetVersion}");
+            var upgraded = upgrader.Upgrade(currentVersion, targetVersion);
+
+            if (!upgraded)
+            {
+                await Out.WriteLineAsync("Upgrading failed, see log for full details");
+                return DeliverableResponse.FinishedWithError;
+            }
+
+            await Out.WriteLineAsync("Upgrading completed");
+            return DeliverableResponse.Continue;
         }
 
-        private SemVersion FindCurrentDbVersion()
+        private bool TryFindCurrentDbVersion(out SemVersion version)
         {
             var entries = migrationEntryService.GetAll(Constants.System.UmbracoMigrationName).ToArray();
             if (entries.Any())
             {
-                return entries.OrderBy(e => e.Version).Last().Version;
+                version = entries.OrderBy(e => e.Version).Last().Version;
+                return true;
             }
-            throw new NoConfiguredVersionException();
+
+            version = null;
+            return false;
         }
-    }
-
-    public class NoConfiguredVersionException : Exception
-    {
-
     }
 
     public interface IUpgrader
@@ -85,7 +79,6 @@ namespace Chauffeur.Deliverables
 
     public class Upgrader : IUpgrader
     {
-        
         private ILogger logger;
         private IMigrationEntryService migrationEntryService;
         private UmbracoDatabase database;
