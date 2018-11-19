@@ -260,6 +260,8 @@
     <Compile Include="IProvideDirections.cs" />
     <Compile Include="IRegistrationBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\IMigrationRunnerService.cs" />
+    <Compile Include="Services\MigrationRunnerService.cs" />
     <Compile Include="Services\OverridingPackagingService.cs" />
     <Compile Include="ShittyIoC.cs" />
     <Compile Include="TextReaderExtensions.cs" />

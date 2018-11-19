@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Chauffeur.Deliverables;
+using Chauffeur.Services;
 using NSubstitute;
 using Semver;
 using Umbraco.Core;
@@ -17,7 +18,7 @@ namespace Chauffeur.Tests.Deliverables
         [Fact]
         public async Task NoMigrationEntries_WillWarnAndExit()
         {
-            var writer = Writer();
+            var writer = new MockTextWriter();
             
             var deliverable = new UpgradeDeliverable(null, writer, null, MigrationEntryService());
 
@@ -30,7 +31,7 @@ namespace Chauffeur.Tests.Deliverables
         [Fact]
         public async Task SameVersions_NothingDone()
         {
-            var writer = Writer();
+            var writer = new MockTextWriter();
             
             var deliverable = new UpgradeDeliverable(null, writer, null, MigrationEntryService(UmbracoVersion.GetSemanticVersion()));
 
@@ -43,7 +44,7 @@ namespace Chauffeur.Tests.Deliverables
         [Fact]
         public async Task CorrectSameVersionSelected_NothingDone()
         {
-            var writer = Writer();
+            var writer = new MockTextWriter();
             
             var deliverable = new UpgradeDeliverable(null, writer, null, MigrationEntryService(new SemVersion(7, 1), UmbracoVersion.GetSemanticVersion(), new SemVersion(7,3)));
 
@@ -56,32 +57,33 @@ namespace Chauffeur.Tests.Deliverables
         [Fact]
         public async Task DifferentVersions_UpgradeIsCompleted()
         {
-            var writer = Writer();
-            var deliverable = new UpgradeDeliverable(null, writer, Upgrader(true), MigrationEntryService(new SemVersion(7,1)));
+            var writer = new MockTextWriter();
+
+            var migrationRunnerService = Substitute.For<IMigrationRunnerService>();
+            migrationRunnerService.Execute(Arg.Any<SemVersion>(), Arg.Any<SemVersion>()).Returns(true);
+
+            var deliverable = new UpgradeDeliverable(null, writer, migrationRunnerService, MigrationEntryService(new SemVersion(7,1)));
 
             var response = await deliverable.Run(null, null);
 
-            Assert.True(writer.Messages.Count() == 2);
+            Assert.Equal(2, writer.Messages.Count());
             Assert.Equal(DeliverableResponse.Continue, response);
         }
 
         [Fact]
         public async Task UpgradeFailes_ErrorStateReturned()
         {
-            var writer = Writer();
-            var deliverable = new UpgradeDeliverable(null, writer, Upgrader(false), MigrationEntryService(new SemVersion(7, 1)));
+            var writer = new MockTextWriter();
+            var migrationRunnerService = Substitute.For<IMigrationRunnerService>();
+            migrationRunnerService.Execute(Arg.Any<SemVersion>(), Arg.Any<SemVersion>()).Returns(false);
+            var deliverable = new UpgradeDeliverable(null, writer, migrationRunnerService, MigrationEntryService(new SemVersion(7, 1)));
 
             var response = await deliverable.Run(null, null);
 
-            Assert.True(writer.Messages.Count() == 2);
+            Assert.Equal(2, writer.Messages.Count());
             Assert.Equal(DeliverableResponse.FinishedWithError, response);
         }
 
-        private MockTextWriter Writer()
-        {
-            return new MockTextWriter();
-        }
-        
         private IMigrationEntryService MigrationEntryService(params SemVersion[] versions)
         {
             var migrationEntryService = Substitute.For<IMigrationEntryService>();
@@ -90,11 +92,5 @@ namespace Chauffeur.Tests.Deliverables
             return migrationEntryService;
         }
 
-        private IUpgrader Upgrader(bool returns)
-        {
-            var upgrader = Substitute.For<IUpgrader>();
-            upgrader.Upgrade(new SemVersion(7, 1), UmbracoVersion.GetSemanticVersion()).Returns(returns);
-            return upgrader;
-        }
     }
 }
