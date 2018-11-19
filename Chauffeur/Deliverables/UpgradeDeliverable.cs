@@ -1,12 +1,10 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Chauffeur.Services;
 using Semver;
 using Umbraco.Core;
-using Umbraco.Core.Logging;
 using Umbraco.Core.Configuration;
-using Umbraco.Core.Persistence;
-using Umbraco.Core.Persistence.Migrations;
 using Umbraco.Core.Services;
 
 namespace Chauffeur.Deliverables
@@ -14,18 +12,18 @@ namespace Chauffeur.Deliverables
     [DeliverableName("upgrade")]
     public sealed class UpgradeDeliverable : Deliverable
     {
-        private readonly IUpgrader upgrader;
+        private readonly IMigrationRunnerService migrationRunner;
         private readonly IMigrationEntryService migrationEntryService;
 
         public UpgradeDeliverable(
             TextReader reader,
             TextWriter writer,
-            IUpgrader upgrader,
+            IMigrationRunnerService migrationRunner,
             IMigrationEntryService migrationEntryService
             )
             : base(reader, writer)
         {
-            this.upgrader = upgrader;
+            this.migrationRunner = migrationRunner;
             this.migrationEntryService = migrationEntryService;
         }
 
@@ -46,7 +44,7 @@ namespace Chauffeur.Deliverables
             }
 
             await Out.WriteLineAsync($"Upgrading from {currentVersion} to {targetVersion}");
-            var upgraded = upgrader.Upgrade(currentVersion, targetVersion);
+            var upgraded = migrationRunner.Execute(currentVersion, targetVersion);
 
             if (!upgraded)
             {
@@ -72,34 +70,5 @@ namespace Chauffeur.Deliverables
         }
     }
 
-    public interface IUpgrader
-    {
-        bool Upgrade(SemVersion from, SemVersion to);
-    }
-
-    public class Upgrader : IUpgrader
-    {
-        private ILogger logger;
-        private IMigrationEntryService migrationEntryService;
-        private UmbracoDatabase database;
-
-        public Upgrader(IMigrationEntryService migrationEntryService, ILogger logger, UmbracoDatabase database)
-        {
-            this.logger = logger;
-            this.migrationEntryService = migrationEntryService;
-            this.database = database;
-        }
-
-        public bool Upgrade(SemVersion from, SemVersion to)
-        {
-            var runner = new MigrationRunner(
-                migrationEntryService,
-                logger,
-                from,
-                to,
-                Constants.System.UmbracoMigrationName);
-
-            return runner.Execute(database, isUpgrade: true);
-        }
-    }
+    
 }
