@@ -1,0 +1,56 @@
+resources:
+- repo: self
+
+queue:
+  name: Hosted VS2017
+  demands: DotNetCore
+
+steps:
+- powershell: ./build.ps1
+  arguments: '-Target Setup'
+  displayName: 'Setup environment'
+
+- task: isaacabraham.fsharp-helpers-extension.a2dadf20-1a83-4220-a4ee-b52f6c77f3cf.FAKE5@1
+  displayName: Build
+  inputs:
+    ScriptArguments: 'target Build'
+
+- task: isaacabraham.fsharp-helpers-extension.a2dadf20-1a83-4220-a4ee-b52f6c77f3cf.FAKE5@1
+  displayName: Package
+  inputs:
+    ScriptArguments: 'target Package'
+
+- task: isaacabraham.fsharp-helpers-extension.a2dadf20-1a83-4220-a4ee-b52f6c77f3cf.FAKE5@1
+  displayName: 'Unit Tests'
+  inputs:
+    ScriptArguments: 'target UnitTests'
+
+- task: isaacabraham.fsharp-helpers-extension.a2dadf20-1a83-4220-a4ee-b52f6c77f3cf.FAKE5@1
+  displayName: 'Integration Tests'
+  inputs:
+    ScriptArguments: 'target IntegrationTests'
+
+- task: PublishTestResults@2
+  displayName: 'Publish Test Results .testresults/results-*.xml'
+  inputs:
+    testResultsFormat: XUnit
+    testResultsFiles: '.testresults/results-*.xml'
+    mergeTestResults: true
+
+- powershell: |
+   ./tools/codecov/tools/codecov.exe -t $(CodeCov_Token) -f .testresults/coverage-unit-tests.xml -v
+   ./tools/codecov/tools/codecov.exe -t $(CodeCov_Token) -f .testresults/coverage-integration-tests.xml -v
+  failOnStderr: true
+  displayName: 'Upload coverage to codecov.io'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: packages'
+  inputs:
+    PathtoPublish: .packaging
+    ArtifactName: packages
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: test results'
+  inputs:
+    PathtoPublish: .testresults
+    ArtifactName: 'test results'
