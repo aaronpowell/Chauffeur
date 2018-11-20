@@ -114,6 +114,7 @@
     <Compile Include="Packages.fs" />
     <Compile Include="DocumentTypeSetup.fs" />
     <Compile Include="ConnectionStringOverriding.fs" />
+    <Compile Include="UpgradeDeliverable.fs" />
     <Content Include="app.config" />
     <Content Include="packages.config" />
   </ItemGroup>
