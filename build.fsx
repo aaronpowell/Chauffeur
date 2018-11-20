@@ -196,7 +196,7 @@ Target.create "CreateRunnerPackage" (fun _ ->
     Shell.cleanDirs [libDir]
 
     Shell.copyFile libDir (chauffeurRunnerDir @@ "Release/Chauffeur.Runner.exe")
-    Shell.copyFiles packagingDir ["License.md"; "readme.md"]
+    Shell.copyFiles packagingDir [".github/License.md"; ".github/readme.md"]
 
 
     NuGet (fun p ->
@@ -221,7 +221,7 @@ Target.create "CreateTestingToolsPackage" (fun _ ->
     Shell.cleanDirs [libDir]
 
     Shell.copyFile libDir (chauffeurTestingToolsDir @@ "Release/Chauffeur.TestingTools.dll")
-    Shell.copyFiles packagingDir ["License.md"; "readme.md"]
+    Shell.copyFiles packagingDir [".github/License.md"; ".github/readme.md"]
 
     NuGet (fun p ->
         {p with
