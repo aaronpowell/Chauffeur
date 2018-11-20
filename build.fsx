@@ -25,7 +25,7 @@ let packagingRunnerDir = packagingRoot @@ "chauffeur.runner"
 let packagingTestingToolsDir = packagingRoot @@ "chauffeur.testingtools"
 let testDir = "./.testresults"
 let buildMode = Environment.environVarOrDefault "buildMode" "Release"
-let isAppVeyorBuild = not (isNull (Environment.environVar "APPVEYOR"))
+let isCIBuild = not (isNull (Environment.environVar "AGENT_ID"))
 let projectName = "Chauffeur"
 let chauffeurSummary = "Chauffeur is a tool for helping with delivering changes to an Umbraco instance."
 let chauffeurDescription = chauffeurSummary
@@ -47,13 +47,13 @@ let trimBranchName (branch: string) =
 
     trimmed.Replace(".", "")
 
-let prv = match Environment.environVar "APPVEYOR_REPO_BRANCH" with
+let prv = match Environment.environVar "BUILD_SOURCEBRANCHNAME" with
             | null -> ""
             | "master" -> ""
             | branch -> sprintf "-%s%s" (trimBranchName branch) (
-                            match Environment.environVar "APPVEYOR_BUILD_NUMBER" with
+                            match Environment.environVar "BUILD_BUILDNUMBER" with
                             | null -> ""
-                            | _ -> sprintf "-%s" (Environment.environVar "APPVEYOR_BUILD_NUMBER")
+                            | _ -> sprintf "-%s" (Environment.environVar "BUILD_BUILDNUMBER")
                             )
 let nugetVersion = sprintf "%d.%d.%d%s" releaseNotes.SemVer.Major releaseNotes.SemVer.Minor releaseNotes.SemVer.Patch prv
 
@@ -115,7 +115,7 @@ Target.create "Build" (fun _ ->
                         "Optimize", "True"
                         "DebugSymbols", "True"
                     ] }
-        if isAppVeyorBuild then p
+        if isCIBuild then p
         else { p with ToolPath = "C:\Program Files (x86)\Microsoft Visual Studio\Preview\Enterprise\MSBuild\15.0\Bin\msbuild.exe" }
 
     MSBuild.build setParams "./Chauffeur.sln"
@@ -125,15 +125,19 @@ Target.create "UnitTests" (fun _ ->
     OpenCover.getVersion (Some (fun p -> { p with ExePath = "./tools/OpenCover/tools/OpenCover.Console.exe" }))
 
     let assemblies = !! (sprintf "./Chauffeur.Tests/bin/%s/Chauffeur.Tests.dll" buildMode)
+    let filename = "coverage-unit-tests.xml"
     OpenCover.run (fun p ->
                     { p with
                             ExePath = "./tools/OpenCover/tools/OpenCover.Console.exe"
                             TestRunnerExePath = "./tools/xunit.runner.console/tools/xunit.console.exe"
-                            Output = testDir @@ "unit-tests.xml"
+                            Output = testDir @@ filename
                             Register = RegisterUser
                             Filter = "+[Chauffeur*]* -[Chauffeur.Tests*]*"
                     })
                     (sprintf "%s -noshadow" (assemblies.Includes |> String.concat " " ))
+
+    assemblies
+    |> XUnit2.run (fun p -> { p with XmlOutputPath = Some(testDir @@ "results-unit-tests.xml") })
 )
 
 Target.create "EnsureSqlExpressAssemblies" (fun _ ->
@@ -147,16 +151,20 @@ Target.create "CleanXUnitVSRunner" (fun _ ->
 Target.create "IntegrationTests" (fun _ ->
     OpenCover.getVersion (Some (fun p -> { p with ExePath = "./tools/OpenCover/tools/OpenCover.Console.exe" }))
 
+    let filename = "coverage-integration-tests.xml"
     let assemblies = !! (sprintf "./Chauffeur.Tests.Integration/bin/%s/Chauffeur.Tests.Integration.dll" buildMode)
     OpenCover.run (fun p ->
                     { p with
                             ExePath = "./tools/OpenCover/tools/OpenCover.Console.exe"
                             TestRunnerExePath = "./tools/xunit.runner.console/tools/xunit.console.exe"
-                            Output = testDir @@ "integration-tests.xml"
+                            Output = testDir @@ filename
                             Register = RegisterUser
                             Filter = "+[Chauffeur*]* -[Chauffeur.Tests*]*"
                     })
                     (sprintf "%s -noshadow" (assemblies.Includes |> String.concat " " ))
+
+    assemblies
+    |> XUnit2.run (fun p -> { p with XmlOutputPath = Some(testDir @@ "results-integration-tests.xml") })
 )
 
 Target.create "CreateChauffeurPackage" (fun _ ->
@@ -233,17 +241,12 @@ Target.create "CreateTestingToolsPackage" (fun _ ->
             Publish = Environment.hasEnvironVar "nugetkey" }) "Chauffeur.TestingTools/Chauffeur.TestingTools.nuspec"
 )
 
-Target.create "BuildVersion" (fun _ ->
-    Shell.Exec("appveyor", sprintf "UpdateBuild -Version \"%s\"" nugetVersion) |> ignore
-)
-
 Target.create "Package" ignore
 
 "AssemblyInfo"
     ==> "Build"
 
 "Clean"
-    =?> ("BuildVersion", isAppVeyorBuild)
     ==> "Build"
 
 "RestoreChauffeurPackages"

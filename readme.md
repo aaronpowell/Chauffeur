@@ -4,8 +4,8 @@
 
 | Build type | Status | NuGet | Code Coverage |
 | --- | --- | --- | --- |
-| master | [![Build status](https://ci.appveyor.com/api/projects/status/py65p0vnrjb4m7sx/branch/master?svg=true)](https://ci.appveyor.com/project/aaronpowell/chauffeur/branch/master) | [![NuGet Badge](https://buildstats.info/nuget/Chauffeur)](https://www.nuget.org/packages/Chauffeur/) | [![codecov](https://codecov.io/gh/aaronpowell/chauffeur/branch/master/graph/badge.svg)](https://codecov.io/gh/aaronpowell/chauffeur)
-| dev | [![Build status](https://ci.appveyor.com/api/projects/status/py65p0vnrjb4m7sx?svg=true)](https://ci.appveyor.com/project/aaronpowell/chauffeur) | [![NuGet Badge](https://buildstats.info/nuget/Chauffeur?includePreReleases=true)](https://www.nuget.org/packages/Chauffeur/) |  |
+| master | [![Build Status](https://aaronpowell.visualstudio.com/Chauffeur/_apis/build/status/Chauffeur%20Pipeline?branchName=master)](https://aaronpowell.visualstudio.com/Chauffeur/_build/latest?definitionId=14) | [![NuGet Badge](https://buildstats.info/nuget/Chauffeur)](https://www.nuget.org/packages/Chauffeur/) | [![codecov](https://codecov.io/gh/aaronpowell/chauffeur/branch/master/graph/badge.svg)](https://codecov.io/gh/aaronpowell/chauffeur)
+| dev | [![Build Status](https://aaronpowell.visualstudio.com/Chauffeur/_apis/build/status/Chauffeur%20Pipeline)](https://aaronpowell.visualstudio.com/Chauffeur/_build/latest?definitionId=14) | [![NuGet Badge](https://buildstats.info/nuget/Chauffeur?includePreReleases=true)](https://www.nuget.org/packages/Chauffeur/) |  |
 
 
 Welcome to Chauffeur, deliverying changes to your Umbraco environment in style.
