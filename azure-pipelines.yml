@@ -3,10 +3,11 @@ queue:
   demands: DotNetCore
 
 steps:
-- powershell: ./build.ps1
-  arguments: '-Target Setup'
-
+- task: PowerShell@2
   displayName: 'Setup environment'
+  inputs:
+    filePath: ./build.ps1
+    arguments: '-Target Setup'
 
 - task: isaacabraham.fsharp-helpers-extension.a2dadf20-1a83-4220-a4ee-b52f6c77f3cf.FAKE5@1
   displayName: Build
