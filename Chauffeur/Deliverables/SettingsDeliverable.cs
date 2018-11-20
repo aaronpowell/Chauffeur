@@ -18,11 +18,13 @@ namespace Chauffeur.Deliverables
 
         public async override Task<DeliverableResponse> Run(string command, string[] args)
         {
-            var dic = new Dictionary<string, string>();
+            var dic = new Dictionary<string, string>
+            {
+                { "Umbraco Version", settings.UmbracoVersion },
+                { "Chauffeur Version", settings.ChauffeurVersion }
+            };
 
-            string path;
-
-            if (settings.TryGetSiteRootDirectory(out path))
+            if (settings.TryGetSiteRootDirectory(out string path))
                 dic.Add("Site Root", path);
             else
                 dic.Add("Site Root", "Failed to access");

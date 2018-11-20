@@ -20,7 +20,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run(null, null);
 
-            Assert.Equal(5, writer.Messages.Count());
+            Assert.Equal(7, writer.Messages.Count());
         }
 
         [Fact]
