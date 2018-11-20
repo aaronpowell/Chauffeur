@@ -40,7 +40,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run(null, null);
 
-            var actual = writer.Messages.Skip(1).First().Split('|')[1].Trim();
+            var actual = writer.Messages.Skip(3).First().Split('|')[1].Trim();
 
             Assert.Equal(expected, actual);
         }
@@ -62,7 +62,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run(null, null);
 
-            var actual = writer.Messages.Skip(2).First().Split('|')[1].Trim();
+            var actual = writer.Messages.Skip(4).First().Split('|')[1].Trim();
 
             Assert.Equal(expected, actual);
         }
@@ -84,7 +84,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run(null, null);
 
-            var actual = writer.Messages.Skip(3).First().Split('|')[1].Trim();
+            var actual = writer.Messages.Skip(5).First().Split('|')[1].Trim();
 
             Assert.Equal(expected, actual);
         }
@@ -101,7 +101,7 @@ namespace Chauffeur.Tests.Deliverables
 
             await deliverable.Run(null, null);
 
-            var actual = string.Join("|", writer.Messages.Skip(4).First().Split('|').Skip(1)).Trim();
+            var actual = string.Join("|", writer.Messages.Skip(6).First().Split('|').Skip(1)).Trim();
 
             Assert.Equal(expected, actual);
         }
