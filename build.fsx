@@ -172,7 +172,7 @@ Target.create "CreateChauffeurPackage" (fun _ ->
     Shell.cleanDirs [libDir]
 
     Shell.copyFile libDir (chauffeurDir @@ "Release/Chauffeur.dll")
-    Shell.copyFiles packagingDir ["License.md"; "readme.md"]
+    Shell.copyFiles packagingDir [".github/License.md"; ".github/readme.md"]
 
     NuGet (fun p ->
         {p with
