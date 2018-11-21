@@ -1,6 +1,6 @@
 # Chauffeur
 
-<img src="./chauffeur_logo.svg" width="50" />
+<img src="../chauffeur_logo.svg" width="50" />
 
 | Build type | Status | NuGet | Code Coverage |
 | --- | --- | --- | --- |
@@ -8,7 +8,7 @@
 | dev | [![Build Status](https://aaronpowell.visualstudio.com/Chauffeur/_apis/build/status/Chauffeur%20Pipeline)](https://aaronpowell.visualstudio.com/Chauffeur/_build/latest?definitionId=14) | [![NuGet Badge](https://buildstats.info/nuget/Chauffeur?includePreReleases=true)](https://www.nuget.org/packages/Chauffeur/) |  |
 
 
-Welcome to Chauffeur, deliverying changes to your Umbraco environment in style.
+Welcome to Chauffeur, delivering changes to your Umbraco environment in style.
 
 ## Who is Chauffeur?
 
