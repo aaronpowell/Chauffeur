@@ -1,8 +1,9 @@
-## New in 1.4.0 (Unreleased)
+## New in 1.4.0 (2018/11/22)
 * Moving away from AppVeyor to Azure DevOps for builds
 * Added editorconfig file to enforce coding standards
 * Merged [PR #85](https://github.com/aaronpowell/Chauffeur/pull/85) from @stevetemple
     * Introduces an `UpgradeDeliverable` for using the Umbraco migration runner to upgrade from one version to another
+* Created some templates for GitHub on issues and stuff.
 
 ## New in 1.3.0 (2018/09/04)
 * Updated the minimum Umbraco version to 7.8.0
