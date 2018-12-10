@@ -1,14 +1,18 @@
+source https://api.nuget.org/v3/index.json
+nuget fsharp.core
+nuget taskbuilder.fs
+nuget System.IO.Abstractions
+
+group Umbraco
+    source https://www.myget.org/F/umbracocore/api/v3/index.json
+    source https://api.nuget.org/v3/index.json
+    nuget UmbracoCMS.Core prerelease
+    nuget UmbracoCMS.Web prerelease
+
 // [ FAKE GROUP ]
 group Build
     source https://api.nuget.org/v3/index.json
     nuget Fake.DotNet.Cli
     nuget Fake.IO.FileSystem
     nuget Fake.Core.Target
-    nuget Fake.Core.Environment
-    nuget Fake.DotNet.Testing.XUnit2
-    nuget Fake.DotNet.NuGet
     nuget Fake.Core.ReleaseNotes
-    nuget Fake.DotNet.AssemblyInfoFile
-    nuget Fake.Tools.Git
-    nuget Fake.DotNet.MSBuild
-    nuget Fake.DotNet.Testing.OpenCover

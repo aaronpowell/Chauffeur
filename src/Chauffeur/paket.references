@@ -1,0 +1,6 @@
+fsharp.core
+taskbuilder.fs
+
+group Umbraco
+    UmbracoCMS.Core
+    UmbracoCMS.Web

@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="IChauffeurSettings.fs" />
+    <Compile Include="ChauffeurComponent.fs" />
+    <Compile Include="IProvideDirections.fs" />
+    <Compile Include="DeliverableResponse.fs" />
+    <Compile Include="Deliverable.fs" />
+    <Compile Include="ChauffeurDeliverableComponent.fs" />
+    <Compile Include="Deliverables\InstallDeliverable.fs" />
+    <Compile Include="Deliverables\QuitDeliverable.fs" />
+    <Compile Include="UmbracoOverrides\NullHttpContextAccessor.fs" />
+    <Compile Include="Host\IChauffeurHost.fs" />
+    <Compile Include="Host\ChauffeurRuntime.fs" />
+    <Compile Include="Host\UmbracoHost.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-62909-01" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Web" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>
