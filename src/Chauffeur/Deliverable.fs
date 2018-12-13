@@ -3,6 +3,7 @@
 open System.IO
 open System.Threading.Tasks
 open System
+open FSharp.Control.Tasks.V2
 
 [<AbstractClass>]
 type Deliverable(reader : TextReader, writer : TextWriter) =
@@ -11,7 +12,7 @@ type Deliverable(reader : TextReader, writer : TextWriter) =
 
     abstract member Run : string -> string[] -> Task<DeliverableResponse>
 
-    default __.Run _ _ = Task.FromResult(DeliverableResponse.Continue)
+    default __.Run _ _ = task { return DeliverableResponse.Continue }
 
 [<AttributeUsage(AttributeTargets.Class, AllowMultiple=false, Inherited=false)>]
 type DeliverableNameAttribute(name : string) =
