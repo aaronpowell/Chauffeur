@@ -4,6 +4,7 @@ open LightInject
 open System.Reflection
 open Umbraco.Core.Components
 open Umbraco.Core.Composing
+open Chauffeur
 
 type ChauffeurDeliverableComponent() =
     inherit UmbracoComponentBase()
