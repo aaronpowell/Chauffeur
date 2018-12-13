@@ -4,12 +4,15 @@
     <TargetFramework>net472</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="TypeHelpers.fs" />
+    <Compile Include="ISqlCeEngineFactory.fs" />
     <Compile Include="IChauffeurSettings.fs" />
-    <Compile Include="ChauffeurComponent.fs" />
     <Compile Include="IProvideDirections.fs" />
     <Compile Include="DeliverableResponse.fs" />
     <Compile Include="Deliverable.fs" />
-    <Compile Include="ChauffeurDeliverableComponent.fs" />
+    <Compile Include="Components\ChauffeurDeliverableComponent.fs" />
+    <Compile Include="Components\ChauffeurComponent.fs" />
+    <Compile Include="Components\FileSystemComponent.fs" />
     <Compile Include="Deliverables\InstallDeliverable.fs" />
     <Compile Include="Deliverables\QuitDeliverable.fs" />
     <Compile Include="UmbracoOverrides\NullHttpContextAccessor.fs" />

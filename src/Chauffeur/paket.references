@@ -1,5 +1,6 @@
 fsharp.core
 taskbuilder.fs
+System.IO.Abstractions
 
 group Umbraco
     UmbracoCMS.Core

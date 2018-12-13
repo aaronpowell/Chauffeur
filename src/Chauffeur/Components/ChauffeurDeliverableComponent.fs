@@ -1,4 +1,4 @@
-﻿namespace Chauffeur
+﻿namespace Chauffeur.Components
 
 open LightInject
 open System.Reflection
