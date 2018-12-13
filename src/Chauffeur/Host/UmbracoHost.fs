@@ -1,20 +1,19 @@
 namespace Chauffeur.Host
 
-open System.IO
 open LightInject
-open System
-open System.Linq
 open FSharp.Control.Tasks.V2
+open System
 open System.Diagnostics
+open System.IO
 open System.Reflection
 open Umbraco.Core.Configuration
 
 open Chauffeur
+open ServiceContainerExtensions
 
 type UmbracoHost(reader : TextReader, writer : TextWriter) =
     let runtime = new ChauffeurRuntime(reader, writer)
     let container = new ServiceContainer()
-    
 
     interface IChauffeurHost with
         member __.Run() = task {
@@ -34,13 +33,12 @@ type UmbracoHost(reader : TextReader, writer : TextWriter) =
 
                 let registeredName = sprintf "chauffeur:%s" rl
 
-                match container.CanGetInstance(typeof<Deliverable>, registeredName) with
-                | true ->
-                    let deliverable = container.GetInstance<Deliverable>(registeredName)
+                match container.TryGetInstance<Deliverable>(registeredName) with
+                | Some deliverable ->
                     let parts = rl.Split(' ')
-                    let! runResult = deliverable.Run (parts.[0]) (parts.Skip(1).ToArray())
+                    let! runResult = deliverable.Run (Array.head parts) (Array.skip 1 parts)
                     result <- runResult
-                | false ->
+                | None ->
                     do! writer.WriteLineAsync(sprintf "'%s' didn't match a known deliverable name or alias" rl)
 
             return result

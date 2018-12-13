@@ -16,6 +16,9 @@ let rec findSiteRoot path =
         | 1 -> Some(path)
         | _ -> failwithf "Found more than 1 web.config at %s" path
 
+let setData (domain : AppDomain) key value =
+    domain.SetData(key, value)
+
 [<EntryPoint>]
 let main argv =
     match AppDomain.CurrentDomain.FriendlyName with
@@ -48,15 +51,19 @@ let main argv =
                             with
                             | _ -> ignore())
 
-            domain.SetData("DataDirectory", Path.Combine(siteRoot, "App_Data"))
-            domain.SetData(".appDomain", "From Domain")
-            domain.SetData(".appId", "From Domain")
-            domain.SetData(".appVPath", exePath)
-            domain.SetData(".appPath", exePath)
-            Thread.GetDomain().SetData(".appDomain", "From Thread")
-            Thread.GetDomain().SetData(".appId", "From Thread")
-            Thread.GetDomain().SetData(".appVPath", exePath)
-            Thread.GetDomain().SetData(".appPath", exePath)
+            let setDomainData = setData domain
+            let setThreadData = Thread.GetDomain() |> setData
+
+            setDomainData "DataDirectory" (Path.Combine(siteRoot, "App_Data"))
+            setDomainData ".appDomain" "From Domain"
+            setDomainData ".appId" "From Domain"
+            setDomainData ".appVPath" exePath
+            setDomainData ".appPath" exePath
+
+            setThreadData ".appDomain" "From Thread"
+            setThreadData ".appId" "From Thread"
+            setThreadData ".appVPath" exePath
+            setThreadData ".appPath" exePath
             let thisAssembly = new FileInfo(asm.Location)
             let _ = domain.ExecuteAssembly(thisAssembly.FullName, argv)
             0
