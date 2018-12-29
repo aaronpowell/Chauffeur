@@ -18,7 +18,11 @@
             },
             "problemMatcher": [
                 "$msCompile"
-            ]
+            ],
+            "group":{
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "fake unit test",
