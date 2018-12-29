@@ -124,7 +124,7 @@
         /* Exit Preview */
         /*****************************************************************************/
         $scope.exitPreview = function () {
-            window.top.location.href = '../endPreview.aspx?redir=%2f' + $scope.pageId;
+            window.top.location.href = '../preview/end?redir=%2f' + $scope.pageId;
         };
         $scope.onFrameLoaded = function (iframe) {
             $scope.frameLoaded = true;

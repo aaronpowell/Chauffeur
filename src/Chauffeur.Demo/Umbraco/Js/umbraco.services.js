@@ -617,7 +617,7 @@
         function loadLocales(locales, supportedLocales) {
             var localeUrls = getMomentLocales(locales, supportedLocales);
             if (localeUrls.length >= 1) {
-                return assetsService.load(localeUrls, $rootScope);
+                return service.load(localeUrls, $rootScope);
             } else {
                 $q.when(true);
             }
@@ -1967,16 +1967,205 @@
     }
     angular.module('umbraco.services').factory('dataTypeHelper', dataTypeHelper);
     'use strict';
+    function _slicedToArray(arr, i) {
+        return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+    }
+    function _nonIterableRest() {
+        throw new TypeError('Invalid attempt to destructure non-iterable instance');
+    }
+    function _iterableToArrayLimit(arr, i) {
+        var _arr = [];
+        var _n = true;
+        var _d = false;
+        var _e = undefined;
+        try {
+            for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+                _arr.push(_s.value);
+                if (i && _arr.length === i)
+                    break;
+            }
+        } catch (err) {
+            _d = true;
+            _e = err;
+        } finally {
+            try {
+                if (!_n && _i['return'] != null)
+                    _i['return']();
+            } finally {
+                if (_d)
+                    throw _e;
+            }
+        }
+        return _arr;
+    }
+    function _arrayWithHoles(arr) {
+        if (Array.isArray(arr))
+            return arr;
+    }
     /**
  @ngdoc service
  * @name umbraco.services.editorService
  *
  * @description
  * Added in Umbraco 8.0. Application-wide service for handling infinite editing.
+ * 
+ *
+ * 
+ * 
+<h2><strong>Open a build-in infinite editor (media picker)</strong></h2>
+<h3>Markup example</h3>
+<pre>
+    <div ng-controller="My.MediaPickerController as vm">
+        <button type="button" ng-click="vm.openMediaPicker()">Open</button>
+    </div>
+</pre>
+
+<h3>Controller example</h3>
+<pre>
+    (function () {
+        "use strict";
+
+        function MediaPickerController(editorService) {
+
+            var vm = this;
+
+            vm.openMediaPicker = openMediaPicker;
+
+            function openMediaPicker() {
+                var mediaPickerOptions = {
+                    multiPicker: true,
+                    submit: function(model) {
+                        editorService.close();
+                    },
+                    close: function() {
+                        editorService.close();
+                    }
+                };
+                editorService.mediaPicker(mediaPickerOptions);
+            };
+        }
+
+        angular.module("umbraco").controller("My.MediaPickerController", MediaPickerController);
+    })();
+</pre>
+
+<h2><strong>Building a custom infinite editor</strong></h2>
+<h3>Open the custom infinite editor (Markup)</h3>
+<pre>
+    <div ng-controller="My.Controller as vm">
+        <button type="button" ng-click="vm.open()">Open</button>
+    </div>
+</pre>
+
+<h3>Open the custom infinite editor (Controller)</h3>
+<pre>
+    (function () {
+        "use strict";
+
+        function Controller(editorService) {
+
+            var vm = this;
+
+            vm.open = open;
+
+            function open() {
+                var options = {
+                    title: "My custom infinite editor",
+                    view: "path/to/view.html",
+                    submit: function(model) {
+                        editorService.close();
+                    },
+                    close: function() {
+                        editorService.close();
+                    }
+                };
+                editorService.open(options);
+            };
+        }
+
+        angular.module("umbraco").controller("My.Controller", Controller);
+    })();
+</pre>
+
+<h3><strong>The custom infinite editor view</strong></h3>
+When building a custom infinite editor view you can use the same components as a normal editor ({@link umbraco.directives.directive:umbEditorView umbEditorView}).
+<pre>
+    <div ng-controller="My.InfiniteEditorController as vm">
+
+        <umb-editor-view>
+
+            <umb-editor-header
+                name="model.title"
+                name-locked="true"
+                hide-alias="true"
+                hide-icon="true"
+                hide-description="true">
+            </umb-editor-header>
+        
+            <umb-editor-container>
+                <umb-box>
+                    <umb-box-content>
+                        {{model | json}}
+                    </umb-box-content>
+                </umb-box>
+            </umb-editor-container>
+
+            <umb-editor-footer>
+                <umb-editor-footer-content-right>
+                    <umb-button
+                        type="button"
+                        button-style="link"
+                        label-key="general_close"
+                        action="vm.close()">
+                    </umb-button>
+                    <umb-button
+                        type="button"
+                        button-style="success"
+                        label-key="general_submit"
+                        action="vm.submit(model)">
+                    </umb-button>
+                </umb-editor-footer-content-right>
+            </umb-editor-footer>
+
+        </umb-editor-view>
+
+    </div>
+</pre>
+
+<h3>The custom infinite editor controller</h3>
+<pre>
+    (function () {
+        "use strict";
+
+        function InfiniteEditorController($scope) {
+
+            var vm = this;
+
+            vm.submit = submit;
+            vm.close = close;
+
+            function submit() {
+                if($scope.model.submit) {
+                    $scope.model.submit($scope.model);
+                }
+            }
+
+            function close() {
+                if($scope.model.close) {
+                    $scope.model.close();
+                }
+            }
+
+        }
+
+        angular.module("umbraco").controller("My.InfiniteEditorController", InfiniteEditorController);
+    })();
+</pre>
  */
     (function () {
         'use strict';
-        function editorService(eventsService) {
+        function editorService(eventsService, keyboardService) {
+            var editorsKeyboardShorcuts = [];
             var editors = [];
             /**
      * @ngdoc method
@@ -2009,8 +2198,17 @@
      *
      * @description
      * Method to open a new editor in infinite editing
+     *
+     * @param {Object} editor rendering options
+     * @param {String} editor.view Path to view
+     * @param {String} editor.size Sets the size of the editor ("Small"). If nothing is set it will use full width.
      */
             function open(editor) {
+                /* keyboard shortcuts will be overwritten by the new infinite editor
+          so we need to store the shortcuts for the current editor so they can be rebound
+          when the infinite editor closes
+      */
+                unbindKeyboardShortcuts();
                 // set flag so we know when the editor is open in "infinie mode"
                 editor.infiniteMode = true;
                 editors.push(editor);
@@ -2029,15 +2227,17 @@
      * Method to close the latest opened editor
      */
             function close() {
-                var length = editors.length;
-                var closedEditor = editors[length - 1];
                 // close last opened editor
+                var closedEditor = editors[editors.length - 1];
                 editors.splice(-1, 1);
                 var args = {
                     editors: editors,
                     editor: closedEditor
                 };
+                // emit event to let components know an editor has been removed
                 eventsService.emit('appState.editors.close', args);
+                // rebind keyboard shortcuts for the new editor in focus
+                rebindKeyboardShortcuts();
             }
             /**
      * @ngdoc method
@@ -2053,7 +2253,7 @@
                     editors: editors,
                     editor: null
                 };
-                eventsService.emit('appState.editors.closeAll', args);
+                eventsService.emit('appState.editors.close', args);
             }
             /**
      * @ngdoc method
@@ -2062,8 +2262,12 @@
      *
      * @description
      * Opens a media editor in infinite editing, the submit callback returns the updated content item
+     * @param {Object} editor rendering options
      * @param {String} editor.id The id of the content item
      * @param {Boolean} editor.create Create new content item
+     * @param {Function} editor.submit Callback function when the publish and close button is clicked. Returns the editor model object
+     * @param {Function} editor.close Callback function when the close button is clicked.
+     * 
      * @returns {Object} editor object
      */
             function contentEditor(editor) {
@@ -2077,6 +2281,12 @@
      *
      * @description
      * Opens a content picker in infinite editing, the submit callback returns an array of selected items
+     * 
+     * @param {Object} editor rendering options
+     * @param {Boolean} editor.multiPicker Pick one or multiple items
+     * @param {Function} editor.submit Callback function when the submit button is clicked. Returns the editor model object
+     * @param {Function} editor.close Callback function when the close button is clicked.
+     * 
      * @returns {Object} editor object
      */
             function contentPicker(editor) {
@@ -2162,6 +2372,9 @@
      *
      * @description
      * Opens an embed editor in infinite editing.
+     * @param {Object} editor rendering options
+     * @param {String} editor.icon The icon class
+     * @param {String} editor.color The color class
      * @param {Callback} editor.submit Saves, submits, and closes the editor
      * @param {Callback} editor.close Closes the editor
      * @returns {Object} editor object
@@ -2178,6 +2391,7 @@
      *
      * @description
      * Opens a media editor in infinite editing, the submit callback returns the updated media item
+     * @param {Object} editor rendering options
      * @param {String} editor.id The id of the media item
      * @param {Boolean} editor.create Create new media item
      * @param {Callback} editor.submit Saves, submits, and closes the editor
@@ -2195,6 +2409,7 @@
      *
      * @description
      * Opens a media picker in infinite editing, the submit callback returns an array of selected media items
+     * @param {Object} editor rendering options
      * @param {Boolean} editor.multiPicker Pick one or multiple items
      * @param {Boolean} editor.onlyImages Only display files that have an image file-extension
      * @param {Boolean} editor.disableFolderSelect Disable folder selection
@@ -2216,6 +2431,7 @@
      *
      * @description
      * Opens an icon picker in infinite editing, the submit callback returns the selected icon
+     * @param {Object} editor rendering options
      * @param {Callback} editor.submit Submits the editor
      * @param {Callback} editor.close Closes the editor
      * @returns {Object} editor object
@@ -2232,6 +2448,7 @@
      *
      * @description
      * Opens the document type editor in infinite editing, the submit callback returns the saved document type
+     * @param {Object} editor rendering options
      * @param {Callback} editor.submit Submits the editor
      * @param {Callback} editor.close Closes the editor
      * @returns {Object} editor object
@@ -2247,6 +2464,7 @@
      *
      * @description
      * Opens the media type editor in infinite editing, the submit callback returns the saved media type
+     * @param {Object} editor rendering options
      * @param {Callback} editor.submit Submits the editor
      * @param {Callback} editor.close Closes the editor
      * @returns {Object} editor object
@@ -2255,21 +2473,72 @@
                 editor.view = 'views/mediatypes/edit.html';
                 open(editor);
             }
+            /**
+     * @ngdoc method
+     * @name umbraco.services.editorService#queryBuilder
+     * @methodOf umbraco.services.editorService
+     *
+     * @description
+     * Opens the query builder in infinite editing, the submit callback returns the generted query
+     * @param {Object} editor rendering options
+     * @param {Callback} editor.submit Submits the editor
+     * @param {Callback} editor.close Closes the editor
+     * @returns {Object} editor object
+     */
             function queryBuilder(editor) {
                 editor.view = 'views/common/infiniteeditors/querybuilder/querybuilder.html';
                 editor.size = 'small';
                 open(editor);
             }
+            /**
+     * @ngdoc method
+     * @name umbraco.services.editorService#treePicker
+     * @methodOf umbraco.services.editorService
+     *
+     * @description
+     * Opens the query builder in infinite editing, the submit callback returns the generted query
+     * @param {Object} editor rendering options
+     * @param {String} options.section tree section to display
+     * @param {String} options.treeAlias specific tree to display
+     * @param {Boolean} options.multiPicker should the tree pick one or multiple items before returning
+     * @param {Callback} editor.submit Submits the editor
+     * @param {Callback} editor.close Closes the editor
+     * @returns {Object} editor object
+     */
             function treePicker(editor) {
                 editor.view = 'views/common/infiniteeditors/treepicker/treepicker.html';
                 editor.size = 'small';
                 open(editor);
             }
+            /**
+     * @ngdoc method
+     * @name umbraco.services.editorService#nodePermissions
+     * @methodOf umbraco.services.editorService
+     *
+     * @description
+     * Opens the an editor to set node permissions.
+     * @param {Object} editor rendering options
+     * @param {Callback} editor.submit Submits the editor
+     * @param {Callback} editor.close Closes the editor
+     * @returns {Object} editor object
+     */
             function nodePermissions(editor) {
                 editor.view = 'views/common/infiniteeditors/nodepermissions/nodepermissions.html';
                 editor.size = 'small';
                 open(editor);
             }
+            /**
+     * @ngdoc method
+     * @name umbraco.services.editorService#insertCodeSnippet
+     * @methodOf umbraco.services.editorService
+     *
+     * @description
+     * Open an editor to insert code snippets into the code editor
+     * @param {Object} editor rendering options
+     * @param {Callback} editor.submit Submits the editor
+     * @param {Callback} editor.close Closes the editor
+     * @returns {Object} editor object
+     */
             function insertCodeSnippet(editor) {
                 editor.view = 'views/common/infiniteeditors/insertcodesnippet/insertcodesnippet.html';
                 editor.size = 'small';
@@ -2282,6 +2551,7 @@
      *
      * @description
      * Opens the user group picker in infinite editing, the submit callback returns an array of the selected user groups
+     * @param {Object} editor rendering options
      * @param {Callback} editor.submit Submits the editor
      * @param {Callback} editor.close Closes the editor
      * @returns {Object} editor object
@@ -2298,6 +2568,7 @@
      *
      * @description
      * Opens the user group picker in infinite editing, the submit callback returns the saved template
+     * @param {Object} editor rendering options
      * @param {String} editor.id The template id
      * @param {Callback} editor.submit Submits the editor
      * @param {Callback} editor.close Closes the editor
@@ -2313,7 +2584,8 @@
      * @methodOf umbraco.services.editorService
      *
      * @description
-     * Opens the section picker in infinite editing, the submit callback returns an array of the selected sections
+     * Opens the section picker in infinite editing, the submit callback returns an array of the selected sections¨
+     * @param {Object} editor rendering options
      * @param {Callback} editor.submit Submits the editor
      * @param {Callback} editor.close Closes the editor
      * @returns {Object} editor object
@@ -2330,6 +2602,7 @@
      *
      * @description
      * Opens the insert field editor in infinite editing, the submit callback returns the code snippet
+     * @param {Object} editor rendering options
      * @param {Callback} editor.submit Submits the editor
      * @param {Callback} editor.close Closes the editor
      * @returns {Object} editor object
@@ -2346,6 +2619,7 @@
      *
      * @description
      * Opens the template sections editor in infinite editing, the submit callback returns the type to insert
+     * @param {Object} editor rendering options
      * @param {Callback} editor.submit Submits the editor
      * @param {Callback} editor.close Closes the editor
      * @returns {Object} editor object
@@ -2357,11 +2631,12 @@
             }
             /**
      * @ngdoc method
-     * @name umbraco.services.editorService#sectionPicker
+     * @name umbraco.services.editorService#userPicker
      * @methodOf umbraco.services.editorService
      *
      * @description
      * Opens the section picker in infinite editing, the submit callback returns an array of the selected users
+     * @param {Object} editor rendering options
      * @param {Callback} editor.submit Submits the editor
      * @param {Callback} editor.close Closes the editor
      * @returns {Object} editor object
@@ -2379,6 +2654,7 @@
      * @description
      * Opens the section picker in infinite editing, the submit callback returns an array of the selected items
      * 
+     * @param {Object} editor rendering options
      * @param {Array} editor.availableItems Array of available items.
      * @param {Array} editor.selectedItems Array of selected items. When passed in the selected items will be filtered from the available items.
      * @param {Boolean} editor.filter Set to false to hide the filter.
@@ -2410,12 +2686,14 @@
             }
             /**
      * @ngdoc method
-     * @name umbraco.services.editorService#macroPicker
+     * @name umbraco.services.editorService#memberGroupPicker
      * @methodOf umbraco.services.editorService
      *
      * @description
      * Opens a member group picker in infinite editing.
      * 
+     * @param {Object} editor rendering options
+     * @param {Object} editor.multiPicker Pick one or multiple items.
      * @param {Callback} editor.submit Submits the editor.
      * @param {Callback} editor.close Closes the editor.
      * @returns {Object} editor object
@@ -2424,6 +2702,50 @@
                 editor.view = 'views/common/infiniteeditors/membergrouppicker/membergrouppicker.html';
                 editor.size = 'small';
                 open(editor);
+            }
+            ///////////////////////
+            /**
+     * @ngdoc method
+     * @name umbraco.services.editorService#storeKeyboardShortcuts
+     * @methodOf umbraco.services.editorService
+     *
+     * @description
+     * Internal method to keep track of keyboard shortcuts registered 
+     * to each editor so they can be rebound when an editor closes
+     * 
+     */
+            function unbindKeyboardShortcuts() {
+                var shortcuts = angular.copy(keyboardService.keyboardEvent);
+                editorsKeyboardShorcuts.push(shortcuts);
+                // unbind the current shortcuts because we only want to 
+                // shortcuts from the newly opened editor working
+                var _arr = Object.entries(shortcuts);
+                for (var _i = 0; _i < _arr.length; _i++) {
+                    var _arr$_i = _slicedToArray(_arr[_i], 2), key = _arr$_i[0], value = _arr$_i[1];
+                    keyboardService.unbind(key);
+                }
+            }
+            /**
+     * @ngdoc method
+     * @name umbraco.services.editorService#rebindKeyboardShortcuts
+     * @methodOf umbraco.services.editorService
+     *
+     * @description
+     * Internal method to rebind keyboard shortcuts for the editor in focus
+     * 
+     */
+            function rebindKeyboardShortcuts() {
+                // find the shortcuts from the previous editor
+                var lastSetOfShortcutsIndex = editorsKeyboardShorcuts.length - 1;
+                var lastSetOfShortcuts = editorsKeyboardShorcuts[lastSetOfShortcutsIndex];
+                // rebind shortcuts
+                var _arr2 = Object.entries(lastSetOfShortcuts);
+                for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
+                    var _arr2$_i = _slicedToArray(_arr2[_i2], 2), key = _arr2$_i[0], value = _arr2$_i[1];
+                    keyboardService.bind(key, value.callback, value.opt);
+                }
+                // remove the shortcuts from the collection
+                editorsKeyboardShorcuts.splice(lastSetOfShortcutsIndex, 1);
             }
             var service = {
                 getEditors: getEditors,
@@ -5182,7 +5504,6 @@
                 appState.setMenuState('showMenuDialog', false);
                 appState.setGlobalState('stickyNavigation', false);
                 appState.setGlobalState('showTray', false);
-                //$("#search-form input").focus();
                 break;
             case 'menu':
                 appState.setGlobalState('navMode', 'menu');
@@ -5205,10 +5526,6 @@
                 appState.setMenuState('showMenu', false);
                 appState.setSectionState('showSearchResults', true);
                 appState.setMenuState('showMenuDialog', false);
-                //TODO: This would be much better off in the search field controller listening to appState changes
-                $timeout(function () {
-                    $('#search-field').focus();
-                });
                 break;
             default:
                 appState.setGlobalState('navMode', 'default');
@@ -8983,7 +9300,10 @@
                 if (!args.node) {
                     throw 'No node defined on args object for loadNodeChildren';
                 }
-                this.removeChildNodes(args.node);
+                // don't remove the children for container nodes in dialogs, as it'll remove the right arrow indicator
+                if (!args.isDialog || !args.node.metaData.isContainer) {
+                    this.removeChildNodes(args.node);
+                }
                 args.node.loading = true;
                 return this.getChildren(args).then(function (data) {
                     //set state to done and expand (only if there actually are children!)
@@ -9841,6 +10161,22 @@
                         }
                     }
                     return displayModel;
+                },
+                /**
+       * Formats the display model used to display the relation type to a model used to save the relation type.
+       * @param {Object} relationType
+       */
+                formatRelationTypePostData: function formatRelationTypePostData(relationType) {
+                    var saveModel = {
+                        id: relationType.id,
+                        name: relationType.name,
+                        alias: relationType.alias,
+                        key: relationType.key,
+                        isBidirectional: relationType.isBidirectional,
+                        parentObjectType: relationType.parentObjectType,
+                        childObjectType: relationType.childObjectType
+                    };
+                    return saveModel;
                 }
             };
         }
@@ -10960,7 +11296,7 @@
                 register: function register(fn) {
                     registered.push(fn);
                     if (inited === false) {
-                        $(window).bind('resize', resize);
+                        $(window).on('resize', resize);
                         inited = true;
                     }
                 },

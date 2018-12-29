@@ -797,20 +797,17 @@ Use this directive to render drawer view
                 vm.errorMsg = '';
                 resetInputValidation();
                 vm.view = 'login';
-                setFieldFocus('loginForm', 'username');
             }
             function showRequestPasswordReset() {
                 vm.errorMsg = '';
                 resetInputValidation();
                 vm.view = 'request-password-reset';
                 vm.showEmailResetConfirmation = false;
-                setFieldFocus('requestPasswordResetForm', 'email');
             }
             function showSetPassword() {
                 vm.errorMsg = '';
                 resetInputValidation();
                 vm.view = 'set-password';
-                setFieldFocus('setPasswordForm', 'password');
             }
             function loginSubmit(login, password) {
                 //TODO: Do validation properly like in the invite password update
@@ -971,11 +968,6 @@ Use this directive to render drawer view
                             vm.avatarFile.serverErrorMessage = evt.Message;
                         }
                     }
-                });
-            }
-            function setFieldFocus(form, field) {
-                $timeout(function () {
-                    $('form[name=\'' + form + '\'] input[name=\'' + field + '\']').focus();
                 });
             }
             function show2FALoginDialog(view, callback) {
@@ -2337,13 +2329,17 @@ Use this directive to render a button with a dropdown of alternative actions.
             $scope.page.hideActionsMenu = infiniteMode ? true : false;
             $scope.page.hideChangeVariant = infiniteMode ? true : false;
             $scope.allowOpen = true;
+            $scope.app = null;
             function init(content) {
-                // set first app to active
-                content.apps[0].active = true;
+                if (!$scope.app) {
+                    // set first app to active
+                    content.apps[0].active = true;
+                    $scope.app = content.apps[0];
+                }
                 if (infiniteMode) {
                     createInfiniteModeButtons(content);
                 } else {
-                    createButtons(content, content.apps[0]);
+                    createButtons(content);
                 }
                 editorState.set($scope.content);
                 //We fetch all ancestors of the node to generate the footer breadcrumb navigation
@@ -2394,12 +2390,6 @@ Use this directive to render a button with a dropdown of alternative actions.
                 for (var e in evts) {
                     eventsService.unsubscribe(evts[e]);
                 }
-                evts.push(eventsService.on('editors.documentType.saved', function (name, args) {
-                    // if this content item uses the updated doc type we need to reload the content item
-                    if (args && args.documentType && args.documentType.key === $scope.content.documentType.key) {
-                        loadContent();
-                    }
-                }));
                 evts.push(eventsService.on('editors.content.reload', function (name, args) {
                     // if this content item uses the updated doc type we need to reload the content item
                     if (args && args.node && args.node.key === $scope.content.key) {
@@ -2432,10 +2422,10 @@ Use this directive to render a button with a dropdown of alternative actions.
      * @param {any} content the content node
      * @param {any} app the active content app
      */
-            function createButtons(content, app) {
+            function createButtons(content) {
                 // only create the save/publish/preview buttons if the
                 // content app is "Conent"
-                if (app && app.alias !== 'umbContent' && app.alias !== 'umbInfo') {
+                if ($scope.app && $scope.app.alias !== 'umbContent' && $scope.app.alias !== 'umbInfo') {
                     $scope.defaultButton = null;
                     $scope.subButtons = null;
                     $scope.page.showSaveButton = false;
@@ -3053,7 +3043,7 @@ Use this directive to render a button with a dropdown of alternative actions.
                         //ensure the save flag is set
                         selectedVariant.save = true;
                         performSave({
-                            saveMethod: contentResource.publish,
+                            saveMethod: $scope.saveMethod(),
                             action: 'save'
                         }).then(function (data) {
                             previewWindow.location.href = redirect;
@@ -3136,7 +3126,8 @@ Use this directive to render a button with a dropdown of alternative actions.
      * @param {any} app
      */
             $scope.appChanged = function (app) {
-                createButtons($scope.content, app);
+                $scope.app = app;
+                createButtons($scope.content);
             };
             // methods for infinite editing
             $scope.close = function () {
@@ -3182,7 +3173,7 @@ Use this directive to render a button with a dropdown of alternative actions.
     'use strict';
     (function () {
         'use strict';
-        function ContentNodeInfoDirective($timeout, logResource, eventsService, userService, localizationService, dateHelper, editorService, redirectUrlsResource) {
+        function ContentNodeInfoDirective($timeout, logResource, eventsService, userService, localizationService, dateHelper, editorService, redirectUrlsResource, overlayService) {
             function link(scope, element, attrs, umbVariantContentCtrl) {
                 var evts = [];
                 var isInfoTab = false;
@@ -3197,19 +3188,18 @@ Use this directive to render a button with a dropdown of alternative actions.
                     scope.isInfiniteMode = editorService.getNumberOfEditors() > 0 ? true : false;
                     userService.getCurrentUser().then(function (user) {
                         // only allow change of media type if user has access to the settings sections
-                        angular.forEach(user.sections, function (section) {
-                            if (section.alias === 'settings' && !scope.isInfiniteMode) {
-                                scope.allowChangeDocumentType = true;
-                                scope.allowChangeTemplate = true;
-                            }
-                        });
+                        var hasAccessToSettings = user.allowedSections.indexOf('settings') !== -1 ? true : false;
+                        scope.allowChangeDocumentType = hasAccessToSettings;
+                        scope.allowChangeTemplate = hasAccessToSettings;
                     });
                     var keys = [
                         'general_deleted',
                         'content_unpublished',
                         'content_published',
                         'content_publishedPendingChanges',
-                        'content_notCreated'
+                        'content_notCreated',
+                        'prompt_unsavedChanges',
+                        'prompt_doctypeChangeWarning'
                     ];
                     localizationService.localizeMany(keys).then(function (data) {
                         labels.deleted = data[0];
@@ -3218,6 +3208,8 @@ Use this directive to render a button with a dropdown of alternative actions.
                         labels.published = data[2];
                         labels.publishedPendingChanges = data[3];
                         labels.notCreated = data[4];
+                        labels.unsavedChanges = data[5];
+                        labels.doctypeChangeWarning = data[6];
                         setNodePublishStatus(scope.node);
                     });
                     scope.auditTrailOptions = { 'id': scope.node.id };
@@ -3249,9 +3241,36 @@ Use this directive to render a button with a dropdown of alternative actions.
                     loadAuditTrail();
                 };
                 scope.openDocumentType = function (documentType) {
+                    var variantIsDirty = _.some(scope.node.variants, function (variant) {
+                        return variant.isDirty;
+                    });
+                    // add confirmation dialog before opening the doc type editor
+                    if (variantIsDirty) {
+                        var confirm = {
+                            title: labels.unsavedChanges,
+                            view: 'default',
+                            content: labels.doctypeChangeWarning,
+                            submitButtonLabelKey: 'general_continue',
+                            closeButtonLabelKey: 'general_cancel',
+                            submit: function submit() {
+                                openDocTypeEditor(documentType);
+                                overlayService.close();
+                            },
+                            close: function close() {
+                                overlayService.close();
+                            }
+                        };
+                        overlayService.open(confirm);
+                    } else {
+                        openDocTypeEditor(documentType);
+                    }
+                };
+                function openDocTypeEditor(documentType) {
                     var editor = {
                         id: documentType.id,
                         submit: function submit(model) {
+                            var args = { node: scope.node };
+                            eventsService.emit('editors.content.reload', args);
                             editorService.close();
                         },
                         close: function close() {
@@ -3259,7 +3278,7 @@ Use this directive to render a button with a dropdown of alternative actions.
                         }
                     };
                     editorService.documentTypeEditor(editor);
-                };
+                }
                 scope.openTemplate = function () {
                     var templateEditor = {
                         id: scope.node.templateId,
@@ -3438,9 +3457,10 @@ Use this directive to render a button with a dropdown of alternative actions.
                 controller: function controller($scope) {
                     //expose the property/methods for other directives to use
                     this.content = $scope.content;
-                    $scope.activeVariant = _.find(this.content.variants, function (variant) {
+                    this.activeVariant = _.find(this.content.variants, function (variant) {
                         return variant.active;
                     });
+                    $scope.activeVariant = this.activeVariant;
                     $scope.defaultVariant = _.find(this.content.variants, function (variant) {
                         return variant.language.isDefault;
                     });
@@ -4953,41 +4973,25 @@ Use this directive to construct a header inside the main editor window.
                         // only select the editors which are allowed to be 
                         // shown so we don't animate a lot of editors which aren't necessary
                         var moveEditors = editorsElement.querySelectorAll('.umb-editor:nth-last-child(-n+' + allowedNumberOfVisibleEditors + ')');
-                        // this is a temporary fix because the animations doesn't perform well
-                        // TODO: fix animation and remove this
-                        moveEditors.forEach(function (editor, index) {
-                            // resize the small editors to 100% so we can easily slide them
-                            if (editor.classList.contains('umb-editor--small')) {
-                                editor.style.width = '100%';
-                            }
-                            // set left position to indent the editors
-                            if (scope.editors.length >= allowedNumberOfVisibleEditors) {
-                                $(editor).css({ 'left': index * editorIndent });
-                            } else {
-                                $(editor).css({ 'left': (index + 1) * editorIndent });
-                            }
+                        // collapse open editors before opening the new one
+                        var collapseEditorAnimation = anime({
+                            targets: moveEditors,
+                            width: function width(el, index, length) {
+                                // we have to resize all small editors when they move to the 
+                                // left side so they don't leave a gap
+                                if (el.classList.contains('umb-editor--small')) {
+                                    return '100%';
+                                }
+                            },
+                            left: function left(el, index, length) {
+                                if (length >= allowedNumberOfVisibleEditors) {
+                                    return index * editorIndent;
+                                }
+                                return (index + 1) * editorIndent;
+                            },
+                            easing: 'easeInOutQuint',
+                            duration: 300
                         });
-                        /*
-          // collapse open editors before opening the new one
-          var collapseEditorAnimation = anime({
-              targets: moveEditors,
-              width: function(el, index, length) {
-                  // we have to resize all small editors when they move to the 
-                  // left side so they don't leave a gap
-                  if(el.classList.contains("umb-editor--small")) {
-                      return "100%";
-                  }
-              },
-              left: function(el, index, length){
-                  if(length >= allowedNumberOfVisibleEditors) {
-                      return index * editorIndent;
-                  }
-                  return (index + 1) * editorIndent;
-              },
-              easing: 'easeInOutQuint',
-              duration: 500
-          });
-          */
                         // push the new editor to the dom
                         scope.editors.push(editor);
                     });
@@ -5018,7 +5022,7 @@ Use this directive to construct a header inside the main editor window.
                                 1
                             ],
                             easing: 'easeInOutQuint',
-                            duration: 400,
+                            duration: 300,
                             complete: function complete() {
                                 $timeout(function () {
                                     editor.animating = false;
@@ -5048,10 +5052,10 @@ Use this directive to construct a header inside the main editor window.
                                 $timeout(function () {
                                     scope.editors.splice(-1, 1);
                                     removeOverlayFromPrevEditor();
-                                    expandEditors();
                                 });
                             }
                         });
+                        expandEditors();
                     });
                 }
                 function expandEditors() {
@@ -5060,37 +5064,31 @@ Use this directive to construct a header inside the main editor window.
                         var editorsElement = el[0];
                         // only select the editors which are allowed to be 
                         // shown so we don't animate a lot of editors which aren't necessary
-                        var moveEditors = editorsElement.querySelectorAll('.umb-editor:nth-last-child(-n+' + 4 + ')');
-                        // this is a temporary fix because the animations doesn't perform well
-                        // TODO: fix animation and remove this
-                        moveEditors.forEach(function (editor, index) {
-                            // set left position
-                            $(editor).css({ 'left': (index + 1) * editorIndent });
-                            // if the new top editor is a small editor we will have to resize it back to the right size on 
-                            // move it all the way to the right side
-                            if (editor.classList.contains('umb-editor--small') && index + 1 === moveEditors.length) {
-                                editor.style.width = '500px';
-                                $(editor).css({ 'left': '' });
-                            }
-                        });    // We need to figure out how to performance optimize this
-                               // TODO: optimize animation
-                               /*
-          var expandEditorAnimation = anime({
-              targets: moveEditors,
-              left: function(el, index, length){
-                  return (index + 1) * editorIndent;
-              },
-              width: function(el, index, length) {
-                  if(el.classList.contains("umb-editor--small")) {
-                      return "500px";
-                  }
-              },
-              easing: 'easeInOutQuint',
-              duration: 500,
-              completed: function() {
-                }
-          });
-          */
+                        // as the last element hasn't been removed from the dom yet we have to select the last four and then skip the last child (as it is the one closing).
+                        var moveEditors = editorsElement.querySelectorAll('.umb-editor:nth-last-child(-n+' + allowedNumberOfVisibleEditors + 1 + '):not(:last-child)');
+                        var editorWidth = editorsElement.offsetWidth;
+                        var expandEditorAnimation = anime({
+                            targets: moveEditors,
+                            left: function left(el, index, length) {
+                                // move the editor all the way to the right if the top one is a small
+                                if (el.classList.contains('umb-editor--small')) {
+                                    // only change the size if it is the editor on top
+                                    if (index + 1 === length) {
+                                        return editorWidth - 500;
+                                    }
+                                } else {
+                                    return (index + 1) * editorIndent;
+                                }
+                            },
+                            width: function width(el, index, length) {
+                                // set the correct size if the top editor is of type "small"
+                                if (el.classList.contains('umb-editor--small') && index + 1 === length) {
+                                    return '500px';
+                                }
+                            },
+                            easing: 'easeInOutQuint',
+                            duration: 300
+                        });
                     });
                 }
                 // show backdrop on previous editor
@@ -5110,10 +5108,14 @@ Use this directive to construct a header inside the main editor window.
                     addEditor(args.editor);
                 }));
                 evts.push(eventsService.on('appState.editors.close', function (name, args) {
-                    removeEditor(args.editor);
-                }));
-                evts.push(eventsService.on('appState.editors.closeAll', function (name, args) {
-                    scope.editors = [];
+                    // remove the closed editor
+                    if (args && args.editor) {
+                        removeEditor(args.editor);
+                    }
+                    // close all editors
+                    if (args && !args.editor && args.editors.length === 0) {
+                        scope.editors = [];
+                    }
                 }));
                 //ensure to unregister from all events!
                 scope.$on('$destroy', function () {
@@ -5270,55 +5272,7 @@ Use this directive to construct the main editor window.
     /**
 * @description Utillity directives for key and field events
 **/
-    angular.module('umbraco.directives').directive('onKeyup', function () {
-        return {
-            link: function link(scope, elm, attrs) {
-                var f = function f() {
-                    scope.$apply(attrs.onKeyup);
-                };
-                elm.on('keyup', f);
-                scope.$on('$destroy', function () {
-                    elm.off('keyup', f);
-                });
-            }
-        };
-    }).directive('onKeydown', function () {
-        return {
-            link: function link(scope, elm, attrs) {
-                var f = function f() {
-                    scope.$apply(attrs.onKeydown);
-                };
-                elm.on('keydown', f);
-                scope.$on('$destroy', function () {
-                    elm.off('keydown', f);
-                });
-            }
-        };
-    }).directive('onBlur', function () {
-        return {
-            link: function link(scope, elm, attrs) {
-                var f = function f() {
-                    scope.$apply(attrs.onBlur);
-                };
-                elm.on('blur', f);
-                scope.$on('$destroy', function () {
-                    elm.off('blur', f);
-                });
-            }
-        };
-    }).directive('onFocus', function () {
-        return {
-            link: function link(scope, elm, attrs) {
-                var f = function f() {
-                    scope.$apply(attrs.onFocus);
-                };
-                elm.on('focus', f);
-                scope.$on('$destroy', function () {
-                    elm.off('focus', f);
-                });
-            }
-        };
-    }).directive('onDragEnter', function () {
+    angular.module('umbraco.directives').directive('onDragEnter', function () {
         return {
             link: function link(scope, elm, attrs) {
                 var f = function f() {
@@ -5408,7 +5362,7 @@ Use this directive to construct the main editor window.
                 });
             }
         };
-    }).directive('onOutsideClick', function ($timeout) {
+    }).directive('onOutsideClick', function ($timeout, angularHelper) {
         return function (scope, element, attrs) {
             var eventBindings = [];
             function oneTimeClick(event) {
@@ -5446,7 +5400,7 @@ Use this directive to construct the main editor window.
                 if ($(element).has($(event.target)).length > 0) {
                     return;
                 }
-                scope.$apply(attrs.onOutsideClick);
+                angularHelper.safeApply(scope, attrs.onOutsideClick);
             }
             $timeout(function () {
                 if ('bindClickOn' in attrs) {
@@ -5624,14 +5578,14 @@ Use this directive to construct the main editor window.
                 ngModel.$render = function () {
                     element.html(ngModel.$viewValue || '');
                 };
-                element.bind('focus', function () {
+                element.on('focus', function () {
                     var range = document.createRange();
                     range.selectNodeContents(element[0]);
                     var sel = window.getSelection();
                     sel.removeAllRanges();
                     sel.addRange(range);
                 });
-                element.bind('blur keyup change', function () {
+                element.on('blur keyup change', function () {
                     scope.$apply(read);
                 });
             }
@@ -5679,7 +5633,7 @@ Use this directive to construct the main editor window.
                 if (typeof elem.prop('validity') === 'undefined') {
                     return;
                 }
-                elem.bind('input', function (e) {
+                elem.on('input', function (e) {
                     var validity = elem.prop('validity');
                     scope.$apply(function () {
                         ctrl.$setValidity('number', !validity.badInput);
@@ -5697,7 +5651,7 @@ Use this directive to construct the main editor window.
                 attrs.$observe('focusWhen', function (newValue) {
                     if (newValue === 'true') {
                         $timeout(function () {
-                            elm.focus();
+                            elm.trigger('focus');
                         });
                     }
                 });
@@ -5779,13 +5733,13 @@ Use this directive to construct the main editor window.
                                 }
                                 // when keycombo is enter and a link or button has focus - click the link or button instead of using the hotkey
                                 if (keyCombo === 'enter' && clickableElements.indexOf(activeElementType) === 0) {
-                                    document.activeElement.click();
+                                    document.activeElement.trigger('click');
                                 } else {
-                                    element.click();
+                                    element.trigger('click');
                                 }
                             }
                         } else {
-                            element.focus();
+                            element.trigger('focus');
                         }
                     }, options);
                     el.on('$destroy', function () {
@@ -5821,7 +5775,7 @@ Use this directive to prevent default action of an element. Effectively implemen
                     enabled = newVal === 'false' || newVal === 0 || newVal === false ? false : true;
                 });
             }
-            $(element).click(function (event) {
+            $(element).on('click', function (event) {
                 if (event.metaKey || event.ctrlKey) {
                     return;
                 } else {
@@ -5848,7 +5802,7 @@ Use this directive to prevent default action of an element. Effectively implemen
                     enabled = newVal === 'false' || newVal === 0 || newVal === false ? false : true;
                 });
             }
-            $(element).keypress(function (event) {
+            $(element).on('keypress', function (event) {
                 if (event.which === 13) {
                     event.preventDefault();
                 }
@@ -5887,7 +5841,7 @@ Use this directive to prevent default action of an element. Effectively implemen
     'use strict';
     angular.module('umbraco.directives').directive('selectOnFocus', function () {
         return function (scope, el, attrs) {
-            $(el).bind('click', function () {
+            $(el).on('click', function () {
                 var editmode = $(el).data('editmode');
                 //If editmode is true a click is handled like a normal click
                 if (!editmode) {
@@ -5896,7 +5850,7 @@ Use this directive to prevent default action of an element. Effectively implemen
                     //Set the edit mode so subsequent clicks work normally
                     $(el).data('editmode', true);
                 }
-            }).bind('blur', function () {
+            }).on('blur', function () {
                 //Reset on focus lost
                 $(el).data('editmode', false);
             });
@@ -5908,7 +5862,7 @@ Use this directive to prevent default action of an element. Effectively implemen
             var update = function update() {
                 //if it uses its default naming
                 if (element.val() === '' || attr.focusOnFilled) {
-                    element.focus();
+                    element.trigger('focus');
                 }
             };
             $timeout(function () {
@@ -6030,8 +5984,8 @@ Use this directive to prevent default action of an element. Effectively implemen
                     update(true);
                 });
                 scope.$on('$destroy', function () {
-                    element.unbind('keyup keydown keypress change', update);
-                    element.unbind('blur', update(true));
+                    element.off('keyup keydown keypress change', update);
+                    element.off('blur', update(true));
                     unbindModelWatcher();
                     // clean up IE dom element
                     if (isIEFlag === true && domElType === 'text') {
@@ -6214,7 +6168,7 @@ will override element type to textarea and add own attribute ngModel tied to jso
                             editor.getBody().style.overflow = 'hidden';
                             $timeout(function () {
                                 if (scope.value === null) {
-                                    editor.focus();
+                                    editor.trigger('focus');
                                 }
                             }, 400);
                         });
@@ -6704,14 +6658,14 @@ Use this directive to construct a title. Recommended to use it inside an {@link 
                 //ie hack
                 if (window.navigator.userAgent.indexOf('MSIE ') >= 0) {
                     var ranger = element.find('input');
-                    ranger.bind('change', function () {
+                    ranger.on('change', function () {
                         scope.$apply(function () {
                             scope.dimensions.scale.current = ranger.val();
                         });
                     });
                 }
                 //// INIT /////
-                $image.load(function () {
+                $image.on('load', function () {
                     $timeout(function () {
                         init($image);
                     });
@@ -6929,7 +6883,7 @@ Use this directive to construct a title. Recommended to use it inside an {@link 
                 //// INIT /////
                 var $image = element.find('img');
                 scope.loaded = false;
-                $image.load(function () {
+                $image.on('load', function () {
                     $timeout(function () {
                         $image.width('auto');
                         $image.height('auto');
@@ -7278,58 +7232,6 @@ Use this directive to construct a title. Recommended to use it inside an {@link 
     </tr>
 </table>
 
-
-<h1>Content Picker</h1>
-Opens a content picker.</br>
-<strong>view: </strong>contentpicker
-<table>
-    <thead>
-        <tr>
-            <th>Param</th>
-            <th>Type</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tr>
-        <td>model.multiPicker</td>
-        <td>Boolean</td>
-        <td>Pick one or multiple items</td>
-    </tr>
-</table>
-<table>
-    <thead>
-        <tr>
-            <th>Returns</th>
-            <th>Type</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tr>
-        <td>model.selection</td>
-        <td>Array</td>
-        <td>Array of content objects</td>
-    </tr>
-</table>
-
-
-<h1>Icon Picker</h1>
-Opens an icon picker.</br>
-<strong>view: </strong>iconpicker
-<table>
-    <thead>
-        <tr>
-            <th>Returns</th>
-            <th>Type</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tr>
-        <td>model.icon</td>
-        <td>String</td>
-        <td>The icon class</td>
-    </tr>
-</table>
-
 <h1>Item Picker</h1>
 Opens an item picker.</br>
 <strong>view: </strong>itempicker
@@ -7372,170 +7274,6 @@ Opens an item picker.</br>
         <td>Object</td>
         <td>The selected item</td>
     </tr>
-</table>
-
-<h1>Macro Picker</h1>
-Opens a media picker.</br>
-<strong>view: </strong>macropicker
-<table>
-    <thead>
-        <tr>
-            <th>Param</th>
-            <th>Type</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>model.dialogData</td>
-            <td>Object</td>
-            <td>Object which contains array of allowedMacros. Set to <code>null</code> to allow all.</td>
-        </tr>
-    </tbody>
-</table>
-<table>
-    <thead>
-        <tr>
-            <th>Returns</th>
-            <th>Type</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>model.macroParams</td>
-            <td>Array</td>
-            <td>Array of macro params</td>
-        </tr>
-        <tr>
-            <td>model.selectedMacro</td>
-            <td>Object</td>
-            <td>The selected macro</td>
-        </tr>
-    </tbody>
-</table>
-
-<h1>Media Picker</h1>
-Opens a media picker.</br>
-<strong>view: </strong>mediapicker
-<table>
-    <thead>
-        <tr>
-            <th>Param</th>
-            <th>Type</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>model.multiPicker</td>
-            <td>Boolean</td>
-            <td>Pick one or multiple items</td>
-        </tr>
-        <tr>
-            <td>model.onlyImages</td>
-            <td>Boolean</td>
-            <td>Only display files that have an image file-extension</td>
-        </tr>
-        <tr>
-            <td>model.disableFolderSelect</td>
-            <td>Boolean</td>
-            <td>Disable folder selection</td>
-        </tr>
-    </tbody>
-</table>
-<table>
-    <thead>
-        <tr>
-            <th>Returns</th>
-            <th>Type</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>model.selectedImages</td>
-            <td>Array</td>
-            <td>Array of selected images</td>
-        </tr>
-    </tbody>
-</table>
-
-<h1>Member Group Picker</h1>
-Opens a member group picker.</br>
-<strong>view: </strong>membergrouppicker
-<table>
-    <thead>
-        <tr>
-            <th>Param</th>
-            <th>Type</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>model.multiPicker</td>
-            <td>Boolean</td>
-            <td>Pick one or multiple items</td>
-        </tr>
-    </tbody>
-</table>
-<table>
-    <thead>
-        <tr>
-            <th>Returns</th>
-            <th>Type</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>model.selectedMemberGroup</td>
-            <td>String</td>
-            <td>The selected member group</td>
-        </tr>
-        <tr>
-            <td>model.selectedMemberGroups (multiPicker)</td>
-            <td>Array</td>
-            <td>The selected member groups</td>
-        </tr>
-    </tbody>
-</table>
-
-<h1>Member Picker</h1>
-Opens a member picker. </br>
-<strong>view: </strong>memberpicker
-<table>
-    <thead>
-        <tr>
-            <th>Param</th>
-            <th>Type</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>model.multiPicker</td>
-            <td>Boolean</td>
-            <td>Pick one or multiple items</td>
-        </tr>
-    </tbody>
-</table>
-<table>
-    <thead>
-        <tr>
-            <th>Returns</th>
-            <th>Type</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>model.selection</td>
-            <td>Array</td>
-            <td>Array of selected members/td>
-        </tr>
-    </tbody>
 </table>
 
 <h1>YSOD</h1>
@@ -7624,7 +7362,7 @@ Opens an overlay to show a custom YSOD. </br>
                 }
                 function registerOverlay() {
                     overlayNumber = overlayHelper.registerOverlay();
-                    $(document).bind('keydown.overlay-' + overlayNumber, function (event) {
+                    $(document).on('keydown.overlay-' + overlayNumber, function (event) {
                         if (event.which === 27) {
                             numberOfOverlays = overlayHelper.getNumberOfOverlays();
                             if (numberOfOverlays === overlayNumber) {
@@ -7645,7 +7383,7 @@ Opens an overlay to show a custom YSOD. </br>
                                 var submitOnEnter = document.activeElement.hasAttribute('overlay-submit-on-enter');
                                 var submitOnEnterValue = submitOnEnter ? document.activeElement.getAttribute('overlay-submit-on-enter') : '';
                                 if (clickableElements.indexOf(activeElementType) === 0) {
-                                    document.activeElement.click();
+                                    document.activeElement.trigger('click');
                                     event.preventDefault();
                                 } else if (activeElementType === 'TEXTAREA' && !submitOnEnter) {
                                 } else if (submitOnEnter && submitOnEnterValue === 'false') {
@@ -7663,7 +7401,7 @@ Opens an overlay to show a custom YSOD. </br>
                 function unregisterOverlay() {
                     if (isRegistered) {
                         overlayHelper.unregisterOverlay();
-                        $(document).unbind('keydown.overlay-' + overlayNumber);
+                        $(document).off('keydown.overlay-' + overlayNumber);
                         isRegistered = false;
                     }
                 }
@@ -7679,10 +7417,10 @@ Opens an overlay to show a custom YSOD. </br>
                 function setOverlayIndent() {
                     var overlayIndex = overlayNumber - 1;
                     var indentSize = overlayIndex * 20;
-                    var overlayWidth = el.context.clientWidth;
+                    var overlayWidth = el[0].clientWidth;
                     el.css('width', overlayWidth - indentSize);
                     if (scope.position === 'center' && overlayIndex > 0 || scope.position === 'target' && overlayIndex > 0) {
-                        var overlayTopPosition = el.context.offsetTop;
+                        var overlayTopPosition = el[0].offsetTop;
                         el.css('top', overlayTopPosition + indentSize);
                     }
                 }
@@ -7708,8 +7446,8 @@ Opens an overlay to show a custom YSOD. </br>
                         mousePositionClickX = scope.model.event.pageX;
                         mousePositionClickY = scope.model.event.pageY;
                         // element size
-                        elementHeight = el.context.clientHeight;
-                        elementWidth = el.context.clientWidth;
+                        elementHeight = el[0].clientHeight;
+                        elementWidth = el[0].clientWidth;
                         // move element to this position
                         position.left = mousePositionClickX - elementWidth / 2;
                         position.top = mousePositionClickY - elementHeight / 2;
@@ -7910,7 +7648,7 @@ Opens an overlay to show a custom YSOD. </br>
 @scope
 
 @description
-Use this directive to render tab content. For an example see: {@link umbraco.directives.directive:umbTabsContent umbTabsContent}
+Use this directive to render tab content. For an example see: {@link umbraco.directives.directive:umbTabContent umbTabContent}
 
 @param {string=} tab The tab.
 
@@ -8002,7 +7740,7 @@ Use this directive to render a tabs navigation.
 
 <h3>Use in combination with</h3>
 <ul>
-    <li>{@link umbraco.directives.directive:umbTabsContent umbTabsContent}</li>
+    <li>{@link umbraco.directives.directive:umbTabContent umbTabContent}</li>
 </ul>
 
 @param {string=} tabs A collection of tabs.
@@ -8044,11 +7782,11 @@ Use this directive to render a tabs navigation.
                         }
                     });
                 }
-                $(window).bind('resize.tabsNav', function () {
+                $(window).on('resize.tabsNav', function () {
                     calculateWidth();
                 });
                 scope.$on('$destroy', function () {
-                    $(window).unbind('resize.tabsNav');
+                    $(window).off('resize.tabsNav');
                 });
             }
             function UmbTabsNavController(eventsService) {
@@ -8097,6 +7835,238 @@ Use this directive to render a tabs navigation.
             return directive;
         }
         angular.module('umbraco.directives').directive('umbTabsNav', TabsNavDirective);
+    }());
+    'use strict';
+    /**
+@ngdoc directive
+@name umbraco.directives.directive:umbTagsEditor
+**/
+    (function () {
+        'use strict';
+        angular.module('umbraco.directives').component('umbTagsEditor', {
+            transclude: true,
+            templateUrl: 'views/components/tags/umb-tags-editor.html',
+            controller: umbTagsEditorController,
+            controllerAs: 'vm',
+            bindings: {
+                value: '<',
+                config: '<',
+                validation: '<',
+                culture: '<?',
+                onValueChanged: '&'
+            }
+        });
+        function umbTagsEditorController($rootScope, assetsService, umbRequestHelper, angularHelper, $timeout, $element) {
+            var vm = this;
+            var typeahead;
+            var tagsHound;
+            vm.$onInit = onInit;
+            vm.$onChanges = onChanges;
+            vm.$onDestroy = onDestroy;
+            vm.validateMandatory = validateMandatory;
+            vm.addTagOnEnter = addTagOnEnter;
+            vm.addTag = addTag;
+            vm.removeTag = removeTag;
+            vm.showPrompt = showPrompt;
+            vm.hidePrompt = hidePrompt;
+            vm.htmlId = 't' + String.CreateGuid();
+            vm.isLoading = true;
+            vm.tagToAdd = '';
+            vm.promptIsVisible = '-1';
+            vm.viewModel = [];
+            function onInit() {
+                assetsService.loadJs('lib/typeahead.js/typeahead.bundle.min.js').then(function () {
+                    vm.isLoading = false;
+                    configureViewModel();
+                    // Set the visible prompt to -1 to ensure it will not be visible
+                    vm.promptIsVisible = '-1';
+                    tagsHound = new Bloodhound({
+                        datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
+                        queryTokenizer: Bloodhound.tokenizers.whitespace,
+                        //pre-fetch the tags for this category
+                        prefetch: {
+                            url: umbRequestHelper.getApiUrl('tagsDataBaseUrl', 'GetTags', {
+                                tagGroup: vm.config.group,
+                                culture: vm.culture
+                            }),
+                            //TTL = 5 minutes
+                            ttl: 300000,
+                            transform: dataTransform
+                        },
+                        //dynamically get the tags for this category (they may have changed on the server)
+                        remote: {
+                            url: umbRequestHelper.getApiUrl('tagsDataBaseUrl', 'GetTags', {
+                                tagGroup: vm.config.group,
+                                culture: vm.culture
+                            }),
+                            transform: dataTransform
+                        }
+                    });
+                    tagsHound.initialize(true);
+                    //configure the type ahead
+                    $timeout(function () {
+                        var sources = {
+                            //see: https://github.com/twitter/typeahead.js/blob/master/doc/jquery_typeahead.md#options
+                            // name = the data set name, we'll make this the tag group name
+                            name: vm.config.group,
+                            display: 'value',
+                            //source: tagsHound
+                            source: function source(query, cb) {
+                                tagsHound.search(query, function (suggestions) {
+                                    cb(removeCurrentTagsFromSuggestions(suggestions));
+                                });
+                            }
+                        };
+                        var opts = {
+                            //This causes some strangeness as it duplicates the textbox, best leave off for now.
+                            hint: false,
+                            highlight: true,
+                            cacheKey: new Date(),
+                            // Force a cache refresh each time the control is initialized
+                            minLength: 1
+                        };
+                        typeahead = $element.find('.tags-' + vm.htmlId).typeahead(opts, sources).bind('typeahead:selected', function (obj, datum, name) {
+                            angularHelper.safeApply($rootScope, function () {
+                                addTagInternal(datum['value']);
+                                vm.tagToAdd = '';
+                                // clear the typed text
+                                typeahead.typeahead('val', '');
+                            });
+                        }).bind('typeahead:autocompleted', function (obj, datum, name) {
+                            angularHelper.safeApply($rootScope, function () {
+                                addTagInternal(datum['value']);
+                                vm.tagToAdd = '';
+                            });
+                        }).bind('typeahead:opened', function (obj) {
+                            console.log('opened ');
+                        });
+                    });
+                });
+            }
+            function onChanges(changes) {
+                // watch for value changes externally
+                if (changes.value) {
+                    if (!changes.value.isFirstChange() && changes.value.currentValue !== changes.value.previousValue) {
+                        configureViewModel();
+                        //this is required to re-validate
+                        vm.tagEditorForm.tagCount.$setViewValue(vm.viewModel.length);
+                    }
+                }
+            }
+            function onDestroy() {
+                if (tagsHound) {
+                    tagsHound.clearPrefetchCache();
+                    tagsHound.clearRemoteCache();
+                    tagsHound = null;
+                }
+                $element.find('.tags-' + vm.htmlId).typeahead('destroy');
+            }
+            function configureViewModel() {
+                if (vm.value) {
+                    if (angular.isString(vm.value) && vm.value.length > 0) {
+                        if (vm.config.storageType === 'Json') {
+                            //json storage
+                            vm.viewModel = JSON.parse(vm.value);
+                            updateModelValue(vm.viewModel);
+                        } else {
+                            //csv storage
+                            // split the csv string, and remove any duplicate values
+                            var tempArray = vm.value.split(',').map(function (v) {
+                                return v.trim();
+                            });
+                            vm.viewModel = tempArray.filter(function (v, i, self) {
+                                return self.indexOf(v) === i;
+                            });
+                            updateModelValue(vm.viewModel);
+                        }
+                    } else if (angular.isArray(vm.value)) {
+                        vm.viewModel = vm.value;
+                    }
+                }
+            }
+            function updateModelValue(val) {
+                if (val) {
+                    vm.onValueChanged({ value: val });
+                } else {
+                    vm.onValueChanged({ value: [] });
+                }
+            }
+            /**
+     * Method required by the valPropertyValidator directive (returns true if the property editor has at least one tag selected)
+     */
+            function validateMandatory() {
+                return {
+                    isValid: !vm.validation.mandatory || vm.viewModel != null && vm.viewModel.length > 0,
+                    errorMsg: 'Value cannot be empty',
+                    errorKey: 'required'
+                };
+            }
+            function addTagInternal(tagToAdd) {
+                if (tagToAdd != null && tagToAdd.length > 0) {
+                    if (vm.viewModel.indexOf(tagToAdd) < 0) {
+                        vm.viewModel.push(tagToAdd);
+                        updateModelValue(vm.viewModel);
+                    }
+                }
+            }
+            function addTagOnEnter(e) {
+                var code = e.keyCode || e.which;
+                if (code == 13) {
+                    //Enter keycode
+                    if ($element.find('.tags-' + vm.htmlId).parent().find('.tt-menu .tt-cursor').length === 0) {
+                        //this is required, otherwise the html form will attempt to submit.
+                        e.preventDefault();
+                        addTag();
+                    }
+                }
+            }
+            function addTag() {
+                //ensure that we're not pressing the enter key whilst selecting a typeahead value from the drop down
+                //we need to use jquery because typeahead duplicates the text box
+                addTagInternal(vm.tagToAdd);
+                vm.tagToAdd = '';
+                //this clears the value stored in typeahead so it doesn't try to add the text again
+                // https://issues.umbraco.org/issue/U4-4947
+                typeahead.typeahead('val', '');
+            }
+            function removeTag(tag) {
+                var i = vm.viewModel.indexOf(tag);
+                if (i >= 0) {
+                    // Make sure to hide the prompt so it does not stay open because another item gets a new number in the array index
+                    vm.promptIsVisible = '-1';
+                    // Remove the tag from the index
+                    vm.viewModel.splice(i, 1);
+                    updateModelValue(vm.viewModel);
+                }
+            }
+            function showPrompt(idx, tag) {
+                var i = vm.viewModel.indexOf(tag);
+                // Make the prompt visible for the clicked tag only
+                if (i === idx) {
+                    vm.promptIsVisible = i;
+                }
+            }
+            function hidePrompt() {
+                vm.promptIsVisible = '-1';
+            }
+            //helper method to format the data for bloodhound
+            function dataTransform(list) {
+                //transform the result to what bloodhound wants
+                var tagList = _.map(list, function (i) {
+                    return { value: i.text };
+                });
+                // remove current tags from the list
+                return $.grep(tagList, function (tag) {
+                    return $.inArray(tag.value, vm.viewModel) === -1;
+                });
+            }
+            // helper method to remove current tags
+            function removeCurrentTagsFromSuggestions(suggestions) {
+                return $.grep(suggestions, function (suggestion) {
+                    return $.inArray(suggestion.value, vm.viewModel) === -1;
+                });
+            }
+        }
     }());
     'use strict';
     (function () {
@@ -8383,7 +8353,8 @@ Use this directive to render a tabs navigation.
                         //get the children from the tree service
                         return treeService.loadNodeChildren({
                             node: node,
-                            section: $scope.section
+                            section: $scope.section,
+                            isDialog: $scope.isdialog
                         }).then(function (data) {
                             //emit expanded event
                             emitEvent('treeNodeExpanded', {
@@ -8525,7 +8496,8 @@ Use this directive to render a tabs navigation.
                 currentNode: '=',
                 enablelistviewexpand: '@',
                 node: '=',
-                tree: '='
+                tree: '=',
+                isDialog: '='
             },
             link: function link(scope, element, attrs, umbTreeCtrl) {
                 localizationService.localize('general_search').then(function (value) {
@@ -13533,8 +13505,8 @@ Use this directive to render a tooltip.
                         bottom: 'inherit'
                     };
                     // element size
-                    elementHeight = el.context.clientHeight;
-                    elementWidth = el.context.clientWidth;
+                    elementHeight = el[0].clientHeight;
+                    elementWidth = el[0].clientWidth;
                     position.left = event.pageX - elementWidth / 2;
                     position.top = event.pageY;
                     // check to see if element is outside screen
@@ -13797,7 +13769,7 @@ TODO
             scope: true,
             //create a new scope
             link: function link(scope, el, attrs) {
-                el.bind('change', function (event) {
+                el.on('change', function (event) {
                     var files = event.target.files;
                     //emit event upward
                     scope.$emit('filesSelected', { files: files });
@@ -14606,14 +14578,14 @@ Use this directive to render a user group preview, where you can see the permiss
                             if (focusSet) {
                                 currentIndex++;
                             }
-                            listItems[currentIndex].focus();
+                            listItems[currentIndex].trigger('focus');
                             focusSet = true;
                         }
                     }
                     function arrowUp() {
                         if (currentIndex > 0) {
                             currentIndex--;
-                            listItems[currentIndex].focus();
+                            listItems[currentIndex].trigger('focus');
                         }
                     }
                     // Stop to listen typing.
@@ -14682,7 +14654,7 @@ Use this directive to render a user group preview, where you can see the permiss
                         element.hide();
                     }));
                     //no isolate scope to listen to element destroy
-                    element.bind('$destroy', function () {
+                    element.on('$destroy', function () {
                         for (var u in unsubscribe) {
                             unsubscribe[u]();
                         }
@@ -15261,7 +15233,7 @@ Use this directive to render a user group preview, where you can see the permiss
                 }
                 // Validation method
                 function validate(viewValue) {
-                    // Calls the validition method
+                    // Calls the validation method
                     var result = scope.valPropertyValidator();
                     if (!result.errorKey || result.isValid === undefined || !result.errorMsg) {
                         throw 'The result object from valPropertyValidator does not contain required properties: isValid, errorKey, errorMsg';
@@ -15279,6 +15251,8 @@ Use this directive to render a user group preview, where you can see the permiss
                             propCtrl.setPropertyError(result.errorMsg);
                         }
                     }
+                    // parsers are expected to return a value
+                    return result.isValid ? viewValue : undefined;
                 }
                 ;
                 // Parsers are called as soon as the value in the form input is modified
@@ -15638,7 +15612,7 @@ Use this directive to render a user group preview, where you can see the permiss
     angular.module('umbraco.directives.validation').directive('valTriggerChange', function ($sniffer) {
         return {
             link: function link(scope, elem, attrs) {
-                elem.bind('click', function () {
+                elem.on('click', function () {
                     $(attrs.valTriggerChange).trigger($sniffer.hasEvent('input') ? 'input' : 'change');
                 });
             },
