@@ -4,7 +4,7 @@
     <TargetFramework>net472</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="TypeHelpers.fs" />
+    <Compile Include="ServiceContainerExtensions.fs" />
     <Compile Include="ISqlCeEngineFactory.fs" />
     <Compile Include="IChauffeurSettings.fs" />
     <Compile Include="IProvideDirections.fs" />
