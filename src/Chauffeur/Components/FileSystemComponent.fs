@@ -1,4 +1,4 @@
-﻿namespace Chauffeur.Component
+﻿namespace Chauffeur.Components
 
 open Umbraco.Core.Components
 open System.IO.Abstractions
