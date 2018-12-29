@@ -1,41 +1,41 @@
 ﻿namespace Chauffeur.Components
 
-open LightInject
+open System
 open System.Reflection
+open Chauffeur
+open LightInject
 open Umbraco.Core.Components
 open Umbraco.Core.Composing
-open Chauffeur
+
+module internal ChauffeurDeliverableComponent =
+    let nameBuilder name = sprintf "chauffeur:%s" name
+
+    let deliveryType = typeof<Deliverable>
+
+    let resolver deliverableName (factory : IServiceFactory) =
+        factory.GetInstance<Deliverable>(nameBuilder deliverableName)
+
+    let registerDeliverable (container : IServiceContainer) (t : Type) =
+        let name = t.GetCustomAttribute<DeliverableNameAttribute>().Name
+        container.Register(deliveryType, t, nameBuilder name) |> ignore
+
+        t.GetCustomAttributes<DeliverableAliasAttribute>()
+        |> Seq.iter (fun attr ->
+                container
+                    .Register<Deliverable>(
+                        resolver name,
+                        nameBuilder attr.Alias
+                    )
+                |> ignore
+            )
+
+open ChauffeurDeliverableComponent
 
 type ChauffeurDeliverableComponent() =
     inherit UmbracoComponentBase()
 
-    let deliveryType = typeof<Deliverable>
-
-    let nameBuilder name = sprintf "chauffeur:%s" name
-
-    let register (container : IServiceContainer) ``type`` name =
-        container.Register(deliveryType, ``type``, nameBuilder name)
-
     override __.Compose(composition) =
         let typeLoader = composition.Container.GetInstance<TypeLoader>()
 
-        let register' = register composition.Container
-
         typeLoader.GetTypes<Deliverable>()
-        |> Seq.iter (fun t ->
-                let nameAttr = t.GetCustomAttribute<DeliverableNameAttribute>()
-                register' t nameAttr.Name
-                |> ignore
-
-                t.GetCustomAttributes<DeliverableAliasAttribute>()
-                |> Seq.iter (fun attr ->
-                        let resolver = fun (factory : IServiceFactory) ->
-                            factory.GetInstance<Deliverable>(nameBuilder nameAttr.Name)
-                        composition.Container
-                            .Register<Deliverable>(
-                                resolver,
-                                nameBuilder attr.Alias
-                            )
-                        |> ignore
-                    )
-            )
+        |> Seq.iter (registerDeliverable composition.Container)
