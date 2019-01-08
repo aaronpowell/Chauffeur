@@ -81,6 +81,7 @@ module InstallDeliverable =
 
 open Umbraco.Core.Migrations.Install
 open InstallDeliverable
+open Umbraco.Core.Configuration
 
 [<DeliverableName("install")>]
 type InstallDeliverable
@@ -89,7 +90,8 @@ type InstallDeliverable
       settings : IChauffeurSettings,
       fileSystem : IFileSystem,
       databaseBuilder : DatabaseBuilder,
-      sqlCeFactory : ISqlCeFactory) =
+      sqlCeFactory : ISqlCeFactory,
+      globalSettings : IGlobalSettings) =
     inherit Deliverable(reader, writer)
 
     let connStr = settings.ConnectionString
@@ -116,7 +118,15 @@ type InstallDeliverable
                 | false ->
                     ignore()
 
+                // start hack
+                let version = globalSettings.ConfigurationStatus
+                globalSettings.ConfigurationStatus <- ""
+                // end hack part 1
+
                 let result = databaseBuilder.CreateSchemaAndData()
+
+                // hack part 2
+                globalSettings.ConfigurationStatus <- version
 
                 match result.Success with
                 | true -> return DeliverableResponse.Continue
