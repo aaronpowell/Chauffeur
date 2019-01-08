@@ -28,12 +28,12 @@ module InstallDeliverable =
                    | _ -> value
         }
 
-    let internal makeDb writeLineAsync writeAsync readLineAsync (createDb : unit -> unit) args =
+    let internal makeDb writeLineAsync prompt (createDb : unit -> unit) args =
         task {
             do! writeLineAsync "The SqlCE database specified in the connection string doesn't appear to exist."
             let! response = match args |> Array.toList with
                             | "y" :: _ | "Y" :: _ -> task { return "Y" }
-                            | _ -> prompt writeAsync readLineAsync "Do you want to create it (Y/n)?" "Y"
+                            | _ -> prompt "Do you want to create it (Y/n)?" "Y"
 
             return! match response with
                     | "Y" | "y" -> task {
@@ -63,22 +63,6 @@ module InstallDeliverable =
 
         pathCombine [|dataDirectory;dbFileName|]
 
-    let createSqlCeDb (readLineAsync : rla)
-                      fileExists
-                      (createDb : unit -> unit)
-                      (writeLineAsync : wla)
-                      (writeAsync : wla)
-                      args
-                      dbPath =
-        match fileExists dbPath with
-        | true -> task { return Some(dbPath) }
-        | false -> task {
-            let! result = makeDb writeLineAsync writeAsync readLineAsync createDb args
-            match result with
-            | true -> return Some(dbPath)
-            | false -> return None
-        }
-
 open Umbraco.Core.Migrations.Install
 open InstallDeliverable
 open Umbraco.Core.Configuration
@@ -96,13 +80,6 @@ type InstallDeliverable
 
     let connStr = settings.ConnectionString
 
-    let createSqlDb' = createSqlCeDb
-                        reader.ReadLineAsync
-                        fileSystem.File.Exists
-                        (fun () -> sqlCeFactory.CreateDatabase connStr.ConnectionString)
-                        writer.WriteLineAsync
-                        writer.WriteAsync
-
     override __.Run _ args =
         task {
             match connStrExists connStr with
@@ -113,8 +90,15 @@ type InstallDeliverable
                 match isSqlCe connStr with
                 | true ->
                     let dbPath = getSqlCePath (AppDomain.CurrentDomain.GetData("DataDirectory") :?> string) fileSystem.Path.Combine connStr.ConnectionString
-                    let! _ = createSqlDb' args dbPath
-                    ignore()
+                    match fileSystem.File.Exists dbPath with
+                    | true -> ignore()
+                    | false ->
+                        let! result = makeDb
+                                        writer.WriteLineAsync
+                                        (prompt writer.WriteAsync reader.ReadLineAsync)
+                                        (fun () -> sqlCeFactory.CreateDatabase connStr.ConnectionString)
+                                        args
+                        ignore()
                 | false ->
                     ignore()
 
