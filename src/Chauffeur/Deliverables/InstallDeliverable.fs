@@ -28,13 +28,12 @@ module InstallDeliverable =
                    | _ -> value
         }
 
-    let internal makeDb writeLineAsync readLineAsync (createDb : unit -> unit) args =
+    let internal makeDb writeLineAsync writeAsync readLineAsync (createDb : unit -> unit) args =
         task {
             do! writeLineAsync "The SqlCE database specified in the connection string doesn't appear to exist."
-            do! writeLineAsync "Do you want to create it (Y/n)?"
             let! response = match args |> Array.toList with
                             | "y" :: _ | "Y" :: _ -> task { return "Y" }
-                            | _ -> prompt writeLineAsync readLineAsync "" "Y"
+                            | _ -> prompt writeAsync readLineAsync "Do you want to create it (Y/n)?" "Y"
 
             return! match response with
                     | "Y" | "y" -> task {
@@ -68,12 +67,13 @@ module InstallDeliverable =
                       fileExists
                       (createDb : unit -> unit)
                       (writeLineAsync : wla)
+                      (writeAsync : wla)
                       args
                       dbPath =
         match fileExists dbPath with
         | true -> task { return Some(dbPath) }
         | false -> task {
-            let! result = makeDb writeLineAsync readLineAsync createDb args
+            let! result = makeDb writeLineAsync writeAsync readLineAsync createDb args
             match result with
             | true -> return Some(dbPath)
             | false -> return None
@@ -99,6 +99,7 @@ type InstallDeliverable
                         fileSystem.File.Exists
                         (fun () -> sqlCeFactory.CreateDatabase connStr.ConnectionString)
                         writer.WriteLineAsync
+                        writer.WriteAsync
 
     override __.Run _ args =
         task {
