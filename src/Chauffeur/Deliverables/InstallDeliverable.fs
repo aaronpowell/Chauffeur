@@ -31,6 +31,7 @@ module InstallDeliverable =
     let internal makeDb writeLineAsync readLineAsync (createDb : unit -> unit) args =
         task {
             do! writeLineAsync "The SqlCE database specified in the connection string doesn't appear to exist."
+            do! writeLineAsync "Do you want to create it (Y/n)?"
             let! response = match args |> Array.toList with
                             | "y" :: _ | "Y" :: _ -> task { return "Y" }
                             | _ -> prompt writeLineAsync readLineAsync "" "Y"
