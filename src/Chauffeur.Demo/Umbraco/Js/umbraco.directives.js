@@ -2212,6 +2212,7 @@ Use this directive to render a button with a dropdown of alternative actions.
 
         <umb-toggle
             checked="vm.checked"
+            disabled="vm.disabled"
             on-click="vm.toggle()"
             show-labels="true"
             label-on="Start"
@@ -2232,6 +2233,7 @@ Use this directive to render a button with a dropdown of alternative actions.
 
             var vm = this;
             vm.checked = false;
+            vm.disabled = false;
 
             vm.toggle = toggle;
 
@@ -2246,6 +2248,7 @@ Use this directive to render a button with a dropdown of alternative actions.
 </pre>
 
 @param {boolean} checked Set to <code>true</code> or <code>false</code> to toggle the switch.
+@param {boolean} disabled Set to <code>true</code> or <code>false</code> to disable the switch.
 @param {callback} onClick The function which should be called when the toggle is clicked.
 @param {string=} showLabels Set to <code>true</code> or <code>false</code> to show a "On" or "Off" label next to the switch.
 @param {string=} labelOn Set a custom label for when the switched is turned on. It will default to "On".
@@ -2296,6 +2299,7 @@ Use this directive to render a button with a dropdown of alternative actions.
                 templateUrl: 'views/components/buttons/umb-toggle.html',
                 scope: {
                     checked: '=',
+                    disabled: '=',
                     onClick: '&',
                     labelOn: '@?',
                     labelOff: '@?',
@@ -3180,10 +3184,26 @@ Use this directive to render a button with a dropdown of alternative actions.
                 var auditTrailLoaded = false;
                 var labels = {};
                 scope.publishStatus = [];
+                scope.currentVariant = null;
+                scope.currentUrls = [];
                 scope.disableTemplates = Umbraco.Sys.ServerVariables.features.disabledFeatures.disableTemplates;
                 scope.allowChangeDocumentType = false;
                 scope.allowChangeTemplate = false;
                 function onInit() {
+                    // set currentVariant
+                    scope.currentVariant = _.find(scope.node.variants, function (v) {
+                        return v.active;
+                    });
+                    // find the urls for the currently selected language
+                    if (scope.node.variants.length > 1) {
+                        // nodes with variants
+                        scope.currentUrls = _.filter(scope.node.urls, function (url) {
+                            return scope.currentVariant.language.culture === url.culture;
+                        });
+                    } else {
+                        // invariant nodes
+                        scope.currentUrls = scope.node.urls;
+                    }
                     // if there are any infinite editors open we are in infinite editing
                     scope.isInfiniteMode = editorService.getNumberOfEditors() > 0 ? true : false;
                     userService.getCurrentUser().then(function (user) {
@@ -3199,7 +3219,10 @@ Use this directive to render a button with a dropdown of alternative actions.
                         'content_publishedPendingChanges',
                         'content_notCreated',
                         'prompt_unsavedChanges',
-                        'prompt_doctypeChangeWarning'
+                        'prompt_doctypeChangeWarning',
+                        'general_history',
+                        'auditTrails_historyIncludingVariants',
+                        'content_itemNotPublished'
                     ];
                     localizationService.localizeMany(keys).then(function (data) {
                         labels.deleted = data[0];
@@ -3210,9 +3233,28 @@ Use this directive to render a button with a dropdown of alternative actions.
                         labels.notCreated = data[4];
                         labels.unsavedChanges = data[5];
                         labels.doctypeChangeWarning = data[6];
-                        setNodePublishStatus(scope.node);
+                        labels.notPublished = data[9];
+                        scope.historyLabel = scope.node.variants && scope.node.variants.length === 1 ? data[7] : data[8];
+                        setNodePublishStatus();
+                        if (scope.currentUrls.length === 0) {
+                            if (scope.node.id > 0) {
+                                //it's created but not published
+                                scope.currentUrls.push({
+                                    text: labels.notPublished,
+                                    isUrl: false
+                                });
+                            } else {
+                                //it's new
+                                scope.currentUrls.push({
+                                    text: labels.notCreated,
+                                    isUrl: false
+                                });
+                            }
+                        }
                     });
                     scope.auditTrailOptions = { 'id': scope.node.id };
+                    // make sure dates are formatted to the user's locale
+                    formatDatesToLocal();
                     // get available templates
                     scope.availableTemplates = scope.node.allowedTemplates;
                     // get document type details
@@ -3353,9 +3395,11 @@ Use this directive to render a button with a dropdown of alternative actions.
                     angular.forEach(auditTrail, function (item) {
                         switch (item.logType) {
                         case 'Publish':
+                        case 'PublishVariant':
                             item.logTypeColor = 'success';
                             break;
                         case 'Unpublish':
+                        case 'UnpublishVariant':
                         case 'Delete':
                             item.logTypeColor = 'danger';
                             break;
@@ -3364,39 +3408,33 @@ Use this directive to render a button with a dropdown of alternative actions.
                         }
                     });
                 }
-                function setNodePublishStatus(node) {
-                    scope.publishStatus = [];
+                function setNodePublishStatus() {
+                    scope.status = {};
                     // deleted node
-                    if (node.trashed === true) {
-                        scope.publishStatus.push({
-                            label: labels.deleted,
-                            color: 'danger'
-                        });
+                    if (scope.node.trashed === true) {
+                        scope.status.color = 'danger';
                         return;
                     }
-                    if (node.variants) {
-                        for (var i = 0; i < node.variants.length; i++) {
-                            var variant = node.variants[i];
-                            var status = { culture: variant.language ? variant.language.culture : null };
-                            if (variant.state === 'NotCreated') {
-                                status.label = labels.notCreated;
-                                status.color = 'gray';
-                            } else if (variant.state === 'Draft') {
-                                // draft node
-                                status.label = labels.unpublished;
-                                status.color = 'gray';
-                            } else if (variant.state === 'Published') {
-                                // published node
-                                status.label = labels.published;
-                                status.color = 'success';
-                            } else if (variant.state === 'PublishedPendingChanges') {
-                                // published node with pending changes
-                                status.label = labels.publishedPendingChanges;
-                                status.color = 'success';
-                            }
-                            scope.publishStatus.push(status);
-                        }
+                    // variant status
+                    if (scope.currentVariant.state === 'NotCreated') {
+                        // not created
+                        scope.status.color = 'gray';
+                    } else if (scope.currentVariant.state === 'Draft') {
+                        // draft node
+                        scope.status.color = 'gray';
+                    } else if (scope.currentVariant.state === 'Published') {
+                        // published node
+                        scope.status.color = 'success';
+                    } else if (scope.currentVariant.state === 'PublishedPendingChanges') {
+                        // published node with pending changes
+                        scope.status.color = 'success';
                     }
+                }
+                function formatDatesToLocal() {
+                    // get current backoffice user and format dates
+                    userService.getCurrentUser().then(function (currentUser) {
+                        scope.currentVariant.createDateFormatted = dateHelper.getLocalDate(scope.currentVariant.createDate, currentUser.locale, 'LLL');
+                    });
                 }
                 // load audit trail and redirects when on the info tab
                 evts.push(eventsService.on('app.tabChange', function (event, args) {
@@ -3422,7 +3460,7 @@ Use this directive to render a button with a dropdown of alternative actions.
                         auditTrailLoaded = false;
                         loadAuditTrail();
                         loadRedirectUrls();
-                        setNodePublishStatus(scope.node);
+                        setNodePublishStatus();
                     }
                 });
                 //ensure to unregister from all events!
@@ -4784,7 +4822,7 @@ Use this directive to construct a header inside the main editor window.
                     icon: '=',
                     hideIcon: '@',
                     alias: '=',
-                    hideAlias: '@',
+                    hideAlias: '=',
                     description: '=',
                     hideDescription: '@',
                     descriptionLocked: '@',
@@ -5400,7 +5438,7 @@ Use this directive to construct the main editor window.
                 if ($(element).has($(event.target)).length > 0) {
                     return;
                 }
-                angularHelper.safeApply(scope, attrs.onOutsideClick);
+                scope.$apply(attrs.onOutsideClick);
             }
             $timeout(function () {
                 if ('bindClickOn' in attrs) {
@@ -8074,10 +8112,10 @@ Use this directive to render a tabs navigation.
         function UmbContextDialog(navigationService, keyboardService) {
             function link($scope) {
                 $scope.outSideClick = function () {
-                    navigationService.hideNavigation();
+                    navigationService.hideDialog();
                 };
                 keyboardService.bind('esc', function () {
-                    navigationService.hideNavigation();
+                    navigationService.hideDialog();
                 });
                 //ensure to unregister from all events!
                 $scope.$on('$destroy', function () {

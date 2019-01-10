@@ -250,6 +250,8 @@
             currentNode: null,
             //Whether the menu's dialog is being shown or not
             showMenuDialog: null,
+            //Whether the menu's dialog can be hidden or not
+            allowHideMenuDialog: true,
             // The dialogs template
             dialogTemplateUrl: null,
             //Whether the context menu is being shown or not
@@ -5491,10 +5493,6 @@ When building a custom infinite editor view you can use the same components as a
             'cculture'
         ];
         var retainedQueryStrings = ['mculture'];
-        //used to track the current dialog object
-        var currentDialog = null;
-        //tracks the user profile dialog
-        var userDialog = null;
         function setMode(mode) {
             switch (mode) {
             case 'tree':
@@ -5518,6 +5516,7 @@ When building a custom infinite editor view you can use the same components as a
                 appState.setGlobalState('showNavigation', true);
                 appState.setMenuState('showMenu', false);
                 appState.setMenuState('showMenuDialog', true);
+                appState.setMenuState('allowHideMenuDialog', true);
                 break;
             case 'search':
                 appState.setGlobalState('navMode', 'search');
@@ -5531,6 +5530,7 @@ When building a custom infinite editor view you can use the same components as a
                 appState.setGlobalState('navMode', 'default');
                 appState.setMenuState('showMenu', false);
                 appState.setMenuState('showMenuDialog', false);
+                appState.setMenuState('allowHideMenuDialog', true);
                 appState.setSectionState('showSearchResults', false);
                 appState.setGlobalState('stickyNavigation', false);
                 appState.setGlobalState('showTray', false);
@@ -5719,7 +5719,7 @@ When building a custom infinite editor view you can use the same components as a
             hideTray: function hideTray() {
                 appState.setGlobalState('showTray', false);
             },
-            /**
+            /**     
      * @ngdoc method
      * @name umbraco.services.navigationService#syncTree
      * @methodOf umbraco.services.navigationService
@@ -5955,6 +5955,21 @@ When building a custom infinite editor view you can use the same components as a
                 }
             },
             /**
+      * @ngdoc method
+      * @name umbraco.services.navigationService#allowHideDialog
+      * @methodOf umbraco.services.navigationService
+      *
+      * @param {boolean} allow false if the navigation service should disregard instructions to hide the current dialog, true otherwise
+      * @description
+      * instructs the navigation service whether it's allowed to hide the current dialog
+      */
+            allowHideDialog: function allowHideDialog(allow) {
+                if (appState.getGlobalState('navMode') !== 'dialog') {
+                    return;
+                }
+                appState.setMenuState('allowHideMenuDialog', allow);
+            },
+            /**
     * @ngdoc method
     * @name umbraco.services.navigationService#hideDialog
     * @methodOf umbraco.services.navigationService
@@ -5963,6 +5978,9 @@ When building a custom infinite editor view you can use the same components as a
     * hides the currently open dialog
     */
             hideDialog: function hideDialog(showMenu) {
+                if (appState.getMenuState('allowHideMenuDialog') === false) {
+                    return;
+                }
                 if (showMenu) {
                     this.showMenu({
                         skipDefault: true,

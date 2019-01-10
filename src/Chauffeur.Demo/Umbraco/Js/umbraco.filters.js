@@ -83,6 +83,15 @@
         };
     });
     'use strict';
+    angular.module('umbraco.filters').filter('safe_html', [
+        '$sce',
+        function ($sce) {
+            return function (text) {
+                return $sce.trustAsHtml(text);
+            };
+        }
+    ]);
+    'use strict';
     angular.module('umbraco.filters').filter('timespan', function () {
         return function (input) {
             var sec_num = parseInt(input, 10);
