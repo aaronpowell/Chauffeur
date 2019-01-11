@@ -1,10 +1,11 @@
 ﻿namespace Chauffeur.Components
 
 open Umbraco.Core.Components
+open Umbraco.Core.Composing
 open System.IO.Abstractions
 
+[<RuntimeLevelAttribute(MinLevel = Umbraco.Core.RuntimeLevel.BootFailed)>]
 type FileSystemComponent() =
-    inherit UmbracoComponentBase()
-
-    override __.Compose(c) =
-        c.Container.Register<IFileSystem, FileSystem>() |> ignore
+    interface IComposer with
+        member __.Compose(register) =
+            register.Register<IFileSystem, FileSystem>()

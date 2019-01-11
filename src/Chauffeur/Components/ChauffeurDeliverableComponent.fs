@@ -3,39 +3,50 @@
 open System
 open System.Reflection
 open Chauffeur
-open LightInject
 open Umbraco.Core.Components
 open Umbraco.Core.Composing
 
-module internal ChauffeurDeliverableComponent =
-    let nameBuilder name = sprintf "chauffeur:%s" name
+type internal Registration =
+     { Type : Type
+       KnownAs : seq<string> }
 
+module internal ChauffeurDeliverableComponent =
     let deliveryType = typeof<Deliverable>
 
-    let resolver deliverableName (factory : IServiceFactory) =
-        factory.GetInstance<Deliverable>(nameBuilder deliverableName)
-
-    let registerDeliverable (container : IServiceContainer) (t : Type) =
+    let registerDeliverable (register : IRegister) (t : Type) =
         let name = t.GetCustomAttribute<DeliverableNameAttribute>().Name
-        container.Register(deliveryType, t, nameBuilder name) |> ignore
+        register.Register(t, Lifetime.Transient)
+        register.Register((fun factory -> (factory.GetInstance t) :?> Deliverable), Lifetime.Transient)
 
-        t.GetCustomAttributes<DeliverableAliasAttribute>()
-        |> Seq.iter (fun attr ->
-                container
-                    .Register<Deliverable>(
-                        resolver name,
-                        nameBuilder attr.Alias
-                    )
-                |> ignore
-            )
+        let aliases = t.GetCustomAttributes<DeliverableAliasAttribute>()
+                      |> Seq.map (fun attr -> attr.Alias)
+                      |> Seq.toArray
+
+        { Type = t
+          KnownAs = Array.append [| name |] aliases }
+
+type internal DeliverableResolver(factory : IFactory, registrations) =
+    let finder registrations key =
+        registrations |> Array.tryFind (fun r -> let x = r.KnownAs |> Seq.tryFind (fun a -> a = key)
+                                                 match x with
+                                                 | Some _ -> true
+                                                 | None _ -> false)
+    member __.Resolve key =
+        let registration = finder registrations key
+        match registration with
+        | Some r -> Some(factory.GetInstance r.Type :?> Deliverable)
+        | None -> None
 
 open ChauffeurDeliverableComponent
 
+[<RuntimeLevelAttribute(MinLevel = Umbraco.Core.RuntimeLevel.BootFailed)>]
 type ChauffeurDeliverableComponent() =
-    inherit UmbracoComponentBase()
+    interface IComposer with
+        member __.Compose(composition) =
+            let typeLoader = composition.TypeLoader
 
-    override __.Compose(composition) =
-        let typeLoader = composition.Container.GetInstance<TypeLoader>()
+            let registrations = typeLoader.GetTypes<Deliverable>()
+                                |> Seq.map (registerDeliverable composition)
+                                |> Seq.toArray
 
-        typeLoader.GetTypes<Deliverable>()
-        |> Seq.iter (registerDeliverable composition.Container)
+            composition.Register(fun factory -> new DeliverableResolver(factory, registrations))

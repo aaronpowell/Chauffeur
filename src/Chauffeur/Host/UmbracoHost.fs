@@ -1,23 +1,23 @@
 namespace Chauffeur.Host
 
-open LightInject
 open FSharp.Control.Tasks.V2
 open System
 open System.Diagnostics
 open System.IO
 open System.Reflection
 open Umbraco.Core.Configuration
+open Umbraco.Core.Composing
 
 open Chauffeur
-open ServiceContainerExtensions
+open Chauffeur.Components
 
 type UmbracoHost(reader : TextReader, writer : TextWriter) =
     let runtime = new ChauffeurRuntime(reader, writer)
-    let container = new ServiceContainer()
 
     interface IChauffeurHost with
         member __.Run() = task {
-            runtime.Boot(container)
+            let register = RegisterFactory.Create()
+            let factory = runtime.Boot(register)
             do! writer.WriteLineAsync("Welcome to Chauffeur, your Umbraco console.")
             let fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location)
             do! writer.WriteLineAsync(sprintf "You're running Chauffeur v%s against Umbraco %A" (fvi.FileVersion) (UmbracoVersion.SemanticVersion))
@@ -31,9 +31,9 @@ type UmbracoHost(reader : TextReader, writer : TextWriter) =
                 do! writer.WriteAsync("umbraco> ")
                 let! rl = reader.ReadLineAsync()
 
-                let registeredName = sprintf "chauffeur:%s" rl
+                let deliverableResolver = factory.GetInstance<DeliverableResolver>()
 
-                match container.TryGetInstance<Deliverable>(registeredName) with
+                match deliverableResolver.Resolve rl with
                 | Some deliverable ->
                     let parts = rl.Split(' ')
                     let! runResult = deliverable.Run (Array.head parts) (Array.skip 1 parts)
@@ -47,4 +47,3 @@ type UmbracoHost(reader : TextReader, writer : TextWriter) =
     interface IDisposable with
         member __.Dispose() =
             runtime.Terminate()
-            container.Dispose()

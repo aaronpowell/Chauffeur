@@ -1,37 +1,54 @@
 namespace Chauffeur.Host
 
 open Umbraco.Core
+open Umbraco.Core.Components
+open Umbraco.Core.Composing
 open Umbraco.Core.Runtime
 open Umbraco.Web
 open Chauffeur
 open System.IO
-open LightInject
-
 open System.Reflection
-open System
 
-module ChauffeurRuntime =
-    let bootLoaderHack (c : ServiceContainer) componentTypes level =
-        match level with
-        | RuntimeLevel.BootFailed ->
-            // time for reflection hacks!
-            let bootLoaderType = level.GetType().Assembly.GetType("Umbraco.Core.Components.BootLoader")
-            let bootLoader = Activator.CreateInstance(bootLoaderType, c)
-            let method = bootLoaderType.GetMethod("Boot");
-            try
-                method.Invoke(bootLoader, [| componentTypes; RuntimeLevel.Install |]) |> ignore
-            with _ ->
-                ignore()
-        | _ -> ignore()
-
-type internal ChauffeurRuntime(reader : TextReader, writer : TextWriter) =
+type internal ChauffeurRuntime(reader : TextReader, writer : TextWriter) as self =
     inherit CoreRuntime()
 
-    override this.Boot(c) =
-        c.Register(fun _ -> reader) |> ignore
-        c.Register(fun _ -> writer) |> ignore
-        c.Register<IHttpContextAccessor, NullHttpContextAccessor>() |> ignore
-        base.Boot(c)
+    let mutable composition : Option<Composition> = None
 
-        let runtimeState = c.GetInstance<IRuntimeState>()
-        ChauffeurRuntime.bootLoaderHack c (this.GetComponentTypes()) runtimeState.Level
+    let getField name =
+        self.GetType().BaseType.GetField(name, BindingFlags.Instance ||| BindingFlags.NonPublic)
+
+    member private this.Hack register (factory : IFactory) composerTypes level =
+        match level with
+        | RuntimeLevel.BootFailed ->
+            match composition with
+            | Some c ->
+                let ccb = new ComponentCollectionBuilder()
+                ccb.RegisterWith(register)
+
+                let composers = new Composers(c, composerTypes, this.ProfilingLogger)
+                composers.Compose()
+
+                //let _factory = getField "_factory"
+                //_factory.SetValue(this, factory)
+                //Current.Factory <- factory
+
+                let _components = getField "_components"
+                let cc = factory.GetInstance<ComponentCollection>()
+                _components.SetValue(this, cc)
+                cc.Initialize()
+                factory
+            | None -> factory
+        | _ -> factory
+
+    override __.Compose c = composition <- Some(c)
+
+    override this.Boot(register) =
+        register.Register(fun _ -> reader) |> ignore
+        register.Register(fun _ -> writer) |> ignore
+        register.Register<IHttpContextAccessor, NullHttpContextAccessor>() |> ignore
+        let factory = base.Boot(register)
+
+        let runtimeState = factory.GetInstance<IRuntimeState>()
+        let typeLoader = factory.GetInstance<TypeLoader>()
+        register.RegisterInstance(factory)
+        this.Hack register factory (this.GetComposerTypes(typeLoader)) runtimeState.Level

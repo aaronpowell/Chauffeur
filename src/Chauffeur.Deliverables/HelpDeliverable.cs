@@ -1,9 +1,9 @@
-﻿using LightInject;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Umbraco.Core;
+using Umbraco.Core.Composing;
 
 namespace Chauffeur.Deliverables
 {
@@ -12,9 +12,9 @@ namespace Chauffeur.Deliverables
     [DeliverableAlias("?")]
     public class HelpDeliverable : Deliverable, IProvideDirections
     {
-        private readonly IServiceContainer container;
+        private readonly IFactory container;
 
-        public HelpDeliverable(TextReader reader, TextWriter writer, IServiceContainer container)
+        public HelpDeliverable(TextReader reader, TextWriter writer, IFactory container)
             : base(reader, writer)
         {
             this.container = container;
@@ -32,7 +32,7 @@ namespace Chauffeur.Deliverables
 
         private async Task Print(string command)
         {
-            if (container.GetInstance<Deliverable>("chauffeur:" + command) is IProvideDirections deliverable)
+            if (container.GetInstance<Deliverable>() is IProvideDirections deliverable)
             {
                 await deliverable.Directions();
                 return;
