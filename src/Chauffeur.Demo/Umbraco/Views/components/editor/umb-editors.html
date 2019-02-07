@@ -1,22 +1,25 @@
 <div class="umb-editors">
 
-    <!-- FIXME -->
-    <!-- 
-        For some reason I can't get the animation to work when we use the umb-editor directive.
-        The the template isn't rendered quick enough and we can't access the css classes inside the directive
-        I have also tried with the animation service but I can't get the animations to run when the ng-repeat is on the umb-editor directive
-
-        <umb-editor
-            ng-repeat="editor in editors"
-            model="editor">
-        </umb-editor>
-    -->
-
-    <!-- Temp solution -->
-    <div class="umb-editor" ng-repeat="model in editors" ng-style="model.style" ng-class="{'umb-editor--small': model.size === 'small', 'umb-editor--animating': model.animating}">
+    <div class="umb-editor"
+        ng-repeat="model in editors"
+        ng-class="{'umb-editor--small': model.size === 'small',
+        'umb-editor--animating': model.animating,
+        '--notInFront': model.inFront !== true,
+        'umb-editor--infinityMode': model.infinityMode,
+        'moveRight': model.moveRight,
+        'umb-editor--n0': model.styleIndex === 0,
+        'umb-editor--n1': model.styleIndex === 1,
+        'umb-editor--n2': model.styleIndex === 2,
+        'umb-editor--n3': model.styleIndex === 3,
+        'umb-editor--outOfRange': model.level === -1,
+        'umb-editor--level0': model.level === 0,
+        'umb-editor--level1': model.level === 1,
+        'umb-editor--level2': model.level === 2,
+        'umb-editor--level3': model.level === 3}"
+        >
         <div ng-if="!model.view && !model.animating" ng-transclude></div>
         <div ng-if="model.view && !model.animating" ng-include="model.view"></div>
-        <div ng-if="model.showOverlay" class="umb-editor__overlay"></div>
+        <div class="umb-editor__overlay"></div>
     </div>
 
 </div>

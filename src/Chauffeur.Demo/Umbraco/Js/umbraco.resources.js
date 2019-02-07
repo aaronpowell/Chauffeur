@@ -89,7 +89,7 @@
                 if (!email) {
                     return $q.reject({ errorMsg: 'Email address cannot be empty' });
                 }
-                //TODO: This validation shouldn't really be done here, the validation on the login dialog
+                // TODO: This validation shouldn't really be done here, the validation on the login dialog
                 // is pretty hacky which is why this is here, ideally validation on the login dialog would
                 // be done properly.
                 var emailRegex = /\S+@\S+\.\S+/;
@@ -302,7 +302,7 @@
     * @name umbraco.resources.codefileResource
     * @description Loads in data for files that contain code such as js scripts, partial views and partial view macros
     **/
-    function codefileResource($q, $http, umbDataFormatter, umbRequestHelper) {
+    function codefileResource($q, $http, umbDataFormatter, umbRequestHelper, localizationService) {
         return {
             /**
      * @ngdoc method
@@ -390,10 +390,11 @@
      *
      */
             deleteByPath: function deleteByPath(type, virtualpath) {
+                var promise = localizationService.localize('codefile_deleteItemFailed', [virtualpath]);
                 return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('codeFileApiBaseUrl', 'Delete', [
                     { type: type },
                     { virtualPath: virtualpath }
-                ])), 'Failed to delete item: ' + virtualpath);
+                ])), promise);
             },
             /**
      * @ngdoc method
@@ -494,11 +495,14 @@
      *
      */
             createContainer: function createContainer(type, parentId, name) {
+                // Is the parent ID numeric?
+                var key = 'codefile_createFolderFailedBy' + (isNaN(parseInt(parentId)) ? 'Name' : 'Id');
+                var promise = localizationService.localize(key, [parentId]);
                 return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('codeFileApiBaseUrl', 'PostCreateContainer', {
                     type: type,
                     parentId: parentId,
                     name: encodeURIComponent(name)
-                })), 'Failed to create a folder under parent id ' + parentId);
+                })), promise);
             },
             /**
      * @ngdoc method
@@ -1722,7 +1726,7 @@
      *
      * @description
      * Retrieves the dashboard configuration for a given section
-     * 
+     *
      * @param {string} section Alias of section to retrieve dashboard configuraton for
      * @returns {Promise} resourcePromise object containing the user array.
      *
@@ -1737,7 +1741,7 @@
     *
     * @description
     * Retrieves dashboard content from a remote source for a given section
-    * 
+    *
     * @param {string} section Alias of section to retrieve dashboard content for
     * @returns {Promise} resourcePromise object containing the user array.
     *
@@ -1757,6 +1761,14 @@
                     values.push({ baseurl: baseurl });
                 }
                 return umbRequestHelper.getApiUrl('dashboardApiBaseUrl', 'GetRemoteDashboardCss', values);
+            },
+            getRemoteXmlData: function getRemoteXmlData(site, url) {
+                //build request values with optional params
+                var values = {
+                    site: site,
+                    url: url
+                };
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('dashboardApiBaseUrl', 'GetRemoteXml', values)), 'Failed to get remote xml');
             }
         };
     }
@@ -2374,20 +2386,12 @@
      * 
      * @param {string} type Object type name        
      * @param {string} postFilter optional filter expression which will execute a dynamic where clause on the server
-     * @param {string} postFilterParams optional parameters for the postFilter expression
      * @returns {Promise} resourcePromise object containing the entity.
      *
      */
-            getAll: function getAll(type, postFilter, postFilterParams) {
+            getAll: function getAll(type, postFilter) {
                 //need to build the query string manually
-                var query = 'type=' + type + '&postFilter=' + (postFilter ? postFilter : '');
-                if (postFilter && postFilterParams) {
-                    var counter = 0;
-                    _.each(postFilterParams, function (val, key) {
-                        query += '&postFilterParams[' + counter + '].key=' + key + '&postFilterParams[' + counter + '].value=' + val;
-                        counter++;
-                    });
-                }
+                var query = 'type=' + type + '&postFilter=' + (postFilter ? encodeURIComponent(postFilter) : '');
                 return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('entityApiBaseUrl', 'GetAll', query)), 'Failed to retrieve entity data for type ' + type);
             },
             /**
@@ -2683,11 +2687,11 @@
     * @description Handles retrieving data for javascript libraries on the server
     **/
         function javascriptLibraryResource($q, $http, umbRequestHelper) {
-            var existingLocales = [];
-            function getSupportedLocalesForMoment() {
+            var existingLocales = null;
+            function getSupportedLocales() {
                 var deferred = $q.defer();
-                if (existingLocales.length === 0) {
-                    umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('backOfficeAssetsApiBaseUrl', 'GetSupportedMomentLocales')), 'Failed to get cultures').then(function (locales) {
+                if (existingLocales === null) {
+                    umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('backOfficeAssetsApiBaseUrl', 'GetSupportedLocales')), 'Failed to get cultures').then(function (locales) {
                         existingLocales = locales;
                         deferred.resolve(existingLocales);
                     });
@@ -2696,7 +2700,7 @@
                 }
                 return deferred.promise;
             }
-            var service = { getSupportedLocalesForMoment: getSupportedLocalesForMoment };
+            var service = { getSupportedLocales: getSupportedLocales };
             return service;
         }
         angular.module('umbraco.resources').factory('javascriptLibraryResource', javascriptLibraryResource);
@@ -2729,29 +2733,6 @@
         };
     }
     angular.module('umbraco.resources').factory('languageResource', languageResource);
-    'use strict';
-    /**
-    * @ngdoc service
-    * @name umbraco.resources.legacyResource
-    * @description Handles legacy dialog requests
-    **/
-    function legacyResource($q, $http, umbRequestHelper) {
-        //the factory object returned
-        return {
-            /** Loads in the data to display the section list */
-            deleteItem: function deleteItem(args) {
-                if (!args.nodeId || !args.nodeType || !args.alias) {
-                    throw 'The args parameter is not formatted correct, it requires properties: nodeId, nodeType, alias';
-                }
-                return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('legacyApiBaseUrl', 'DeleteLegacyItem', [
-                    { nodeId: args.nodeId },
-                    { nodeType: args.nodeType },
-                    { alias: args.alias }
-                ])), 'Failed to delete item ' + args.nodeId);
-            }
-        };
-    }
-    angular.module('umbraco.resources').factory('legacyResource', legacyResource);
     'use strict';
     /**
     * @ngdoc service
@@ -2977,6 +2958,63 @@
     'use strict';
     /**
     * @ngdoc service
+    * @name umbraco.resources.logViewerResource
+    * @description Retrives Umbraco log items (by default from JSON files on disk)
+    *
+    *
+    **/
+    function logViewerResource($q, $http, umbRequestHelper) {
+        //the factory object returned
+        return {
+            getNumberOfErrors: function getNumberOfErrors() {
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('logViewerApiBaseUrl', 'GetNumberOfErrors')), 'Failed to retrieve number of errors in logs');
+            },
+            getLogLevelCounts: function getLogLevelCounts() {
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('logViewerApiBaseUrl', 'GetLogLevelCounts')), 'Failed to retrieve log level counts');
+            },
+            getMessageTemplates: function getMessageTemplates() {
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('logViewerApiBaseUrl', 'GetMessageTemplates')), 'Failed to retrieve log templates');
+            },
+            getSavedSearches: function getSavedSearches() {
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('logViewerApiBaseUrl', 'GetSavedSearches')), 'Failed to retrieve saved searches');
+            },
+            postSavedSearch: function postSavedSearch(name, query) {
+                return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('logViewerApiBaseUrl', 'PostSavedSearch'), {
+                    'name': name,
+                    'query': query
+                }), 'Failed to add new saved search');
+            },
+            deleteSavedSearch: function deleteSavedSearch(name, query) {
+                return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('logViewerApiBaseUrl', 'DeleteSavedSearch'), {
+                    'name': name,
+                    'query': query
+                }), 'Failed to delete saved search');
+            },
+            getLogs: function getLogs(options) {
+                var defaults = {
+                    pageSize: 100,
+                    pageNumber: 1,
+                    orderDirection: 'Descending',
+                    filterExpression: ''
+                };
+                if (options === undefined) {
+                    options = {};
+                }
+                //overwrite the defaults if there are any specified
+                angular.extend(defaults, options);
+                //now copy back to the options we will use
+                options = defaults;
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('logViewerApiBaseUrl', 'GetLogs', options)), 'Failed to retrieve common log messages');
+            },
+            canViewLogs: function canViewLogs() {
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('logViewerApiBaseUrl', 'GetCanViewLogs')), 'Failed to retrieve state if logs can be viewed');
+            }
+        };
+    }
+    angular.module('umbraco.resources').factory('logViewerResource', logViewerResource);
+    'use strict';
+    /**
+    * @ngdoc service
     * @name umbraco.resources.macroResource
     * @description Deals with data for macros
     *
@@ -2996,7 +3034,7 @@
      *
      */
             getMacroParameters: function getMacroParameters(macroId) {
-                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('macroApiBaseUrl', 'GetMacroParameters', [{ macroId: macroId }])), 'Failed to retrieve macro parameters for macro with id  ' + macroId);
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('macroRenderingApiBaseUrl', 'GetMacroParameters', [{ macroId: macroId }])), 'Failed to retrieve macro parameters for macro with id  ' + macroId);
             },
             /**
      * @ngdoc method
@@ -3012,7 +3050,7 @@
      *
      */
             getMacroResultAsHtmlForEditor: function getMacroResultAsHtmlForEditor(macroAlias, pageId, macroParamDictionary) {
-                return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('macroApiBaseUrl', 'GetMacroResultAsHtmlForEditor'), {
+                return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('macroRenderingApiBaseUrl', 'GetMacroResultAsHtmlForEditor'), {
                     macroAlias: macroAlias,
                     pageId: pageId,
                     macroParams: macroParamDictionary
@@ -3024,10 +3062,28 @@
      * @returns {}
      */
             createPartialViewMacroWithFile: function createPartialViewMacroWithFile(virtualPath, filename) {
-                return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('macroApiBaseUrl', 'CreatePartialViewMacroWithFile'), {
+                return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('macroRenderingApiBaseUrl', 'CreatePartialViewMacroWithFile'), {
                     virtualPath: virtualPath,
                     filename: filename
                 }), 'Failed to create macro "' + filename + '"');
+            },
+            createMacro: function createMacro(name) {
+                return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('macroApiBaseUrl', 'Create?name=' + name)), 'Failed to create macro "' + name + '"');
+            },
+            getPartialViews: function getPartialViews() {
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('macroApiBaseUrl', 'GetPartialViews'), 'Failed to get partial views'));
+            },
+            getParameterEditors: function getParameterEditors() {
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('macroApiBaseUrl', 'GetParameterEditors'), 'Failed to get parameter editors'));
+            },
+            getById: function getById(id) {
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('macroApiBaseUrl', 'GetById', { 'id': id }), 'Failed to get macro'));
+            },
+            saveMacro: function saveMacro(macro) {
+                return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('macroApiBaseUrl', 'Save'), macro));
+            },
+            deleteById: function deleteById(id) {
+                return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('macroApiBaseUrl', 'deleteById', { 'id': id })));
             }
         };
     }
@@ -4032,16 +4088,13 @@
      * Gets a list of installed packages       
      */
             getInstalled: function getInstalled() {
-                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('packageInstallApiBaseUrl', 'GetInstalled')), 'Failed to get installed packages');
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('packageApiBaseUrl', 'GetInstalled')), 'Failed to get installed packages');
             },
             validateInstalled: function validateInstalled(name, version) {
                 return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('packageInstallApiBaseUrl', 'ValidateInstalled', {
                     name: name,
                     version: version
                 })), 'Failed to validate package ' + name);
-            },
-            deleteCreatedPackage: function deleteCreatedPackage(packageId) {
-                return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('packageInstallApiBaseUrl', 'DeleteCreatedPackage', { packageId: packageId })), 'Failed to delete package ' + packageId);
             },
             uninstall: function uninstall(packageId) {
                 return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('packageInstallApiBaseUrl', 'Uninstall', { packageId: packageId })), 'Failed to uninstall package');
@@ -4106,6 +4159,56 @@
             },
             cleanUp: function cleanUp(umbPackage) {
                 return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('packageInstallApiBaseUrl', 'CleanUp'), umbPackage), 'Failed to install package. Error during the step "CleanUp" ');
+            },
+            /**
+     * @ngdoc method
+     * @name umbraco.resources.packageInstallResource#getCreated
+     * @methodOf umbraco.resources.packageInstallResource
+     *
+     * @description
+     * Gets a list of created packages       
+     */
+            getAllCreated: function getAllCreated() {
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('packageApiBaseUrl', 'GetCreatedPackages')), 'Failed to get created packages');
+            },
+            /**
+     * @ngdoc method
+     * @name umbraco.resources.packageInstallResource#getCreatedById
+     * @methodOf umbraco.resources.packageInstallResource
+     *
+     * @description
+     * Gets a created package by id       
+     */
+            getCreatedById: function getCreatedById(id) {
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('packageApiBaseUrl', 'GetCreatedPackageById', { id: id })), 'Failed to get package');
+            },
+            getInstalledById: function getInstalledById(id) {
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('packageApiBaseUrl', 'GetInstalledPackageById', { id: id })), 'Failed to get package');
+            },
+            getEmpty: function getEmpty() {
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('packageApiBaseUrl', 'getEmpty')), 'Failed to get scaffold');
+            },
+            /**
+     * @ngdoc method
+     * @name umbraco.resources.packageInstallResource#savePackage
+     * @methodOf umbraco.resources.packageInstallResource
+     *
+     * @description
+     * Creates or updates a package
+     */
+            savePackage: function savePackage(umbPackage) {
+                return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('packageApiBaseUrl', 'PostSavePackage'), umbPackage), 'Failed to create package');
+            },
+            /**
+     * @ngdoc method
+     * @name umbraco.resources.packageInstallResource#deleteCreatedPackage
+     * @methodOf umbraco.resources.packageInstallResource
+     *
+     * @description
+     * Detes a created package
+     */
+            deleteCreatedPackage: function deleteCreatedPackage(packageId) {
+                return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('packageApiBaseUrl', 'DeleteCreatedPackage', { packageId: packageId })), 'Failed to delete package ' + packageId);
             }
         };
     }
@@ -4244,10 +4347,10 @@
      *
      */
             getByChildId: function getByChildId(id, alias) {
-                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('relationApiBaseUrl', 'GetByChildId', [{
-                        childId: id,
-                        relationTypeAlias: alias
-                    }])), 'Failed to get relation by child ID ' + id + ' and type of ' + alias);
+                return umbRequestHelper.resourcePromise($http.get(umbRequestHelper.getApiUrl('relationApiBaseUrl', 'GetByChildId', {
+                    childId: id,
+                    relationTypeAlias: alias
+                })), 'Failed to get relation by child ID ' + id + ' and type of ' + alias);
             },
             /**
      * @ngdoc method
@@ -4460,7 +4563,7 @@
     * @name umbraco.resources.templateResource
     * @description Loads in data for templates
     **/
-    function templateResource($q, $http, umbDataFormatter, umbRequestHelper) {
+    function templateResource($q, $http, umbDataFormatter, umbRequestHelper, localizationService) {
         return {
             /**
      * @ngdoc method
@@ -4575,7 +4678,8 @@
      *
      */
             deleteById: function deleteById(id) {
-                return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('templateApiBaseUrl', 'DeleteById', [{ id: id }])), 'Failed to delete item ' + id);
+                var promise = localizationService.localize('template_deleteByIdFailed', [id]);
+                return umbRequestHelper.resourcePromise($http.post(umbRequestHelper.getApiUrl('templateApiBaseUrl', 'DeleteById', [{ id: id }])), promise);
             },
             /**
      * @ngdoc method
@@ -4788,11 +4892,7 @@
                     options.isDialog = false;
                 }
                 //create the query string for the tree request, these are the mandatory options:
-                var query = 'application=' + options.section + '&tree=' + options.tree + '&isDialog=' + options.isDialog;
-                //if you need to load a not initialized tree set this value to false - default is true
-                if (options.onlyinitialized) {
-                    query += '&onlyInitialized=' + options.onlyinitialized;
-                }
+                var query = 'application=' + options.section + '&tree=' + options.tree + '&use=' + (options.isDialog ? 'dialog' : 'main');
                 //the options can contain extra query string parameters
                 if (options.queryString) {
                     query += '&' + options.queryString;

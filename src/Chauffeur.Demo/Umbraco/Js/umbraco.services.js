@@ -517,7 +517,7 @@
                 return current;
             }
         };
-        //TODO: This shouldn't be removed! use getCurrent() method instead of a hacked readonly property which is confusing.
+        // TODO: This shouldn't be removed! use getCurrent() method instead of a hacked readonly property which is confusing.
         //create a get/set property but don't allow setting
         Object.defineProperty(state, 'current', {
             get: function get() {
@@ -593,18 +593,24 @@
             return path;
         }
         function getMomentLocales(locales, supportedLocales) {
+            return getLocales(locales, supportedLocales, 'lib/moment/');
+        }
+        function getFlatpickrLocales(locales, supportedLocales) {
+            return getLocales(locales, supportedLocales, 'lib/flatpickr/l10n/');
+        }
+        function getLocales(locales, supportedLocales, path) {
             var localeUrls = [];
             var locales = locales.split(',');
             for (var i = 0; i < locales.length; i++) {
                 var locale = locales[i].toString().toLowerCase();
                 if (locale !== 'en-us') {
                     if (supportedLocales.indexOf(locale + '.js') > -1) {
-                        localeUrls.push('lib/moment/' + locale + '.js');
+                        localeUrls.push(path + locale + '.js');
                     }
                     if (locale.indexOf('-') > -1) {
                         var majorLocale = locale.split('-')[0] + '.js';
                         if (supportedLocales.indexOf(majorLocale) > -1) {
-                            localeUrls.push('lib/moment/' + majorLocale);
+                            localeUrls.push(path + majorLocale);
                         }
                     }
                 }
@@ -612,12 +618,13 @@
             return localeUrls;
         }
         /**
-   * Loads specific Moment.js Locales.
+   * Loads specific Moment.js and Flatpickr Locales.
    * @param {any} locales
    * @param {any} supportedLocales
    */
         function loadLocales(locales, supportedLocales) {
-            var localeUrls = getMomentLocales(locales, supportedLocales);
+            var localeUrls = getMomentLocales(locales, supportedLocales.moment);
+            localeUrls = localeUrls.concat(getFlatpickrLocales(locales, supportedLocales.flatpickr));
             if (localeUrls.length >= 1) {
                 return service.load(localeUrls, $rootScope);
             } else {
@@ -625,11 +632,11 @@
             }
         }
         /**
-   * Loads in moment.js requirements during the _loadInitAssets call
+   * Loads in locale requirements during the _loadInitAssets call
    */
-        function loadMomentLocaleForCurrentUser() {
+        function loadLocaleForCurrentUser() {
             userService.getCurrentUser().then(function (currentUser) {
-                return javascriptLibraryResource.getSupportedLocalesForMoment().then(function (supportedLocales) {
+                return javascriptLibraryResource.getSupportedLocales().then(function (supportedLocales) {
                     return loadLocales(currentUser.locale, supportedLocales);
                 });
             });
@@ -659,7 +666,7 @@
                     var self = this;
                     return self.loadJs(umbRequestHelper.getApiUrl('serverVarsJs', '', ''), $rootScope).then(function () {
                         initAssetsLoaded = true;
-                        return loadMomentLocaleForCurrentUser();
+                        return loadLocaleForCurrentUser();
                     });
                 } else {
                     return $q.when(true);
@@ -942,7 +949,7 @@
         }
         return {
             /** Used by the content editor and mini content editor to perform saving operations */
-            //TODO: Make this a more helpful/reusable method for other form operations! we can simplify this form most forms
+            // TODO: Make this a more helpful/reusable method for other form operations! we can simplify this form most forms
             //         = this is already done in the formhelper service
             contentEditorPerformSave: function contentEditorPerformSave(args) {
                 if (!angular.isObject(args)) {
@@ -1298,7 +1305,7 @@
      * This returns the list of changed content properties (does not include standard object property changes).
      */
             reBindChangedProperties: function reBindChangedProperties(origContent, savedContent) {
-                //TODO: We should probably split out this logic to deal with media/members seperately to content
+                // TODO: We should probably split out this logic to deal with media/members separately to content
                 //a method to ignore built-in prop changes
                 var shouldIgnore = function shouldIgnore(propName) {
                     return _.some([
@@ -1880,13 +1887,6 @@
                 }
                 return crop;
             },
-            centerInsideViewPort: function centerInsideViewPort(img, viewport) {
-                var left = viewport.width / 2 - img.width / 2, top = viewport.height / 2 - img.height / 2;
-                return {
-                    left: left,
-                    top: top
-                };
-            },
             alignToCoordinates: function alignToCoordinates(image, center, viewport) {
                 var min_left = image.width - viewport.width;
                 var min_top = image.height - viewport.height;
@@ -2010,10 +2010,10 @@
  *
  * @description
  * Added in Umbraco 8.0. Application-wide service for handling infinite editing.
- * 
  *
- * 
- * 
+ *
+ *
+ *
 <h2><strong>Open a build-in infinite editor (media picker)</strong></h2>
 <h3>Markup example</h3>
 <pre>
@@ -2103,7 +2103,7 @@ When building a custom infinite editor view you can use the same components as a
                 hide-icon="true"
                 hide-description="true">
             </umb-editor-header>
-        
+
             <umb-editor-container>
                 <umb-box>
                     <umb-box-content>
@@ -2122,7 +2122,7 @@ When building a custom infinite editor view you can use the same components as a
                     </umb-button>
                     <umb-button
                         type="button"
-                        button-style="success"
+                        button-style="action"
                         label-key="general_submit"
                         action="vm.submit(model)">
                     </umb-button>
@@ -2166,7 +2166,7 @@ When building a custom infinite editor view you can use the same components as a
  */
     (function () {
         'use strict';
-        function editorService(eventsService, keyboardService) {
+        function editorService(eventsService, keyboardService, $timeout) {
             var editorsKeyboardShorcuts = [];
             var editors = [];
             /**
@@ -2238,8 +2238,12 @@ When building a custom infinite editor view you can use the same components as a
                 };
                 // emit event to let components know an editor has been removed
                 eventsService.emit('appState.editors.close', args);
-                // rebind keyboard shortcuts for the new editor in focus
-                rebindKeyboardShortcuts();
+                // delay required to map the properties to the correct editor due
+                // to another delay in the closing animation of the editor
+                $timeout(function () {
+                    // rebind keyboard shortcuts for the new editor in focus
+                    rebindKeyboardShortcuts();
+                }, 0);
             }
             /**
      * @ngdoc method
@@ -2269,7 +2273,7 @@ When building a custom infinite editor view you can use the same components as a
      * @param {Boolean} editor.create Create new content item
      * @param {Function} editor.submit Callback function when the publish and close button is clicked. Returns the editor model object
      * @param {Function} editor.close Callback function when the close button is clicked.
-     * 
+     *
      * @returns {Object} editor object
      */
             function contentEditor(editor) {
@@ -2283,12 +2287,12 @@ When building a custom infinite editor view you can use the same components as a
      *
      * @description
      * Opens a content picker in infinite editing, the submit callback returns an array of selected items
-     * 
+     *
      * @param {Object} editor rendering options
      * @param {Boolean} editor.multiPicker Pick one or multiple items
      * @param {Function} editor.submit Callback function when the submit button is clicked. Returns the editor model object
      * @param {Function} editor.close Callback function when the close button is clicked.
-     * 
+     *
      * @returns {Object} editor object
      */
             function contentPicker(editor) {
@@ -2489,7 +2493,6 @@ When building a custom infinite editor view you can use the same components as a
      */
             function queryBuilder(editor) {
                 editor.view = 'views/common/infiniteeditors/querybuilder/querybuilder.html';
-                editor.size = 'small';
                 open(editor);
             }
             /**
@@ -2655,7 +2658,7 @@ When building a custom infinite editor view you can use the same components as a
      *
      * @description
      * Opens the section picker in infinite editing, the submit callback returns an array of the selected items
-     * 
+     *
      * @param {Object} editor rendering options
      * @param {Array} editor.availableItems Array of available items.
      * @param {Array} editor.selectedItems Array of selected items. When passed in the selected items will be filtered from the available items.
@@ -2676,7 +2679,7 @@ When building a custom infinite editor view you can use the same components as a
      *
      * @description
      * Opens a macro picker in infinite editing, the submit callback returns an array of the selected items
-     * 
+     *
      * @param {Callback} editor.submit Submits the editor.
      * @param {Callback} editor.close Closes the editor.
      * @returns {Object} editor object
@@ -2693,7 +2696,7 @@ When building a custom infinite editor view you can use the same components as a
      *
      * @description
      * Opens a member group picker in infinite editing.
-     * 
+     *
      * @param {Object} editor rendering options
      * @param {Object} editor.multiPicker Pick one or multiple items.
      * @param {Callback} editor.submit Submits the editor.
@@ -2705,6 +2708,28 @@ When building a custom infinite editor view you can use the same components as a
                 editor.size = 'small';
                 open(editor);
             }
+            /**
+    * @ngdoc method
+    * @name umbraco.services.editorService#memberPicker
+    * @methodOf umbraco.services.editorService
+    *
+    * @description
+    * Opens a member picker in infinite editing, the submit callback returns an array of selected items
+    * 
+    * @param {Object} editor rendering options
+    * @param {Boolean} editor.multiPicker Pick one or multiple items
+    * @param {Function} editor.submit Callback function when the submit button is clicked. Returns the editor model object
+    * @param {Function} editor.close Callback function when the close button is clicked.
+    * 
+    * @returns {Object} editor object
+    */
+            function memberPicker(editor) {
+                editor.view = 'views/common/infiniteeditors/treepicker/treepicker.html';
+                editor.size = 'small';
+                editor.section = 'member';
+                editor.treeAlias = 'member';
+                open(editor);
+            }
             ///////////////////////
             /**
      * @ngdoc method
@@ -2712,14 +2737,14 @@ When building a custom infinite editor view you can use the same components as a
      * @methodOf umbraco.services.editorService
      *
      * @description
-     * Internal method to keep track of keyboard shortcuts registered 
+     * Internal method to keep track of keyboard shortcuts registered
      * to each editor so they can be rebound when an editor closes
-     * 
+     *
      */
             function unbindKeyboardShortcuts() {
                 var shortcuts = angular.copy(keyboardService.keyboardEvent);
                 editorsKeyboardShorcuts.push(shortcuts);
-                // unbind the current shortcuts because we only want to 
+                // unbind the current shortcuts because we only want to
                 // shortcuts from the newly opened editor working
                 var _arr = Object.entries(shortcuts);
                 for (var _i = 0; _i < _arr.length; _i++) {
@@ -2734,7 +2759,7 @@ When building a custom infinite editor view you can use the same components as a
      *
      * @description
      * Internal method to rebind keyboard shortcuts for the editor in focus
-     * 
+     *
      */
             function rebindKeyboardShortcuts() {
                 // find the shortcuts from the previous editor
@@ -2779,7 +2804,8 @@ When building a custom infinite editor view you can use the same components as a
                 userPicker: userPicker,
                 itemPicker: itemPicker,
                 macroPicker: macroPicker,
-                memberGroupPicker: memberGroupPicker
+                memberGroupPicker: memberGroupPicker,
+                memberPicker: memberPicker
             };
             return service;
         }
@@ -2812,7 +2838,6 @@ When building a custom infinite editor view you can use the same components as a
     app.ready
     app.authenticated
     app.notAuthenticated
-    app.ysod
     app.reInitialize
     app.userRefresh
     app.navigationReady
@@ -3031,9 +3056,10 @@ When building a custom infinite editor view you can use the same components as a
                         this.handleServerValidation(err.data.ModelState);
                         //execute all server validation events and subscribers
                         serverValidationManager.notifyAndClearAllSubscriptions();
-                    } else {
-                        overlayService.ysod(err);
                     }
+                } else {
+                    // TODO: All YSOD handling should be done with an interceptor
+                    overlayService.ysod(err);
                 }
             },
             /**
@@ -3105,10 +3131,10 @@ When building a custom infinite editor view you can use the same components as a
         return service;
     });
     'use strict';
-    angular.module('umbraco.services').factory('helpService', function ($http, $q, umbRequestHelper) {
+    angular.module('umbraco.services').factory('helpService', function ($http, $q, umbRequestHelper, dashboardResource) {
         var helpTopics = {};
-        var defaultUrl = 'https://our.umbraco.com/rss/help';
-        var tvUrl = 'https://umbraco.tv/feeds/help';
+        var defaultUrl = 'rss/help';
+        var tvUrl = 'feeds/help';
         function getCachedHelp(url) {
             if (helpTopics[url]) {
                 return helpTopics[cacheKey];
@@ -3119,14 +3145,13 @@ When building a custom infinite editor view you can use the same components as a
         function setCachedHelp(url, data) {
             helpTopics[url] = data;
         }
-        function fetchUrl(url) {
+        function fetchUrl(site, url) {
             var deferred = $q.defer();
             var found = getCachedHelp(url);
             if (found) {
                 deferred.resolve(found);
             } else {
-                var proxyUrl = 'dashboard/feedproxy.aspx?url=' + url;
-                $http.get(proxyUrl).then(function (data) {
+                dashboardResource.getRemoteXmlData(site, url).then(function (data) {
                     var feed = $(data.data);
                     var topics = [];
                     $('item', feed).each(function (i, item) {
@@ -3139,6 +3164,8 @@ When building a custom infinite editor view you can use the same components as a
                     });
                     setCachedHelp(topics);
                     deferred.resolve(topics);
+                }, function (exception) {
+                    console.error('ex from remote data', exception);
                 });
             }
             return deferred.promise;
@@ -3146,11 +3173,11 @@ When building a custom infinite editor view you can use the same components as a
         var service = {
             findHelp: function findHelp(args) {
                 var url = service.getUrl(defaultUrl, args);
-                return fetchUrl(url);
+                return fetchUrl('OUR', url);
             },
             findVideos: function findVideos(args) {
                 var url = service.getUrl(tvUrl, args);
-                return fetchUrl(url);
+                return fetchUrl('TV', url);
             },
             getContextHelpForPage: function getContextHelpForPage(section, tree, baseurl) {
                 var qs = '?section=' + section + '&tree=' + tree;
@@ -3494,7 +3521,7 @@ When building a custom infinite editor view you can use the same components as a
                 oldIcon: '.sprTreeSettingDataType',
                 newIcon: 'icon-autofill'
             },
-            //TODO:
+            // TODO: Something needs to be done with the old tree icons that are commented out.
             /*
   { oldIcon: ".sprTreeSettingAgent", newIcon: "" },
   { oldIcon: ".sprTreeSettingCss", newIcon: "" },
@@ -4539,7 +4566,7 @@ When building a custom infinite editor view you can use the same components as a
  * </pre>
  */
     angular.module('umbraco.services').factory('localizationService', function ($http, $q, eventsService, $window, $filter, userService) {
-        //TODO: This should be injected as server vars
+        // TODO: This should be injected as server vars
         var url = 'LocalizedText';
         var resourceFileLoadStatus = 'none';
         var resourceLoadingPromise = [];
@@ -4819,7 +4846,7 @@ When building a custom infinite editor view you can use the same components as a
             },
             /**
      * @ngdoc function
-     * @name umbraco.services.macroService#generateWebFormsSyntax
+     * @name umbraco.services.macroService#generateMacroSyntax
      * @methodOf umbraco.services.macroService
      * @function    
      *
@@ -4850,28 +4877,6 @@ When building a custom infinite editor view you can use the same components as a
                     });
                 }
                 macroString += '/>';
-                return macroString;
-            },
-            /**
-     * @ngdoc function
-     * @name umbraco.services.macroService#generateWebFormsSyntax
-     * @methodOf umbraco.services.macroService
-     * @function    
-     *
-     * @description
-     * generates the syntax for inserting a macro into a webforms templates
-     * 
-     * @param {object} args an object containing the macro alias and it's parameter values
-     */
-            generateWebFormsSyntax: function generateWebFormsSyntax(args) {
-                var macroString = '<umbraco:Macro ';
-                if (args.macroParamsDictionary) {
-                    _.each(args.macroParamsDictionary, function (val, key) {
-                        var keyVal = key + '="' + (val ? val : '') + '" ';
-                        macroString += keyVal;
-                    });
-                }
-                macroString += 'Alias="' + args.macroAlias + '" runat="server"></umbraco:Macro>';
                 return macroString;
             },
             /**
@@ -4909,6 +4914,9 @@ When building a custom infinite editor view you can use the same components as a
             collectValueData: function collectValueData(macro, macroParams, renderingEngine) {
                 var paramDictionary = {};
                 var macroAlias = macro.alias;
+                if (!macroAlias) {
+                    throw 'The macro object does not contain an alias';
+                }
                 var syntax;
                 _.each(macroParams, function (item) {
                     var val = item.value;
@@ -4922,12 +4930,7 @@ When building a custom infinite editor view you can use the same components as a
                     paramDictionary[item.alias] = _.escape(val);
                 });
                 //get the syntax based on the rendering engine
-                if (renderingEngine && renderingEngine === 'WebForms') {
-                    syntax = this.generateWebFormsSyntax({
-                        macroAlias: macroAlias,
-                        macroParamsDictionary: paramDictionary
-                    });
-                } else if (renderingEngine && renderingEngine === 'Mvc') {
+                if (renderingEngine && renderingEngine === 'Mvc') {
                     syntax = this.generateMvcSyntax({
                         macroAlias: macroAlias,
                         macroParamsDictionary: paramDictionary
@@ -5010,7 +5013,7 @@ When building a custom infinite editor view you can use the same components as a
                     };
                 });
                 //for now we'll just return the first image in the collection.
-                //TODO: we should enable returning many to be displayed in the picker if the uploader supports many.
+                // TODO: we should enable returning many to be displayed in the picker if the uploader supports many.
                 if (mediaVal.length && mediaVal.length > 0) {
                     if (!options.imageOnly || options.imageOnly === true && mediaVal[0].isImage) {
                         return mediaVal[0].file;
@@ -5321,7 +5324,7 @@ When building a custom infinite editor view you can use the same components as a
                 return mediaEntity.contentTypeAlias.endsWith('Folder');
             },
             getAllowedImagetypes: function getAllowedImagetypes(mediaId) {
-                //TODO: This is horribly inneficient - why make one request per type!?
+                // TODO: This is horribly inneficient - why make one request per type!?
                 //This should make a call to c# to get exactly what it's looking for instead of returning every single media type and doing 
                 //some filtering on the client side.
                 //This is also called multiple times when it's not needed! Example, when launching the media picker, this will be called twice 
@@ -5490,9 +5493,13 @@ When building a custom infinite editor view you can use the same components as a
         //A list of query strings defined that when changed will not cause a reload of the route
         var nonRoutingQueryStrings = [
             'mculture',
+            'cculture',
+            'lq'
+        ];
+        var retainedQueryStrings = [
+            'mculture',
             'cculture'
         ];
-        var retainedQueryStrings = ['mculture'];
         function setMode(mode) {
             switch (mode) {
             case 'tree':
@@ -6346,6 +6353,10 @@ When building a custom infinite editor view you can use the same components as a
                 if (!overlay.position) {
                     overlay.position = 'center';
                 }
+                // use a default empty view if nothing is set
+                if (!overlay.view) {
+                    overlay.view = 'views/common/overlays/default/default.html';
+                }
                 // option to disable backdrop clicks
                 if (overlay.disableBackdropClick) {
                     backdropOptions.disableEventsOnClick = true;
@@ -6642,7 +6653,7 @@ When building a custom infinite editor view you can use the same components as a
                     return data;
                 });
             },
-            //TODO: This doesn't do anything!
+            // TODO: This doesn't do anything!
             setCurrent: function setCurrent(sectionAlias) {
                 var currentSection = sectionAlias;
             }
@@ -7854,7 +7865,10 @@ When building a custom infinite editor view you can use the same components as a
                         selection_toolbar: toolbars.selectionToolbar,
                         body_class: 'umb-rte',
                         //see http://archive.tinymce.com/wiki.php/Configuration:cache_suffix
-                        cache_suffix: '?umb__rnd=' + Umbraco.Sys.ServerVariables.application.cacheBuster
+                        cache_suffix: '?umb__rnd=' + Umbraco.Sys.ServerVariables.application.cacheBuster,
+                        //this is used to style the inline macro bits, sorry hard coding this form now since we don't have a standalone
+                        //stylesheet to load in for this with only these styles (the color is @pinkLight)
+                        content_style: '.mce-content-body .umb-macro-holder { border: 3px dotted #f5c1bc; padding: 7px; display: block; margin: 3px; } .umb-rte .mce-content-body .umb-macro-holder.loading {background: url(assets/img/loader.gif) right no-repeat; background-size: 18px; background-position-x: 99%;}'
                     };
                     if (tinyMceConfig.customConfig) {
                         //if there is some custom config, we need to see if the string value of each item might actually be json and if so, we need to
@@ -8053,7 +8067,9 @@ When building a custom infinite editor view you can use the same components as a
      * @param {Object} editor the TinyMCE editor instance
      */
             createInsertMacro: function createInsertMacro(editor, callback) {
-                var createInsertMacroScope = this;
+                var self = this;
+                var activeMacroElement = null;
+                //track an active macro element
                 /** Adds custom rules for the macro plugin and custom serialization */
                 editor.on('preInit', function (args) {
                     //this is requires so that we tell the serializer that a 'div' is actually allowed in the root, otherwise the cleanup will strip it out
@@ -8065,6 +8081,13 @@ When building a custom infinite editor view you can use the same components as a
                                 nodes[i].parent.unwrap();
                             }
                         }
+                    });
+                });
+                /** when the contents load we need to find any macros declared and load in their content */
+                editor.on('SetContent', function (o) {
+                    //get all macro divs and load their content
+                    $(editor.dom.select('.umb-macro-holder.mceNonEditable')).each(function () {
+                        self.loadMacroContent($(this), null);
                     });
                 });
                 /**
@@ -8091,180 +8114,19 @@ When building a custom infinite editor view you can use the same components as a
                     tooltip: 'Insert macro',
                     onPostRender: function onPostRender() {
                         var ctrl = this;
-                        var isOnMacroElement = false;
                         /**
-           if the selection comes from a different element that is not the macro's
-           we need to check if the selection includes part of the macro, if so we'll force the selection
-           to clear to the next element since if people can select part of the macro markup they can then modify it.
-          */
-                        function handleSelectionChange() {
-                            if (!editor.selection.isCollapsed()) {
-                                var endSelection = tinymce.activeEditor.selection.getEnd();
-                                var startSelection = tinymce.activeEditor.selection.getStart();
-                                //don't proceed if it's an entire element selected
-                                if (endSelection !== startSelection) {
-                                    //if the end selection is a macro then move the cursor
-                                    //NOTE: we don't have to handle when the selection comes from a previous parent because
-                                    // that is automatically taken care of with the normal onNodeChanged logic since the
-                                    // evt.element will be the macro once it becomes part of the selection.
-                                    var $testForMacro = $(endSelection).closest('.umb-macro-holder');
-                                    if ($testForMacro.length > 0) {
-                                        //it came from before so move after, if there is no after then select ourselves
-                                        var next = $testForMacro.next();
-                                        if (next.length > 0) {
-                                            editor.selection.setCursorLocation($testForMacro.next().get(0));
-                                        } else {
-                                            selectMacroElement($testForMacro.get(0));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        /** helper method to select the macro element */
-                        function selectMacroElement(macroElement) {
-                            // move selection to top element to ensure we can't edit this
-                            editor.selection.select(macroElement);
-                            // check if the current selection *is* the element (ie bug)
-                            var currentSelection = editor.selection.getStart();
-                            if (tinymce.isIE) {
-                                if (!editor.dom.hasClass(currentSelection, 'umb-macro-holder')) {
-                                    while (!editor.dom.hasClass(currentSelection, 'umb-macro-holder') && currentSelection.parentNode) {
-                                        currentSelection = currentSelection.parentNode;
-                                    }
-                                    editor.selection.select(currentSelection);
-                                }
-                            }
-                        }
-                        /**
-           * Add a node change handler, test if we're editing a macro and select the whole thing, then set our isOnMacroElement flag.
-           * If we change the selection inside this method, then we end up in an infinite loop, so we have to remove ourselves
-           * from the event listener before changing selection, however, it seems that putting a break point in this method
-           * will always cause an 'infinite' loop as the caret keeps changing.
-           *
-           * TODO: I don't think we need this anymore with recent tinymce fixes: https://www.tiny.cloud/docs/plugins/noneditable/
+           * Check if the macro is currently selected and toggle the menu button
            */
                         function onNodeChanged(evt) {
                             //set our macro button active when on a node of class umb-macro-holder
-                            var $macroElement = $(evt.element).closest('.umb-macro-holder');
-                            handleSelectionChange();
-                            //set the button active
-                            ctrl.active($macroElement.length !== 0);
-                            if ($macroElement.length > 0) {
-                                var macroElement = $macroElement.get(0);
-                                //remove the event listener before re-selecting
-                                editor.off('NodeChange', onNodeChanged);
-                                selectMacroElement(macroElement);
-                                //set the flag
-                                isOnMacroElement = true;
-                                //re-add the event listener
-                                editor.on('NodeChange', onNodeChanged);
-                            } else {
-                                isOnMacroElement = false;
-                            }
+                            activeMacroElement = getRealMacroElem(evt.element);
+                            //set the button active/inactive
+                            ctrl.active(activeMacroElement !== null);
                         }
-                        /** when the contents load we need to find any macros declared and load in their content */
-                        editor.on('LoadContent', function (o) {
-                            //get all macro divs and load their content
-                            $(editor.dom.select('.umb-macro-holder.mceNonEditable')).each(function () {
-                                createInsertMacroScope.loadMacroContent($(this), null);
-                            });
-                        });
-                        /**
-           * This prevents any other commands from executing when the current element is the macro so the content cannot be edited
-           *
-           * TODO: I don't think we need this anymore with recent tinymce fixes: https://www.tiny.cloud/docs/plugins/noneditable/
-           */
-                        editor.on('BeforeExecCommand', function (o) {
-                            if (isOnMacroElement) {
-                                if (o.preventDefault) {
-                                    o.preventDefault();
-                                }
-                                if (o.stopImmediatePropagation) {
-                                    o.stopImmediatePropagation();
-                                }
-                                return;
-                            }
-                        });
-                        /**
-           * This double checks and ensures you can't paste content into the rendered macro
-           *
-           * TODO: I don't think we need this anymore with recent tinymce fixes: https://www.tiny.cloud/docs/plugins/noneditable/
-           */
-                        editor.on('Paste', function (o) {
-                            if (isOnMacroElement) {
-                                if (o.preventDefault) {
-                                    o.preventDefault();
-                                }
-                                if (o.stopImmediatePropagation) {
-                                    o.stopImmediatePropagation();
-                                }
-                                return;
-                            }
-                        });
+                        //NOTE: This could be another way to deal with the active/inactive state
+                        //editor.on('ObjectSelected', function (e) {});
                         //set onNodeChanged event listener
                         editor.on('NodeChange', onNodeChanged);
-                        /**
-           * Listen for the keydown in the editor, we'll check if we are currently on a macro element, if so
-           * we'll check if the key down is a supported key which requires an action, otherwise we ignore the request
-           * so the macro cannot be edited.
-           *
-           * TODO: I don't think we need this anymore with recent tinymce fixes: https://www.tiny.cloud/docs/plugins/noneditable/
-           */
-                        editor.on('KeyDown', function (e) {
-                            if (isOnMacroElement) {
-                                var macroElement = editor.selection.getNode();
-                                //get the 'real' element (either p or the real one)
-                                macroElement = getRealMacroElem(macroElement);
-                                //prevent editing
-                                e.preventDefault();
-                                e.stopPropagation();
-                                var moveSibling = function moveSibling(element, isNext) {
-                                    var $e = $(element);
-                                    var $sibling = isNext ? $e.next() : $e.prev();
-                                    if ($sibling.length > 0) {
-                                        editor.selection.select($sibling.get(0));
-                                        editor.selection.collapse(true);
-                                    } else {
-                                        //if we're moving previous and there is no sibling, then lets recurse and just select the next one
-                                        if (!isNext) {
-                                            moveSibling(element, true);
-                                            return;
-                                        }
-                                        //if there is no sibling we'll generate a new p at the end and select it
-                                        editor.setContent(editor.getContent() + '<p>&nbsp;</p>');
-                                        editor.selection.select($(editor.dom.getRoot()).children().last().get(0));
-                                        editor.selection.collapse(true);
-                                    }
-                                };
-                                //supported keys to move to the next or prev element (13-enter, 27-esc, 38-up, 40-down, 39-right, 37-left)
-                                //supported keys to remove the macro (8-backspace, 46-delete)
-                                //TODO: Should we make the enter key insert a line break before or leave it as moving to the next element?
-                                if ($.inArray(e.keyCode, [
-                                        13,
-                                        40,
-                                        39
-                                    ]) !== -1) {
-                                    //move to next element
-                                    moveSibling(macroElement, true);
-                                } else if ($.inArray(e.keyCode, [
-                                        27,
-                                        38,
-                                        37
-                                    ]) !== -1) {
-                                    //move to prev element
-                                    moveSibling(macroElement, false);
-                                } else if ($.inArray(e.keyCode, [
-                                        8,
-                                        46
-                                    ]) !== -1) {
-                                    //delete macro element
-                                    //move first, then delete
-                                    moveSibling(macroElement, false);
-                                    editor.dom.remove(macroElement);
-                                }
-                                return;
-                            }
-                        });
                     },
                     /** The insert macro button click event handler */
                     onclick: function onclick() {
@@ -8274,11 +8136,9 @@ When building a custom infinite editor view you can use the same components as a
                         };
                         //when we click we could have a macro already selected and in that case we'll want to edit the current parameters
                         //so we'll need to extract them and submit them to the dialog.
-                        var macroElement = editor.selection.getNode();
-                        macroElement = getRealMacroElem(macroElement);
-                        if (macroElement) {
+                        if (activeMacroElement) {
                             //we have a macro selected so we'll need to parse it's alias and parameters
-                            var contents = $(macroElement).contents();
+                            var contents = $(activeMacroElement).contents();
                             var comment = _.find(contents, function (item) {
                                 return item.nodeType === 8;
                             });
@@ -8287,7 +8147,10 @@ When building a custom infinite editor view you can use the same components as a
                             }
                             var syntax = comment.textContent.trim();
                             var parsed = macroService.parseMacroSyntax(syntax);
-                            dialogData = { macroData: parsed };
+                            dialogData = {
+                                macroData: parsed,
+                                activeMacroElement: activeMacroElement    //pass the active element along so we can retrieve it later
+                            };
                         }
                         if (callback) {
                             angularHelper.safeApply($rootScope, function () {
@@ -8297,14 +8160,25 @@ When building a custom infinite editor view you can use the same components as a
                     }
                 });
             },
-            insertMacroInEditor: function insertMacroInEditor(editor, macroObject) {
+            insertMacroInEditor: function insertMacroInEditor(editor, macroObject, activeMacroElement) {
+                //Important note: the TinyMce plugin "noneditable" is used here so that the macro cannot be edited,
+                // for this to work the mceNonEditable class needs to come last and we also need to use the attribute contenteditable = false
+                // (even though all the docs and examples say that is not necessary)
                 //put the macro syntax in comments, we will parse this out on the server side to be used
                 //for persisting.
                 var macroSyntaxComment = '<!-- ' + macroObject.syntax + ' -->';
                 //create an id class for this element so we can re-select it after inserting
                 var uniqueId = 'umb-macro-' + editor.dom.uniqueId();
-                var macroDiv = editor.dom.create('div', { 'class': 'umb-macro-holder ' + macroObject.macroAlias + ' mceNonEditable ' + uniqueId }, macroSyntaxComment + '<ins>Macro alias: <strong>' + macroObject.macroAlias + '</strong></ins>');
-                editor.selection.setNode(macroDiv);
+                var macroDiv = editor.dom.create('div', {
+                    'class': 'umb-macro-holder ' + macroObject.macroAlias + ' ' + uniqueId + ' mceNonEditable',
+                    'contenteditable': 'false'
+                }, macroSyntaxComment + '<ins>Macro alias: <strong>' + macroObject.macroAlias + '</strong></ins>');
+                //if there's an activeMacroElement then replace it, otherwise set the contents of the selected node
+                if (activeMacroElement) {
+                    activeMacroElement.replaceWith(macroDiv);    //directly replaces the html node
+                } else {
+                    editor.selection.setNode(macroDiv);
+                }
                 var $macroDiv = $(editor.dom.select('div.umb-macro-holder.' + uniqueId));
                 //async load the macro content
                 this.loadMacroContent($macroDiv, macroObject);
@@ -8638,10 +8512,14 @@ When building a custom infinite editor view you can use the same components as a
                 insertLink();
             },
             pinToolbar: function pinToolbar(editor) {
+                //we can't pin the toolbar if this doesn't exist (i.e. when in distraction free mode)
+                if (!editor.editorContainer) {
+                    return;
+                }
                 var tinyMce = $(editor.editorContainer);
                 var toolbar = tinyMce.find('.mce-toolbar');
                 var toolbarHeight = toolbar.height();
-                var tinyMceRect = tinyMce[0].getBoundingClientRect();
+                var tinyMceRect = editor.editorContainer.getBoundingClientRect();
                 var tinyMceTop = tinyMceRect.top;
                 var tinyMceBottom = tinyMceRect.bottom;
                 var tinyMceWidth = tinyMceRect.width;
@@ -8667,14 +8545,14 @@ When building a custom infinite editor view you can use the same components as a
                 if (!args.editor) {
                     throw 'args.editor is required';
                 }
-                //if (!args.value) {
-                //    throw "args.value is required";
+                //if (!args.model.value) {
+                //    throw "args.model.value is required";
                 //}
                 var unwatch = null;
                 //Starts a watch on the model value so that we can update TinyMCE if the model changes behind the scenes or from the server
                 function startWatch() {
                     unwatch = $rootScope.$watch(function () {
-                        return args.value;
+                        return args.model.value;
                     }, function (newVal, oldVal) {
                         if (newVal !== oldVal) {
                             //update the display val again if it has changed from the server;
@@ -8696,14 +8574,14 @@ When building a custom infinite editor view you can use the same components as a
                     //stop watching before we update the value
                     stopWatch();
                     angularHelper.safeApply($rootScope, function () {
-                        args.value = args.editor.getContent();
+                        args.model.value = args.editor.getContent();
                     });
                     //re-watch the value
                     startWatch();
                 }
                 args.editor.on('init', function (e) {
-                    if (args.value) {
-                        args.editor.setContent(args.value);
+                    if (args.model.value) {
+                        args.editor.setContent(args.model.value);
                     }
                     //enable browser based spell checking
                     args.editor.getBody().setAttribute('spellcheck', true);
@@ -8734,7 +8612,7 @@ When building a custom infinite editor view you can use the same components as a
                 self.createLinkPicker(args.editor, function (currentTarget, anchorElement) {
                     var linkPicker = {
                         currentTarget: currentTarget,
-                        anchors: self.getAnchorNames(JSON.stringify(editorState.current.properties)),
+                        anchors: editorState.current ? self.getAnchorNames(JSON.stringify(editorState.current.properties)) : [],
                         submit: function submit(model) {
                             self.insertLinkInEditor(args.editor, model.target, anchorElement);
                             editorService.close();
@@ -8755,7 +8633,7 @@ When building a custom infinite editor view you can use the same components as a
                         startNodeId: userData.startMediaIds.length !== 1 ? -1 : userData.startMediaIds[0],
                         startNodeIsVirtual: userData.startMediaIds.length !== 1,
                         submit: function submit(model) {
-                            self.insertMediaInEditor(args.editor, model.selectedImages[0]);
+                            self.insertMediaInEditor(args.editor, model.selection[0]);
                             editorService.close();
                         },
                         close: function close() {
@@ -8783,7 +8661,7 @@ When building a custom infinite editor view you can use the same components as a
                         dialogData: dialogData,
                         submit: function submit(model) {
                             var macroObject = macroService.collectValueData(model.selectedMacro, model.macroParams, dialogData.renderingEngine);
-                            self.insertMacroInEditor(args.editor, macroObject, $scope);
+                            self.insertMacroInEditor(args.editor, macroObject, dialogData.activeMacroElement);
                             editorService.close();
                         },
                         close: function close() {
@@ -8793,7 +8671,7 @@ When building a custom infinite editor view you can use the same components as a
                     editorService.macroPicker(macroPicker);
                 });
                 self.createAceCodeEditor(args.editor, function () {
-                    //TODO: CHECK TO SEE WHAT WE NEED TO DO WIT MACROS (See code block?)
+                    // TODO: CHECK TO SEE WHAT WE NEED TO DO WIT MACROS (See code block?)
                     /*
         var html = editor.getContent({source_view: true});
         html = html.replace(/<span\s+class="CmCaReT"([^>]*)>([^<]*)<\/span>/gm, String.fromCharCode(chr));
@@ -8932,7 +8810,7 @@ When building a custom infinite editor view you can use the same components as a
      * @returns {Object} Returns the current tour
      */
             function getCurrentTour() {
-                //TODO: This should be reset if a new user logs in
+                // TODO: This should be reset if a new user logs in
                 return currentTour;
             }
             /**
@@ -9863,8 +9741,8 @@ When building a custom infinite editor view you can use the same components as a
                 },
                 formatContentTypePostData: function formatContentTypePostData(displayModel, action) {
                     //create the save model from the display model
-                    var saveModel = _.pick(displayModel, 'compositeContentTypes', 'isContainer', 'allowAsRoot', 'allowedTemplates', 'allowedContentTypes', 'alias', 'description', 'thumbnail', 'name', 'id', 'icon', 'trashed', 'key', 'parentId', 'alias', 'path', 'allowCultureVariant');
-                    //TODO: Map these
+                    var saveModel = _.pick(displayModel, 'compositeContentTypes', 'isContainer', 'allowAsRoot', 'allowedTemplates', 'allowedContentTypes', 'alias', 'description', 'thumbnail', 'name', 'id', 'icon', 'trashed', 'key', 'parentId', 'alias', 'path', 'allowCultureVariant', 'isElement');
+                    // TODO: Map these
                     saveModel.allowedTemplates = _.map(displayModel.allowedTemplates, function (t) {
                         return t.alias;
                     });
@@ -10099,7 +9977,7 @@ When building a custom infinite editor view you can use the same components as a
                 },
                 /** formats the display model used to display the media to the model used to save the media */
                 formatMediaPostData: function formatMediaPostData(displayModel, action) {
-                    //NOTE: the display model inherits from the save model so we can in theory just post up the display model but 
+                    //NOTE: the display model inherits from the save model so we can in theory just post up the display model but
                     // we don't want to post all of the data as it is unecessary.
                     var saveModel = {
                         id: displayModel.id,
@@ -10114,7 +9992,7 @@ When building a custom infinite editor view you can use the same components as a
                 },
                 /** formats the display model used to display the content to the model used to save the content  */
                 formatContentPostData: function formatContentPostData(displayModel, action) {
-                    //NOTE: the display model inherits from the save model so we can in theory just post up the display model but 
+                    //NOTE: the display model inherits from the save model so we can in theory just post up the display model but
                     // we don't want to post all of the data as it is unecessary.
                     var saveModel = {
                         id: displayModel.id,
@@ -10145,8 +10023,8 @@ When building a custom infinite editor view you can use the same components as a
                 },
                 /**
        * This formats the server GET response for a content display item
-       * @param {} displayModel 
-       * @returns {} 
+       * @param {} displayModel
+       * @returns {}
        */
                 formatContentGetData: function formatContentGetData(displayModel) {
                     //We need to check for invariant properties among the variant variants.
@@ -10218,7 +10096,7 @@ When building a custom infinite editor view you can use the same components as a
 * @name umbraco.services.umbRequestHelper
 * @description A helper object used for sending requests to the server
 **/
-    function umbRequestHelper($http, $q, notificationsService, eventsService, formHelper) {
+    function umbRequestHelper($http, $q, notificationsService, eventsService, formHelper, overlayService) {
         return {
             /**
      * @ngdoc method
@@ -10370,10 +10248,12 @@ When building a custom infinite editor view you can use the same components as a
                     if (response.status >= 500 && response.status < 600) {
                         //show a ysod dialog
                         if (Umbraco.Sys.ServerVariables['isDebuggingEnabled'] === true) {
-                            eventsService.emit('app.ysod', {
+                            var error = {
                                 errorMsg: 'An error occured',
                                 data: response.data
-                            });
+                            };
+                            // TODO: All YSOD handling should be done with an interceptor
+                            overlayService.ysod(error);
                         } else {
                             //show a simple error notification                         
                             notificationsService.error('Server error', 'Contact administrator, see log for full details.<br/><i>' + result.errorMsg + '</i>');
@@ -10452,7 +10332,7 @@ When building a custom infinite editor view you can use the same components as a
                     if (args.showNotifications) {
                         formHelper.showNotifications(response.data);
                     }
-                    //TODO: Do we need to pass the result through umbDataFormatter.formatContentGetData? Right now things work so not sure but we should check
+                    // TODO: Do we need to pass the result through umbDataFormatter.formatContentGetData? Right now things work so not sure but we should check
                     //the data returned is the up-to-date data so the UI will refresh
                     return $q.resolve(response.data);
                 }, function (response) {
@@ -10466,10 +10346,12 @@ When building a custom infinite editor view you can use the same components as a
                             notificationsService.error('Server error', 'The uploaded file was too large, check with your site administrator to adjust the maximum size allowed');
                         } else if (Umbraco.Sys.ServerVariables['isDebuggingEnabled'] === true) {
                             //show a ysod dialog
-                            eventsService.emit('app.ysod', {
+                            var error = {
                                 errorMsg: 'An error occured',
                                 data: response.data
-                            });
+                            };
+                            // TODO: All YSOD handling should be done with an interceptor
+                            overlayService.ysod(error);
                         } else {
                             //show a simple error notification                         
                             notificationsService.error('Server error', 'Contact administrator, see log for full details.<br/><i>' + response.data.ExceptionMessage + '</i>');

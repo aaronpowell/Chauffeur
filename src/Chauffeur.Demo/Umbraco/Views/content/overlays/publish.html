@@ -1,7 +1,7 @@
 <div ng-controller="Umbraco.Overlays.PublishController as vm">
 
     <div style="margin-bottom: 15px;">
-        <p><localize key="content_languagesToPublish"></localize></p>
+        <p>{{vm.headline}}</p>
     </div>
 
     <div ng-if="vm.loading" style="min-height: 50px; position: relative;">
@@ -18,6 +18,7 @@
                            type="checkbox"
                            ng-model="variant.publish"
                            ng-change="vm.changeSelection(variant)"
+                           ng-disabled="(vm.isNew && variant.language.isMandatory) || (variant.canSave === false)"
                            style="margin-right: 8px;"
                            val-server-field="{{variant.htmlId}}" />
                     <div>
@@ -65,7 +66,7 @@
                 <div ng-repeat="notification in variant.notifications">
                     <div class="umb-permission__description" style="color: #1FB572;">{{notification.message}}</div>
                 </div>
-                
+
             </div>
         </div>
     </div>

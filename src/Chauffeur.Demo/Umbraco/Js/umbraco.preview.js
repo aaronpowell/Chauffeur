@@ -62,15 +62,7 @@
             //this flag. This is a required trick to get around chrome popup mgr. 
             return;
         }
-        $scope.pageId = $location.search().id || getParameterByName('id');
-        var culture = $location.search().culture || getParameterByName('culture');
-        if ($scope.pageId) {
-            var query = 'id=' + $scope.pageId;
-            if (culture) {
-                query += '&culture=' + culture;
-            }
-            $scope.pageUrl = 'frame?' + query;
-        }
+        setPageUrl();
         $scope.isOpen = false;
         $scope.frameLoaded = false;
         $scope.valueAreLoaded = false;
@@ -113,6 +105,17 @@
             }
         ];
         $scope.previewDevice = $scope.devices[0];
+        function setPageUrl() {
+            $scope.pageId = $location.search().id || getParameterByName('id');
+            var culture = $location.search().culture || getParameterByName('culture');
+            if ($scope.pageId) {
+                var query = 'id=' + $scope.pageId;
+                if (culture) {
+                    query += '&culture=' + culture;
+                }
+                $scope.pageUrl = 'frame?' + query;
+            }
+        }
         /*****************************************************************************/
         /* Preview devices */
         /*****************************************************************************/
@@ -124,32 +127,44 @@
         /* Exit Preview */
         /*****************************************************************************/
         $scope.exitPreview = function () {
-            window.top.location.href = '../preview/end?redir=%2f' + $scope.pageId;
+            var culture = $location.search().culture || getParameterByName('culture');
+            var relativeUrl = '/' + $scope.pageId + '?culture=' + culture;
+            window.top.location.href = '../preview/end?redir=' + encodeURIComponent(relativeUrl);
         };
         $scope.onFrameLoaded = function (iframe) {
             $scope.frameLoaded = true;
             configureSignalR(iframe);
         };
         /*****************************************************************************/
-        /* Panel managment */
+        /* Panel management */
         /*****************************************************************************/
         $scope.openPreviewDevice = function () {
             $scope.showDevicesPreview = true;
         };
+        /*****************************************************************************/
+        /* Change culture */
+        /*****************************************************************************/
+        $scope.changeCulture = function (culture) {
+            if ($location.search().culture !== culture) {
+                $scope.frameLoaded = false;
+                $location.search('culture', culture);
+                setPageUrl();
+            }
+        };
     }).component('previewIFrame', {
-        template: '<div style=\'width:100%;height:100%;margin:0 auto;overflow:hidden;\'><iframe id=\'resultFrame\' src=\'about:blank\' ng-src="{{vm.srcDelayed}}" frameborder=\'0\'></iframe></div>',
+        template: '<div style=\'width:100%;height:100%;margin:0 auto;overflow:hidden;\'><iframe id=\'resultFrame\' src=\'about:blank\' ng-src="{{vm.src}}" frameborder=\'0\'></iframe></div>',
         controller: function controller($element, $scope, angularHelper) {
             var vm = this;
             vm.$postLink = function () {
                 var resultFrame = $element.find('#resultFrame');
                 resultFrame.on('load', iframeReady);
-                vm.srcDelayed = vm.src;
             };
             function iframeReady() {
                 var iframe = $element.find('#resultFrame').get(0);
                 hideUmbracoPreviewBadge(iframe);
                 angularHelper.safeApply($scope, function () {
                     vm.onLoaded({ iframe: iframe });
+                    $scope.frameLoaded = true;
                 });
             }
             function hideUmbracoPreviewBadge(iframe) {

@@ -3944,6 +3944,9 @@ var table = (function () {
       var map = function (f) {
         return value$1(f(o));
       };
+      var mapError = function (f) {
+        return value$1(o);
+      };
       var each = function (f) {
         f(o);
       };
@@ -3973,6 +3976,7 @@ var table = (function () {
         orThunk: orThunk,
         fold: fold,
         map: map,
+        mapError: mapError,
         each: each,
         bind: bind,
         exists: exists,
@@ -3996,6 +4000,9 @@ var table = (function () {
       var map = function (f) {
         return error(message);
       };
+      var mapError = function (f) {
+        return error(f(message));
+      };
       var bind = function (f) {
         return error(message);
       };
@@ -4013,6 +4020,7 @@ var table = (function () {
         orThunk: orThunk,
         fold: fold,
         map: map,
+        mapError: mapError,
         each: noop,
         bind: bind,
         exists: never,
@@ -7104,6 +7112,7 @@ var table = (function () {
       var start = getStart$1(selection);
       return defaultView(start);
     };
+    var domRange = type$2.domRange;
     var relative$1 = type$2.relative;
     var exact = type$2.exact;
 
@@ -7261,6 +7270,8 @@ var table = (function () {
         }
       });
     };
+    var ltr$2 = adt$1.ltr;
+    var rtl$2 = adt$1.rtl;
 
     var searchForPoint = function (rectForOffset, x, y, maxX, length) {
       if (length === 0)

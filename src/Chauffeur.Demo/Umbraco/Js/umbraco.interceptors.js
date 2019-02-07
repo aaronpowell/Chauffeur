@@ -8,6 +8,7 @@
             $httpProvider.defaults.xsrfCookieName = 'UMB-XSRF-TOKEN';
             $httpProvider.interceptors.push('securityInterceptor');
             $httpProvider.interceptors.push('debugRequestInterceptor');
+            $httpProvider.interceptors.push('doNotPostDollarVariablesOnPostRequestInterceptor');
         }
     ]);
     'use strict';
@@ -31,6 +32,49 @@
             };
         }
         angular.module('umbraco.interceptors').factory('debugRequestInterceptor', debugRequestInterceptor);
+    }());
+    'use strict';
+    function _typeof(obj) {
+        if (typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol') {
+            _typeof = function _typeof(obj) {
+                return typeof obj;
+            };
+        } else {
+            _typeof = function _typeof(obj) {
+                return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj;
+            };
+        }
+        return _typeof(obj);
+    }
+    (function () {
+        'use strict';
+        function removeProperty(obj, propertyPrefix) {
+            for (var property in obj) {
+                if (obj.hasOwnProperty(property)) {
+                    if (property.startsWith(propertyPrefix) && obj[property]) {
+                        obj[property] = undefined;
+                    }
+                    if (_typeof(obj[property]) == 'object') {
+                        removeProperty(obj[property], propertyPrefix);
+                    }
+                }
+            }
+        }
+        function transform(data) {
+            removeProperty(data, '$');
+        }
+        function doNotPostDollarVariablesRequestInterceptor($q, urlHelper) {
+            return {
+                //dealing with requests:
+                'request': function request(config) {
+                    if (config.method === 'POST') {
+                        transform(config.data);
+                    }
+                    return config;
+                }
+            };
+        }
+        angular.module('umbraco.interceptors').factory('doNotPostDollarVariablesOnPostRequestInterceptor', doNotPostDollarVariablesRequestInterceptor);
     }());
     'use strict';
     (function () {

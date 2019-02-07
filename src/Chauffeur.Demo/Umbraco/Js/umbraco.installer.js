@@ -3,7 +3,7 @@
     angular.module('umbraco.install', ['umbraco.directives']);
     'use strict';
     angular.module('umbraco.install').controller('Umbraco.InstallerController', function ($scope, installerService) {
-        //TODO: Decouple the service from the controller - the controller should be responsible
+        // TODO: Decouple the service from the controller - the controller should be responsible
         // for the model (state) and the service should be responsible for helping the controller,
         // the controller should be passing the model into it's methods for manipulation and not hold
         // state. We should not be assigning properties from a service to a controller's scope.
@@ -35,7 +35,7 @@
         $templateCache.removeAll();
     });
     'use strict';
-    angular.module('umbraco.install').factory('installerService', function ($rootScope, $q, $timeout, $http, $location, $log) {
+    angular.module('umbraco.install').factory('installerService', function ($rootScope, $q, $timeout, $http, $templateRequest) {
         var _status = {
             index: 0,
             current: undefined,
@@ -51,16 +51,16 @@
         //add to umbraco installer facts here
         var facts = [
             'Umbraco helped millions of people watch a man jump from the edge of space',
-            'Over 440 000 websites are currently powered by Umbraco',
+            'Over 500 000 websites are currently powered by Umbraco',
             'At least 2 people have named their cat \'Umbraco\'',
-            'On an average day, more than 1000 people download Umbraco',
-            '<a target="_blank" href="https://umbraco.tv">umbraco.tv</a> is the premier source of Umbraco video tutorials to get you started',
-            'You can find the world\'s friendliest CMS community at <a target="_blank" href="https://our.umbraco.com">our.umbraco.com</a>',
+            'On an average day more than 1000 people download Umbraco',
+            '<a target=\'_blank\' href=\'https://umbraco.tv/\'>umbraco.tv</a> is the premier source of Umbraco video tutorials to get you started',
+            'You can find the world\'s friendliest CMS community at <a target=\'_blank\' href=\'https://our.umbraco.com/\'>our.umbraco.com</a>',
             'You can become a certified Umbraco developer by attending one of the official courses',
             'Umbraco works really well on tablets',
             'You have 100% control over your markup and design when crafting a website in Umbraco',
             'Umbraco is the best of both worlds: 100% free and open source, and backed by a professional and profitable company',
-            'There\'s a pretty big chance, you\'ve visited a website powered by Umbraco today',
+            'There\'s a pretty big chance you\'ve visited a website powered by Umbraco today',
             '\'Umbraco-spotting\' is the game of spotting big brands running Umbraco',
             'At least 4 people have the Umbraco logo tattooed on them',
             '\'Umbraco\' is the Danish name for an allen key',
@@ -130,15 +130,19 @@
             init: function init() {
                 service.status.loading = true;
                 if (!_status.all) {
-                    service.getSteps().then(function (response) {
-                        service.status.steps = response.data.steps;
-                        service.status.index = 0;
-                        _installerModel.installId = response.data.installId;
-                        service.findNextStep();
-                        $timeout(function () {
-                            service.status.loading = false;
-                            service.status.configuring = true;
-                        }, 2000);
+                    //pre-load the error page, if an error occurs, the page might not be able to load
+                    // so we want to make sure it's available in the templatecache first
+                    $templateRequest('views/install/error.html').then(function (x) {
+                        service.getSteps().then(function (response) {
+                            service.status.steps = response.data.steps;
+                            service.status.index = 0;
+                            _installerModel.installId = response.data.installId;
+                            service.findNextStep();
+                            $timeout(function () {
+                                service.status.loading = false;
+                                service.status.configuring = true;
+                            }, 2000);
+                        });
                     });
                 }
             },
@@ -344,10 +348,6 @@
             {
                 name: 'Microsoft SQL Azure',
                 id: 3
-            },
-            {
-                name: 'MySQL',
-                id: 2
             },
             {
                 name: 'Custom connection string',

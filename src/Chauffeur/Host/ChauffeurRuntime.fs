@@ -46,9 +46,9 @@ type internal ChauffeurRuntime(reader : TextReader, writer : TextWriter) as self
         register.Register(fun _ -> reader) |> ignore
         register.Register(fun _ -> writer) |> ignore
         register.Register<IHttpContextAccessor, NullHttpContextAccessor>() |> ignore
+        register.Register(fun factory -> factory) |> ignore
         let factory = base.Boot(register)
 
         let runtimeState = factory.GetInstance<IRuntimeState>()
         let typeLoader = factory.GetInstance<TypeLoader>()
-        register.RegisterInstance(factory)
         this.Hack register factory (this.GetComposerTypes(typeLoader)) runtimeState.Level
