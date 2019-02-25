@@ -9,8 +9,39 @@
             $httpProvider.interceptors.push('securityInterceptor');
             $httpProvider.interceptors.push('debugRequestInterceptor');
             $httpProvider.interceptors.push('doNotPostDollarVariablesOnPostRequestInterceptor');
+            $httpProvider.interceptors.push('cultureRequestInterceptor');
         }
     ]);
+    'use strict';
+    (function () {
+        'use strict';
+        /**
+   * Used to set the current client culture on all requests API requests
+   * @param {any} $routeParams
+   */
+        function cultureRequestInterceptor($injector) {
+            return {
+                //dealing with requests:
+                'request': function request(config) {
+                    if (!Umbraco.Sys.ServerVariables.umbracoSettings.umbracoPath) {
+                        // no settings available, we're probably on the login screen
+                        return config;
+                    }
+                    if (!config.url.match(RegExp(Umbraco.Sys.ServerVariables.umbracoSettings.umbracoPath + '/backoffice/', 'i'))) {
+                        // it's not an API request, no handling
+                        return config;
+                    }
+                    var $routeParams = $injector.get('$routeParams');
+                    if ($routeParams) {
+                        // it's an API request, add the current client culture as a header value
+                        config.headers['X-UMB-CULTURE'] = $routeParams.cculture ? $routeParams.cculture : $routeParams.mculture;
+                    }
+                    return config;
+                }
+            };
+        }
+        angular.module('umbraco.interceptors').factory('cultureRequestInterceptor', cultureRequestInterceptor);
+    }());
     'use strict';
     (function () {
         'use strict';
@@ -51,10 +82,10 @@
         function removeProperty(obj, propertyPrefix) {
             for (var property in obj) {
                 if (obj.hasOwnProperty(property)) {
-                    if (property.startsWith(propertyPrefix) && obj[property]) {
+                    if (property.startsWith(propertyPrefix) && obj[property] !== undefined) {
                         obj[property] = undefined;
                     }
-                    if (_typeof(obj[property]) == 'object') {
+                    if (_typeof(obj[property]) === 'object') {
                         removeProperty(obj[property], propertyPrefix);
                     }
                 }
@@ -68,7 +99,9 @@
                 //dealing with requests:
                 'request': function request(config) {
                     if (config.method === 'POST') {
-                        transform(config.data);
+                        var clone = angular.copy(config);
+                        transform(clone.data);
+                        return clone;
                     }
                     return config;
                 }

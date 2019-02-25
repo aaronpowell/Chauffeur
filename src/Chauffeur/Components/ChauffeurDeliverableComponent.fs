@@ -3,7 +3,6 @@
 open System
 open System.Reflection
 open Chauffeur
-open Umbraco.Core.Components
 open Umbraco.Core.Composing
 
 type internal Registration =

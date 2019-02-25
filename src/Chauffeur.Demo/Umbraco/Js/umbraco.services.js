@@ -5496,10 +5496,7 @@ When building a custom infinite editor view you can use the same components as a
             'cculture',
             'lq'
         ];
-        var retainedQueryStrings = [
-            'mculture',
-            'cculture'
-        ];
+        var retainedQueryStrings = ['mculture'];
         function setMode(mode) {
             switch (mode) {
             case 'tree':
@@ -7927,10 +7924,10 @@ When building a custom infinite editor view you can use the same components as a
             defaultPrevalues: function defaultPrevalues() {
                 var cfg = {};
                 cfg.toolbar = [
-                    'code',
+                    'ace',
+                    'styleselect',
                     'bold',
                     'italic',
-                    'styleselect',
                     'alignleft',
                     'aligncenter',
                     'alignright',
@@ -7939,10 +7936,9 @@ When building a custom infinite editor view you can use the same components as a
                     'outdent',
                     'indent',
                     'link',
-                    'image',
                     'umbmediapicker',
-                    'umbembeddialog',
-                    'umbmacro'
+                    'umbmacro',
+                    'umbembeddialog'
                 ];
                 cfg.stylesheets = [];
                 cfg.maxImageSize = 500;
@@ -8681,7 +8677,6 @@ When building a custom infinite editor view you can use the same components as a
                     var aceEditor = {
                         content: args.editor.getContent(),
                         view: 'views/propertyeditors/rte/codeeditor.html',
-                        size: 'small',
                         submit: function submit(model) {
                             args.editor.setContent(model.content);
                             editorService.close();
@@ -10233,6 +10228,9 @@ When building a custom infinite editor view you can use the same components as a
                     //when it's successful, just return the data
                     return $q.resolve(result);
                 }, function (response) {
+                    if (!response) {
+                        return;    //sometimes oddly this happens, nothing we can do
+                    }
                     if (!response.status && response.message && response.stack) {
                         //this is a JS/angular error that we should deal with
                         return $q.reject({ errorMsg: response.message });
@@ -10866,14 +10864,14 @@ When building a custom infinite editor view you can use the same components as a
                     'color': 'warning'
                 }
             ];
-            angular.forEach(userStates, function (userState) {
-                var key = 'user_state' + userState.key;
-                localizationService.localize(key).then(function (value) {
-                    var reg = /^\[[\S\s]*]$/g;
-                    var result = reg.test(value);
-                    if (result === false) {
+            localizationService.localizeMany(_.map(userStates, function (userState) {
+                return 'user_state' + userState.key;
+            })).then(function (data) {
+                var reg = /^\[[\S\s]*]$/g;
+                _.each(data, function (value, index) {
+                    if (!reg.test(value)) {
                         // Only translate if key exists
-                        userState.name = value;
+                        userStates[index].name = value;
                     }
                 });
             });

@@ -10,6 +10,7 @@
     <Compile Include="IProvideDirections.fs" />
     <Compile Include="DeliverableResponse.fs" />
     <Compile Include="Deliverable.fs" />
+    <Compile Include="Components\CompositionExtensions.fs" />
     <Compile Include="Components\ChauffeurDeliverableComponent.fs" />
     <Compile Include="Components\ChauffeurComponent.fs" />
     <Compile Include="Components\FileSystemComponent.fs" />

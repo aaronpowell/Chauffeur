@@ -100,30 +100,6 @@
         };
     });
     'use strict';
-    angular.module('umbraco.directives').directive('sectionIcon', function ($compile, iconHelper) {
-        return {
-            restrict: 'E',
-            replace: true,
-            link: function link(scope, element, attrs) {
-                var icon = attrs.icon;
-                if (iconHelper.isLegacyIcon(icon)) {
-                    //its a known legacy icon, convert to a new one
-                    element.html('<i class=\'' + iconHelper.convertFromLegacyIcon(icon) + '\'></i>');
-                } else if (iconHelper.isFileBasedIcon(icon)) {
-                    var convert = iconHelper.convertFromLegacyImage(icon);
-                    if (convert) {
-                        element.html('<i class=\'icon-section ' + convert + '\'></i>');
-                    } else {
-                        element.html('<img class=\'icon-section\' src=\'images/tray/' + icon + '\'>');
-                    }    //it's a file, normally legacy so look in the icon tray images
-                } else {
-                    //it's normal
-                    element.html('<i class=\'icon-section ' + icon + '\'></i>');
-                }
-            }
-        };
-    });
-    'use strict';
     (function () {
         'use strict';
         function AppHeaderDirective(eventsService, appState, userService) {
@@ -708,6 +684,7 @@ Use this directive to render drawer view
             vm.externalLoginInfo = externalLoginInfo;
             vm.resetPasswordCodeInfo = resetPasswordCodeInfo;
             vm.backgroundImage = Umbraco.Sys.ServerVariables.umbracoSettings.loginBackgroundImage;
+            vm.usernameIsEmail = Umbraco.Sys.ServerVariables.umbracoSettings.usernameIsEmail;
             vm.$onInit = onInit;
             vm.togglePassword = togglePassword;
             vm.changeAvatar = changeAvatar;
@@ -719,6 +696,14 @@ Use this directive to render drawer view
             vm.loginSubmit = loginSubmit;
             vm.requestPasswordResetSubmit = requestPasswordResetSubmit;
             vm.setPasswordSubmit = setPasswordSubmit;
+            vm.labels = {};
+            localizationService.localizeMany([
+                vm.usernameIsEmail ? 'general_email' : 'general_username',
+                vm.usernameIsEmail ? 'placeholders_email' : 'placeholders_usernameHint'
+            ]).then(function (data) {
+                vm.labels.usernameLabel = data[0];
+                vm.labels.usernamePlaceholder = data[1];
+            });
             function onInit() {
                 // Check if it is a new user
                 var inviteVal = $location.search().invite;
@@ -2312,7 +2297,7 @@ Use this directive to render a button with a dropdown of alternative actions.
     'use strict';
     (function () {
         'use strict';
-        function ContentEditController($rootScope, $scope, $routeParams, $q, $window, appState, contentResource, entityResource, navigationService, notificationsService, serverValidationManager, contentEditingHelper, treeService, formHelper, umbRequestHelper, editorState, $http, eventsService, relationResource, overlayService) {
+        function ContentEditController($rootScope, $scope, $routeParams, $q, $window, appState, contentResource, entityResource, navigationService, notificationsService, serverValidationManager, contentEditingHelper, localizationService, formHelper, umbRequestHelper, editorState, $http, eventsService, overlayService, $location) {
             var evts = [];
             var infiniteMode = $scope.infiniteModel && $scope.infiniteModel.infiniteMode;
             //setup scope vars
@@ -2327,7 +2312,7 @@ Use this directive to render a button with a dropdown of alternative actions.
             $scope.page.isNew = $scope.isNew ? true : false;
             $scope.page.buttonGroupState = 'init';
             $scope.page.hideActionsMenu = infiniteMode ? true : false;
-            $scope.page.hideChangeVariant = infiniteMode ? true : false;
+            $scope.page.hideChangeVariant = false;
             $scope.allowOpen = true;
             $scope.app = null;
             function init() {
@@ -2440,8 +2425,8 @@ Use this directive to render a button with a dropdown of alternative actions.
      * @param {any} app the active content app
      */
             function createButtons(content) {
-                // for trashed items, the save button is the primary action - otherwise it's a secondary action
-                $scope.page.saveButtonStyle = content.trashed ? 'primary' : 'info';
+                // for trashed and element type items, the save button is the primary action - otherwise it's a secondary action
+                $scope.page.saveButtonStyle = content.trashed || content.isElement ? 'primary' : 'info';
                 // only create the save/publish/preview buttons if the
                 // content app is "Conent"
                 if ($scope.app && $scope.app.alias !== 'umbContent' && $scope.app.alias !== 'umbInfo') {
@@ -2473,17 +2458,6 @@ Use this directive to render a button with a dropdown of alternative actions.
                 $scope.defaultButton = buttons.defaultButton;
                 $scope.subButtons = buttons.subButtons;
                 $scope.page.showPreviewButton = true;
-            }
-            // create infinite editing buttons
-            function createInfiniteModeButtons(content) {
-                $scope.page.allowInfinitePublishAndClose = false;
-                $scope.page.allowInfiniteSaveAndClose = false;
-                // check for publish rights
-                if (_.contains(content.allowedActions, 'U')) {
-                    $scope.page.allowInfinitePublishAndClose = true;    // check for save rights
-                } else if (_.contains(content.allowedActions, 'A')) {
-                    $scope.page.allowInfiniteSaveAndClose = true;
-                }
             }
             /** Syncs the content item to it's tree node - this occurs on first load and after saving */
             function syncTreeNode(content, path, initialLoad) {
@@ -2657,6 +2631,17 @@ Use this directive to render a button with a dropdown of alternative actions.
                     }
                 }
             }
+            /** Just shows a simple notification that there are client side validation issues to be fixed */
+            function showValidationNotification() {
+                //TODO: We need to make the validation UI much better, there's a lot of inconsistencies in v8 including colors, issues with the property groups and validation errors between variants
+                //need to show a notification else it's not clear there was an error.
+                localizationService.localizeMany([
+                    'speechBubbles_validationFailedHeader',
+                    'speechBubbles_validationFailedMessage'
+                ]).then(function (data) {
+                    notificationsService.error(data[0], data[1]);
+                });
+            }
             if ($scope.page.isNew) {
                 $scope.page.loading = true;
                 //we are creating so get an empty content item
@@ -2761,6 +2746,8 @@ Use this directive to render a button with a dropdown of alternative actions.
                             }
                         };
                         overlayService.open(dialog);
+                    } else {
+                        showValidationNotification();
                     }
                 } else {
                     $scope.page.buttonGroupState = 'busy';
@@ -2819,6 +2806,8 @@ Use this directive to render a button with a dropdown of alternative actions.
                             }
                         };
                         overlayService.open(dialog);
+                    } else {
+                        showValidationNotification();
                     }
                 } else {
                     //ensure the flags are set
@@ -2881,6 +2870,8 @@ Use this directive to render a button with a dropdown of alternative actions.
                             }
                         };
                         overlayService.open(dialog);
+                    } else {
+                        showValidationNotification();
                     }
                 } else {
                     //ensure the flags are set
@@ -2960,6 +2951,8 @@ Use this directive to render a button with a dropdown of alternative actions.
                         }
                     };
                     overlayService.open(dialog);
+                } else {
+                    showValidationNotification();
                 }
             };
             $scope.publishDescendants = function () {
@@ -3016,43 +3009,44 @@ Use this directive to render a button with a dropdown of alternative actions.
                         }
                     };
                     overlayService.open(dialog);
+                } else {
+                    showValidationNotification();
                 }
             };
             $scope.preview = function (content) {
-                if (!$scope.busy) {
-                    // Chromes popup blocker will kick in if a window is opened
-                    // without the initial scoped request. This trick will fix that.
-                    //
-                    var previewWindow = $window.open('preview/?init=true', 'umbpreview');
-                    // Build the correct path so both /#/ and #/ work.
-                    var query = 'id=' + content.id;
+                // Chromes popup blocker will kick in if a window is opened
+                // without the initial scoped request. This trick will fix that.
+                //
+                var previewWindow = $window.open('preview/?init=true', 'umbpreview');
+                // Build the correct path so both /#/ and #/ work.
+                var query = 'id=' + content.id;
+                if ($scope.culture) {
+                    query += '#?culture=' + $scope.culture;
+                }
+                var redirect = Umbraco.Sys.ServerVariables.umbracoSettings.umbracoPath + '/preview/?' + query;
+                //The user cannot save if they don't have access to do that, in which case we just want to preview
+                //and that's it otherwise they'll get an unauthorized access message
+                if (!_.contains(content.allowedActions, 'A')) {
+                    previewWindow.location.href = redirect;
+                } else {
+                    var selectedVariant = $scope.content.variants[0];
                     if ($scope.culture) {
-                        query += '#?culture=' + $scope.culture;
-                    }
-                    var redirect = Umbraco.Sys.ServerVariables.umbracoSettings.umbracoPath + '/preview/?' + query;
-                    //The user cannot save if they don't have access to do that, in which case we just want to preview
-                    //and that's it otherwise they'll get an unauthorized access message
-                    if (!_.contains(content.allowedActions, 'A')) {
-                        previewWindow.location.href = redirect;
-                    } else {
-                        var selectedVariant;
-                        if (!$scope.culture) {
-                            selectedVariant = $scope.content.variants[0];
-                        } else {
-                            selectedVariant = _.find($scope.content.variants, function (v) {
-                                return v.language.culture === $scope.culture;
-                            });
-                        }
-                        //ensure the save flag is set
-                        selectedVariant.save = true;
-                        performSave({
-                            saveMethod: $scope.saveMethod(),
-                            action: 'save'
-                        }).then(function (data) {
-                            previewWindow.location.href = redirect;
-                        }, function (err) {
+                        var found = _.find($scope.content.variants, function (v) {
+                            return v.language && v.language.culture === $scope.culture;
                         });
+                        if (found) {
+                            selectedVariant = found;
+                        }
                     }
+                    //ensure the save flag is set
+                    selectedVariant.save = true;
+                    performSave({
+                        saveMethod: $scope.saveMethod(),
+                        action: 'save'
+                    }).then(function (data) {
+                        previewWindow.location.href = redirect;
+                    }, function (err) {
+                    });
                 }
             };
             /* publish method used in infinite editing */
@@ -3089,16 +3083,35 @@ Use this directive to render a button with a dropdown of alternative actions.
      */
             $scope.appChanged = function (app) {
                 $scope.app = app;
-                if (infiniteMode) {
-                    createInfiniteModeButtons($scope.content);
-                } else {
-                    createButtons($scope.content);
-                }
+                $scope.$broadcast('editors.apps.appChanged', { app: app });
+                createButtons($scope.content);
+            };
+            /**
+     * Call back when a content app changes
+     * @param {any} app
+     */
+            $scope.appAnchorChanged = function (app, anchor) {
+                //send an event downwards
+                $scope.$broadcast('editors.apps.appAnchorChanged', {
+                    app: app,
+                    anchor: anchor
+                });
             };
             // methods for infinite editing
             $scope.close = function () {
                 if ($scope.infiniteModel.close) {
                     $scope.infiniteModel.close($scope.infiniteModel);
+                }
+            };
+            /**
+     * Call back when user click the back-icon
+     */
+            $scope.onBack = function () {
+                if ($scope.infiniteModel && $scope.infiniteModel.close) {
+                    $scope.infiniteModel.close($scope.infiniteModel);
+                } else {
+                    // navigate backwards if content has a parent.
+                    $location.path('/' + $routeParams.section + '/' + $routeParams.tree + '/' + $routeParams.method + '/' + $scope.content.parentId);
                 }
             };
             //ensure to unregister from all events!
@@ -3140,7 +3153,7 @@ Use this directive to render a button with a dropdown of alternative actions.
     (function () {
         'use strict';
         function ContentNodeInfoDirective($timeout, logResource, eventsService, userService, localizationService, dateHelper, editorService, redirectUrlsResource, overlayService) {
-            function link(scope, umbVariantContentCtrl) {
+            function link(scope) {
                 var evts = [];
                 var isInfoTab = false;
                 var auditTrailLoaded = false;
@@ -3175,7 +3188,8 @@ Use this directive to render a button with a dropdown of alternative actions.
                         'prompt_doctypeChangeWarning',
                         'general_history',
                         'auditTrails_historyIncludingVariants',
-                        'content_itemNotPublished'
+                        'content_itemNotPublished',
+                        'general_choose'
                     ];
                     localizationService.localizeMany(keys).then(function (data) {
                         labels.deleted = data[0];
@@ -3188,8 +3202,9 @@ Use this directive to render a button with a dropdown of alternative actions.
                         labels.doctypeChangeWarning = data[6];
                         labels.notPublished = data[9];
                         scope.historyLabel = scope.node.variants && scope.node.variants.length === 1 ? data[7] : data[8];
+                        scope.chooseLabel = data[10];
                         setNodePublishStatus();
-                        if (scope.currentUrls.length === 0) {
+                        if (scope.currentUrls && scope.currentUrls.length === 0) {
                             if (scope.node.id > 0) {
                                 //it's created but not published
                                 scope.currentUrls.push({
@@ -3218,22 +3233,19 @@ Use this directive to render a button with a dropdown of alternative actions.
                     if (scope.documentType !== null) {
                         scope.previewOpenUrl = '#/settings/documenttypes/edit/' + scope.documentType.id;
                     }
-                    //load in the audit trail if we are currently looking at the INFO tab
-                    if (umbVariantContentCtrl && umbVariantContentCtrl.editor) {
-                        var activeApp = _.find(umbVariantContentCtrl.editor.content.apps, function (a) {
-                            return a.active;
-                        });
-                        if (activeApp && activeApp.alias === 'umbInfo') {
-                            isInfoTab = true;
-                            loadAuditTrail();
-                            loadRedirectUrls();
-                        }
+                    var activeApp = _.find(scope.node.apps, function (a) {
+                        return a.active;
+                    });
+                    if (activeApp.alias === 'umbInfo') {
+                        loadRedirectUrls();
+                        loadAuditTrail();
                     }
+                    // never show templates for element types (if they happen to have been created in the content tree)
+                    scope.disableTemplates = scope.disableTemplates || scope.node.isElement;
                 }
                 scope.auditTrailPageChange = function (pageNumber) {
                     scope.auditTrailOptions.pageNumber = pageNumber;
-                    auditTrailLoaded = false;
-                    loadAuditTrail();
+                    loadAuditTrail(true);
                 };
                 scope.openDocumentType = function (documentType) {
                     var variantIsDirty = _.some(scope.node.variants, function (variant) {
@@ -3304,12 +3316,11 @@ Use this directive to render a button with a dropdown of alternative actions.
                     };
                     editorService.rollback(rollback);
                 };
-                function loadAuditTrail() {
+                function loadAuditTrail(forceReload) {
                     //don't load this if it's already done
-                    if (auditTrailLoaded) {
+                    if (auditTrailLoaded && !forceReload) {
                         return;
                     }
-                    ;
                     scope.loadingAuditTrail = true;
                     logResource.getPagedEntityLog(scope.auditTrailOptions).then(function (data) {
                         // get current backoffice user and format dates
@@ -3395,6 +3406,11 @@ Use this directive to render a button with a dropdown of alternative actions.
                     });
                 }
                 function updateCurrentUrls() {
+                    // never show urls for element types (if they happen to have been created in the content tree)
+                    if (scope.node.isElement) {
+                        scope.currentUrls = null;
+                        return;
+                    }
                     // find the urls for the currently selected language
                     if (scope.node.variants.length > 1) {
                         // nodes with variants
@@ -3427,8 +3443,7 @@ Use this directive to render a button with a dropdown of alternative actions.
                         return;
                     }
                     if (isInfoTab) {
-                        auditTrailLoaded = false;
-                        loadAuditTrail();
+                        loadAuditTrail(true);
                         loadRedirectUrls();
                         setNodePublishStatus();
                         updateCurrentUrls();
@@ -3458,32 +3473,126 @@ Use this directive to render a button with a dropdown of alternative actions.
     (function () {
         'use strict';
         /** This directive is used to render out the current variant tabs and properties and exposes an API for other directives to consume  */
-        function tabbedContentDirective() {
+        function tabbedContentDirective($timeout) {
+            function link($scope, $element, $attrs) {
+                var appRootNode = $element[0];
+                // Directive for cached property groups.
+                var propertyGroupNodesDictionary = {};
+                var scrollableNode = appRootNode.closest('.umb-scrollable');
+                scrollableNode.addEventListener('scroll', onScroll);
+                scrollableNode.addEventListener('mousewheel', cancelScrollTween);
+                function onScroll(event) {
+                    var viewFocusY = scrollableNode.scrollTop + scrollableNode.clientHeight * 0.5;
+                    for (var i in $scope.content.tabs) {
+                        var group = $scope.content.tabs[i];
+                        var node = propertyGroupNodesDictionary[group.id];
+                        if (viewFocusY >= node.offsetTop && viewFocusY <= node.offsetTop + node.clientHeight) {
+                            setActiveAnchor(group);
+                            return;
+                        }
+                    }
+                }
+                function setActiveAnchor(tab) {
+                    if (tab.active !== true) {
+                        var i = $scope.content.tabs.length;
+                        while (i--) {
+                            $scope.content.tabs[i].active = false;
+                        }
+                        tab.active = true;
+                    }
+                }
+                function getActiveAnchor() {
+                    var i = $scope.content.tabs.length;
+                    while (i--) {
+                        if ($scope.content.tabs[i].active === true)
+                            return $scope.content.tabs[i];
+                    }
+                    return false;
+                }
+                function getScrollPositionFor(id) {
+                    if (propertyGroupNodesDictionary[id]) {
+                        return propertyGroupNodesDictionary[id].offsetTop - 20;    // currently only relative to closest relatively positioned parent 
+                    }
+                    return null;
+                }
+                function scrollTo(id) {
+                    var y = getScrollPositionFor(id);
+                    if (getScrollPositionFor !== null) {
+                        var viewportHeight = scrollableNode.clientHeight;
+                        var from = scrollableNode.scrollTop;
+                        var to = Math.min(y, scrollableNode.scrollHeight - viewportHeight);
+                        var animeObject = { _y: from };
+                        $scope.scrollTween = anime({
+                            targets: animeObject,
+                            _y: to,
+                            easing: 'easeOutExpo',
+                            duration: 200 + Math.min(Math.abs(to - from) / viewportHeight * 100, 400),
+                            update: function update() {
+                                scrollableNode.scrollTo(0, animeObject._y);
+                            }
+                        });
+                    }
+                }
+                function jumpTo(id) {
+                    var y = getScrollPositionFor(id);
+                    if (getScrollPositionFor !== null) {
+                        cancelScrollTween();
+                        scrollableNode.scrollTo(0, y);
+                    }
+                }
+                function cancelScrollTween() {
+                    if ($scope.scrollTween) {
+                        $scope.scrollTween.pause();
+                    }
+                }
+                $scope.registerPropertyGroup = function (element, appAnchor) {
+                    propertyGroupNodesDictionary[appAnchor] = element;
+                };
+                $scope.$on('editors.apps.appChanged', function ($event, $args) {
+                    // if app changed to this app, then we want to scroll to the current anchor
+                    if ($args.app.alias === 'umbContent') {
+                        var activeAnchor = getActiveAnchor();
+                        $timeout(jumpTo.bind(null, [activeAnchor.id]));
+                    }
+                });
+                $scope.$on('editors.apps.appAnchorChanged', function ($event, $args) {
+                    if ($args.app.alias === 'umbContent') {
+                        setActiveAnchor($args.anchor);
+                        scrollTo($args.anchor.id);
+                    }
+                });
+                //ensure to unregister from all dom-events
+                $scope.$on('$destroy', function () {
+                    cancelScrollTween();
+                    scrollableNode.removeEventListener('scroll', onScroll);
+                    scrollableNode.removeEventListener('mousewheel', cancelScrollTween);
+                });
+            }
+            function controller($scope, $element, $attrs) {
+                //expose the property/methods for other directives to use
+                this.content = $scope.content;
+                this.activeVariant = _.find(this.content.variants, function (variant) {
+                    return variant.active;
+                });
+                $scope.activeVariant = this.activeVariant;
+                $scope.defaultVariant = _.find(this.content.variants, function (variant) {
+                    return variant.language.isDefault;
+                });
+                $scope.unlockInvariantValue = function (property) {
+                    property.unlockInvariantValue = !property.unlockInvariantValue;
+                };
+                $scope.$watch('tabbedContentForm.$dirty', function (newValue, oldValue) {
+                    if (newValue === true) {
+                        $scope.content.isDirty = true;
+                    }
+                });
+            }
             var directive = {
                 restrict: 'E',
                 replace: true,
                 templateUrl: 'views/components/content/umb-tabbed-content.html',
-                controller: function controller($scope) {
-                    //expose the property/methods for other directives to use
-                    this.content = $scope.content;
-                    this.activeVariant = _.find(this.content.variants, function (variant) {
-                        return variant.active;
-                    });
-                    $scope.activeVariant = this.activeVariant;
-                    $scope.defaultVariant = _.find(this.content.variants, function (variant) {
-                        return variant.language.isDefault;
-                    });
-                    $scope.unlockInvariantValue = function (property) {
-                        property.unlockInvariantValue = !property.unlockInvariantValue;
-                    };
-                    $scope.$watch('tabbedContentForm.$dirty', function (newValue, oldValue) {
-                        if (newValue === true) {
-                            $scope.content.isDirty = true;
-                        }
-                    });
-                },
-                link: function link(scope) {
-                },
+                controller: controller,
+                link: link,
                 scope: { content: '=' }
             };
             return directive;
@@ -3508,7 +3617,10 @@ Use this directive to render a button with a dropdown of alternative actions.
                 onCloseSplitView: '&',
                 onSelectVariant: '&',
                 onOpenSplitView: '&',
-                onSelectApp: '&'
+                onSelectApp: '&',
+                onSelectAppAnchor: '&',
+                onBack: '&?',
+                showBack: '<?'
             },
             controllerAs: 'vm',
             controller: umbVariantContentController
@@ -3522,6 +3634,8 @@ Use this directive to render a button with a dropdown of alternative actions.
             vm.selectVariant = selectVariant;
             vm.openSplitView = openSplitView;
             vm.selectApp = selectApp;
+            vm.selectAppAnchor = selectAppAnchor;
+            vm.showBackButton = showBackButton;
             function onInit() {
                 // disable the name field if the active content app is not "Content"
                 vm.nameDisabled = false;
@@ -3530,6 +3644,9 @@ Use this directive to render a button with a dropdown of alternative actions.
                         vm.nameDisabled = true;
                     }
                 });
+            }
+            function showBackButton() {
+                return vm.page.listViewPath !== null && vm.showBack;
             }
             /** Called when the component has linked all elements, this is when the form controller is available */
             function postLink() {
@@ -3559,14 +3676,30 @@ Use this directive to render a button with a dropdown of alternative actions.
      * @param {any} item
      */
             function selectApp(item) {
-                // disable the name field if the active content app is not "Content" or "Info"
-                vm.nameDisabled = false;
-                if (item && item.alias !== 'umbContent' && item.alias !== 'umbInfo') {
-                    vm.nameDisabled = true;
-                }
                 // call the callback if any is registered
                 if (vm.onSelectApp) {
                     vm.onSelectApp({ 'app': item });
+                }
+            }
+            $scope.$on('editors.apps.appChanged', function ($event, $args) {
+                var app = $args.app;
+                // disable the name field if the active content app is not "Content" or "Info"
+                vm.nameDisabled = false;
+                if (app && app.alias !== 'umbContent' && app.alias !== 'umbInfo') {
+                    vm.nameDisabled = true;
+                }
+            });
+            /**
+     * Used to proxy a callback
+     * @param {any} item
+     */
+            function selectAppAnchor(item, anchor) {
+                // call the callback if any is registered
+                if (vm.onSelectAppAnchor) {
+                    vm.onSelectAppAnchor({
+                        'app': item,
+                        'anchor': anchor
+                    });
                 }
             }
             /**
@@ -3594,7 +3727,10 @@ Use this directive to render a button with a dropdown of alternative actions.
                 content: '<',
                 // TODO: Not sure if this should be = since we are changing the 'active' property of a variant
                 culture: '<',
-                onSelectApp: '&?'
+                onSelectApp: '&?',
+                onSelectAppAnchor: '&?',
+                onBack: '&?',
+                showBack: '<?'
             },
             controllerAs: 'vm',
             controller: umbVariantContentEditorsController
@@ -3611,6 +3747,7 @@ Use this directive to render a button with a dropdown of alternative actions.
             vm.closeSplitView = closeSplitView;
             vm.selectVariant = selectVariant;
             vm.selectApp = selectApp;
+            vm.selectAppAnchor = selectAppAnchor;
             //Used to track how many content views there are (for split view there will be 2, it could support more in theory)
             vm.editors = [];
             //Used to track the open variants across the split views
@@ -3846,13 +3983,24 @@ Use this directive to render a button with a dropdown of alternative actions.
      * @param {any} app This is the model of the selected app
      */
             function selectApp(app) {
-                if (app && app.alias) {
-                    activeAppAlias = app.alias;
-                }
                 if (vm.onSelectApp) {
                     vm.onSelectApp({ 'app': app });
                 }
             }
+            function selectAppAnchor(app, anchor) {
+                if (vm.onSelectAppAnchor) {
+                    vm.onSelectAppAnchor({
+                        'app': app,
+                        'anchor': anchor
+                    });
+                }
+            }
+            $scope.$on('editors.apps.appChanged', function ($event, $args) {
+                var app = $args.app;
+                if (app && app.alias) {
+                    activeAppAlias = app.alias;
+                }
+            });
         }
         angular.module('umbraco.directives').component('umbVariantContentEditors', umbVariantContentEditors);
     }());
@@ -4158,13 +4306,30 @@ Use this directive to generate a list of breadcrumbs.
 **/
     (function () {
         'use strict';
-        function BreadcrumbsDirective() {
+        function BreadcrumbsDirective($location, navigationService) {
             function link(scope, el, attr, ctrl) {
                 scope.allowOnOpen = false;
                 scope.open = function (ancestor) {
                     if (scope.onOpen && scope.allowOnOpen) {
                         scope.onOpen({ 'ancestor': ancestor });
                     }
+                };
+                scope.openPath = function (ancestor, event) {
+                    // targeting a new tab/window?
+                    if (event.ctrlKey || event.shiftKey || event.metaKey || // apple
+                        event.button && event.button === 1    // middle click, >IE9 + everyone else
+) {
+                        // yes, let the link open itself
+                        return;
+                    }
+                    event.stopPropagation();
+                    event.preventDefault();
+                    var path = scope.pathTo(ancestor);
+                    $location.path(path);
+                    navigationService.clearSearch(['cculture']);
+                };
+                scope.pathTo = function (ancestor) {
+                    return '/' + scope.entityType + '/' + scope.entityType + '/edit/' + ancestor.id;
                 };
                 function onInit() {
                     if ('onOpen' in attr) {
@@ -4267,7 +4432,7 @@ Use this directive to construct a main content area inside the main editor windo
     'use strict';
     (function () {
         'use strict';
-        function EditorContentHeader($location, $routeParams) {
+        function EditorContentHeader() {
             function link(scope, el, attr, ctrl) {
                 if (!scope.serverValidationNameField) {
                     scope.serverValidationNameField = 'Name';
@@ -4280,16 +4445,23 @@ Use this directive to construct a main content area inside the main editor windo
                 scope.vm.currentVariant = '';
                 function onInit() {
                     setCurrentVariant();
+                    angular.forEach(scope.content.apps, function (app) {
+                        if (app.alias === 'umbContent') {
+                            app.anchors = scope.content.tabs;
+                        }
+                    });
                 }
                 function setCurrentVariant() {
-                    angular.forEach(scope.variants, function (variant) {
+                    angular.forEach(scope.content.variants, function (variant) {
                         if (variant.active) {
                             scope.vm.currentVariant = variant;
                         }
                     });
                 }
                 scope.goBack = function () {
-                    $location.path('/' + $routeParams.section + '/' + $routeParams.tree + '/' + $routeParams.method + '/' + scope.menu.currentNode.parentId);
+                    if (scope.onBack) {
+                        scope.onBack();
+                    }
                 };
                 scope.selectVariant = function (event, variant) {
                     if (scope.onSelectVariant) {
@@ -4300,6 +4472,14 @@ Use this directive to construct a main content area inside the main editor windo
                 scope.selectNavigationItem = function (item) {
                     if (scope.onSelectNavigationItem) {
                         scope.onSelectNavigationItem({ 'item': item });
+                    }
+                };
+                scope.selectAnchorItem = function (item, anchor) {
+                    if (scope.onSelectAnchorItem) {
+                        scope.onSelectAnchorItem({
+                            'item': item,
+                            'anchor': anchor
+                        });
                     }
                 };
                 scope.closeSplitView = function () {
@@ -4324,10 +4504,10 @@ Use this directive to construct a main content area inside the main editor windo
                 };
                 onInit();
                 //watch for the active culture changing, if it changes, update the current variant
-                if (scope.variants) {
+                if (scope.content.variants) {
                     scope.$watch(function () {
-                        for (var i = 0; i < scope.variants.length; i++) {
-                            var v = scope.variants[i];
+                        for (var i = 0; i < scope.content.variants.length; i++) {
+                            var v = scope.content.variants[i];
                             if (v.active) {
                                 return v.language.culture;
                             }
@@ -4349,13 +4529,14 @@ Use this directive to construct a main content area inside the main editor windo
                     name: '=',
                     nameDisabled: '<?',
                     menu: '=',
-                    hideMenu: '<?',
-                    variants: '=',
+                    hideActionsMenu: '<?',
+                    content: '=',
                     openVariants: '<',
                     hideChangeVariant: '<?',
-                    navigation: '=',
                     onSelectNavigationItem: '&?',
+                    onSelectAnchorItem: '&?',
                     showBackButton: '<?',
+                    onBack: '&?',
                     splitViewOpen: '=?',
                     onOpenInSplitView: '&?',
                     onCloseSplitView: '&?',
@@ -4795,7 +4976,7 @@ Use this directive to construct a header inside the main editor window.
                     name: '=',
                     nameLocked: '=',
                     menu: '=',
-                    hideMenu: '<?',
+                    hideActionsMenu: '<?',
                     icon: '=',
                     hideIcon: '@',
                     alias: '=',
@@ -4877,14 +5058,25 @@ Use this directive to construct a header inside the main editor window.
                     active: false,
                     name: 'More'
                 };
-                scope.clickNavigationItem = function (selectedItem) {
+                scope.openNavigationItem = function (item) {
                     scope.showDropdown = false;
-                    runItemAction(selectedItem);
-                    setItemToActive(selectedItem);
+                    runItemAction(item);
+                    setItemToActive(item);
                     if (scope.onSelect) {
-                        scope.onSelect({ 'item': selectedItem });
+                        scope.onSelect({ 'item': item });
                     }
-                    eventsService.emit('app.tabChange', selectedItem);
+                    eventsService.emit('app.tabChange', item);
+                };
+                scope.openAnchorItem = function (item, anchor) {
+                    if (scope.onAnchorSelect) {
+                        scope.onAnchorSelect({
+                            'item': item,
+                            'anchor': anchor
+                        });
+                    }
+                    if (item.active !== true) {
+                        scope.openNavigationItem(item);
+                    }
                 };
                 scope.toggleDropdown = function () {
                     scope.showDropdown = !scope.showDropdown;
@@ -4893,12 +5085,11 @@ Use this directive to construct a header inside the main editor window.
                     scope.showDropdown = false;
                 };
                 function onInit() {
-                    // hide navigation if there is only 1 item
-                    if (scope.navigation.length <= 1) {
-                        scope.showNavigation = false;
-                    }
-                    $timeout(function () {
-                        if ($window && $window.innerWidth) {
+                    var firstRun = true;
+                    scope.$watch('navigation.length', function (newVal, oldVal) {
+                        if (firstRun || newVal !== undefined && newVal !== oldVal) {
+                            firstRun = false;
+                            scope.showNavigation = newVal > 1;
                             calculateVisibleItems($window.innerWidth);
                         }
                     });
@@ -4964,13 +5155,54 @@ Use this directive to construct a header inside the main editor window.
                 templateUrl: 'views/components/editor/umb-editor-navigation.html',
                 scope: {
                     navigation: '=',
-                    onSelect: '&'
+                    onSelect: '&',
+                    onAnchorSelect: '&'
                 },
                 link: link
             };
             return directive;
         }
         angular.module('umbraco.directives.html').directive('umbEditorNavigation', EditorNavigationDirective);
+    }());
+    'use strict';
+    (function () {
+        'use strict';
+        function UmbEditorNavigationItemController($scope, $element, $attrs) {
+            var vm = this;
+            vm.clicked = function () {
+                vm.onOpen({ item: vm.item });
+            };
+            vm.anchorClicked = function (anchor, $event) {
+                vm.onOpenAnchor({
+                    item: vm.item,
+                    anchor: anchor
+                });
+                $event.stopPropagation();
+                $event.preventDefault();
+            };
+            // needed to make sure that we update what anchors are active.
+            vm.mouseOver = function () {
+                $scope.$digest();
+            };
+            var componentNode = $element[0];
+            componentNode.classList.add('umb-sub-views-nav-item');
+            componentNode.addEventListener('mouseover', vm.mouseOver);
+            //ensure to unregister from all dom-events
+            $scope.$on('$destroy', function () {
+                componentNode.removeEventListener('mouseover', vm.mouseOver);
+            });
+        }
+        angular.module('umbraco.directives.html').component('umbEditorNavigationItem', {
+            templateUrl: 'views/components/editor/umb-editor-navigation-item.html',
+            controller: UmbEditorNavigationItemController,
+            controllerAs: 'vm',
+            bindings: {
+                item: '=',
+                onOpen: '&',
+                onOpenAnchor: '&',
+                index: '@'
+            }
+        });
     }());
     'use strict';
     (function () {
@@ -6564,7 +6796,7 @@ Use this directive to construct a title. Recommended to use it inside an {@link 
                 var throttledResizing = _.throttle(function () {
                     resizeImageToScale(scope.dimensions.scale.current);
                     calculateCropBox();
-                }, 100);
+                }, 15);
                 //happens when we change the scale
                 scope.$watch('dimensions.scale.current', function () {
                     if (scope.loaded) {
@@ -7830,6 +8062,7 @@ Use this directive to render a tabs navigation.
             var vm = this;
             var typeahead;
             var tagsHound;
+            var initLoad = true;
             vm.$onInit = onInit;
             vm.$onChanges = onChanges;
             vm.$onDestroy = onDestroy;
@@ -7848,7 +8081,7 @@ Use this directive to render a tabs navigation.
                 assetsService.loadJs('lib/typeahead.js/typeahead.bundle.min.js').then(function () {
                     vm.isLoading = false;
                     //ensure that the models are formatted correctly
-                    configureViewModel();
+                    configureViewModel(true);
                     // Set the visible prompt to -1 to ensure it will not be visible
                     vm.promptIsVisible = '-1';
                     tagsHound = new Bloodhound({
@@ -7940,13 +8173,18 @@ Use this directive to render a tabs navigation.
                 }
                 $element.find('.tags-' + vm.htmlId).typeahead('destroy');
             }
-            function configureViewModel() {
+            function configureViewModel(isInitLoad) {
                 if (vm.value) {
                     if (angular.isString(vm.value) && vm.value.length > 0) {
                         if (vm.config.storageType === 'Json') {
                             //json storage
                             vm.viewModel = JSON.parse(vm.value);
-                            updateModelValue(vm.viewModel);
+                            //if this is the first load, we are just re-formatting the underlying model to be consistent
+                            //we don't want to notify the component parent of any changes, that will occur if the user actually
+                            //changes a value. If we notify at this point it will signal a form dirty change which we don't want.
+                            if (!isInitLoad) {
+                                updateModelValue(vm.viewModel);
+                            }
                         } else {
                             //csv storage
                             // split the csv string, and remove any duplicate values
@@ -7956,7 +8194,12 @@ Use this directive to render a tabs navigation.
                             vm.viewModel = tempArray.filter(function (v, i, self) {
                                 return self.indexOf(v) === i;
                             });
-                            updateModelValue(vm.viewModel);
+                            //if this is the first load, we are just re-formatting the underlying model to be consistent
+                            //we don't want to notify the component parent of any changes, that will occur if the user actually
+                            //changes a value. If we notify at this point it will signal a form dirty change which we don't want.
+                            if (!isInitLoad) {
+                                updateModelValue(vm.viewModel);
+                            }
                         }
                     } else if (angular.isArray(vm.value)) {
                         vm.viewModel = vm.value;
@@ -9570,8 +9813,16 @@ Use this directive to generate color swatches to pick from.
                     scope.useColorClass = false;
                 }
                 scope.setColor = function (color, $index, $event) {
-                    scope.selectedColor = color;
                     if (scope.onSelect) {
+                        // did the value change?
+                        if (scope.selectedColor != null && scope.selectedColor.value === color.value) {
+                            // User clicked the currently selected color
+                            // to remove the selection, they don't want
+                            // to select any color after all.
+                            // Unselect the color
+                            color = null;
+                        }
+                        scope.selectedColor = color;
                         scope.onSelect({
                             color: color,
                             $index: $index,
@@ -11260,11 +11511,11 @@ When this combination is hit an overview is opened with shortcuts based on the m
                     "name": "Design",
                     "shortcuts": [
                         {
-                            "description": "Add tab",
+                            "description": "Add group",
                             "keys": [
                                 {"key": "alt"},
                                 {"key": "shift"},
-                                {"key": "t"}
+                                {"key": "g"}
                             ]
                         }
                     ]
@@ -13215,10 +13466,8 @@ Use this directive make an element sticky and follow the page when scrolling.
                     }
                 }
                 function calculateSize() {
-                    clonedBar.css({
-                        width: bar.outerWidth(),
-                        height: bar.height()
-                    });
+                    var width = bar.innerWidth();
+                    clonedBar.css({ width: width });
                 }
                 function createClone() {
                     //switch place with cloned element, to keep binding intact
@@ -13228,7 +13477,9 @@ Use this directive make an element sticky and follow the page when scrolling.
                     clonedBar.addClass('-umb-sticky-bar');
                     clonedBar.css({
                         'position': 'fixed',
-                        'z-index': 500,
+                        // if you change this z-index value, make sure the sticky editor sub headers do not 
+                        // clash with umb-dropdown (e.g. the content actions dropdown in content list view)
+                        'z-index': 99,
                         'visibility': 'hidden'
                     });
                     cloneIsMade = true;
@@ -14422,6 +14673,23 @@ Use this directive to render a user group preview, where you can see the permiss
                 }
             }
         };
+    });
+    'use strict';
+    angular.module('umbraco.directives').directive('retriveDomElement', function () {
+        var directiveDefinitionObject = {
+            restrict: 'A',
+            selector: '[retriveDomElement]',
+            scope: { 'retriveDomElement': '&' },
+            link: {
+                post: function post(scope, iElement, iAttrs, controller) {
+                    scope.retriveDomElement({
+                        element: iElement,
+                        attributes: iAttrs
+                    });
+                }
+            }
+        };
+        return directiveDefinitionObject;
     });
     'use strict';
     /**

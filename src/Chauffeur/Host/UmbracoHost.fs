@@ -5,6 +5,7 @@ open System
 open System.Diagnostics
 open System.IO
 open System.Reflection
+open Umbraco.Core
 open Umbraco.Core.Configuration
 open Umbraco.Core.Composing
 

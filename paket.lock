@@ -1468,8 +1468,8 @@ NUGET
       ClientDependency (>= 1.8)
       Microsoft.AspNet.Mvc (>= 5.0)
     CSharpTest.Net.Collections (14.906.1403.1082) - restriction: >= net472
-    HtmlAgilityPack (1.8.14) - restriction: >= net472
-    ImageProcessor (2.6.2.25) - restriction: >= net472
+    HtmlAgilityPack (1.9) - restriction: >= net472
+    ImageProcessor (2.7.0.100) - restriction: >= net472
     LightInject (5.4) - restriction: >= net472
       System.ValueTuple (>= 4.5) - restriction: || (&& (>= net452) (< netstandard1.3)) (&& (< net452) (>= netstandard1.1) (< netstandard1.3)) (&& (< net452) (>= netstandard1.3) (< netstandard1.6)) (&& (< net452) (>= netstandard1.6) (< netstandard2.0)) (&& (< net452) (>= netstandard2.0)) (>= net46) (>= netcoreapp2.0)
     LightInject.Annotation (1.1) - restriction: >= net472
@@ -1560,10 +1560,10 @@ NUGET
     System.Threading.Tasks.Dataflow (4.9) - restriction: >= net472
     System.ValueTuple (4.5) - restriction: >= net472
   remote: https://www.myget.org/F/umbracocore/api/v3/index.json
-    Examine (1.0.0-beta078) - restriction: >= net472
+    Examine (1.0.0) - restriction: >= net472
       Lucene.Net (>= 3.0.3 < 4.0) - restriction: >= net452
     Umbraco.SqlServerCE (4.0.0.1) - restriction: >= net472
-    UmbracoCMS.Core (8.0.0-alpha.58.2180)
+    UmbracoCMS.Core (8.0.0-alpha.2503)
       AutoMapper (>= 8.0 < 8.999999) - restriction: >= net472
       LightInject (>= 5.4 < 5.999999) - restriction: >= net472
       LightInject.Annotation (>= 1.1 < 1.999999) - restriction: >= net472
@@ -1584,13 +1584,13 @@ NUGET
       Serilog.Settings.AppSettings (>= 2.2.2 < 2.999999) - restriction: >= net472
       Serilog.Sinks.File (>= 4.0 < 4.999999) - restriction: >= net472
       Umbraco.SqlServerCE (>= 4.0.0.1 < 4.999999) - restriction: >= net472
-    UmbracoCMS.Web (8.0.0-alpha.58.2180)
+    UmbracoCMS.Web (8.0.0-alpha.2503)
       ClientDependency (>= 1.9.7 < 1.999999) - restriction: >= net472
       ClientDependency-Mvc5 (>= 1.8 < 1.999999) - restriction: >= net472
       CSharpTest.Net.Collections (>= 14.906.1403.1082 < 14.999999) - restriction: >= net472
-      Examine (>= 1.0.0-beta078 < 1.999999) - restriction: >= net472
+      Examine (>= 1.0 < 1.999999) - restriction: >= net472
       HtmlAgilityPack (>= 1.8.14 < 1.999999) - restriction: >= net472
-      ImageProcessor (>= 2.6.2.25 < 2.999999) - restriction: >= net472
+      ImageProcessor (>= 2.7.0.100 < 2.999999) - restriction: >= net472
       LightInject.Mvc (>= 2.0 < 2.999999) - restriction: >= net472
       LightInject.WebApi (>= 2.0 < 2.999999) - restriction: >= net472
       Markdown (>= 2.2.1 < 2.999999) - restriction: >= net472
@@ -1602,4 +1602,4 @@ NUGET
       Microsoft.Owin.Security.Cookies (>= 4.0.1 < 4.999999) - restriction: >= net472
       Microsoft.Owin.Security.OAuth (>= 4.0.1 < 4.999999) - restriction: >= net472
       System.Threading.Tasks.Dataflow (>= 4.9 < 4.999999) - restriction: >= net472
-      UmbracoCMS.Core (8.0.0-alpha.58.2180) - restriction: >= net472
+      UmbracoCMS.Core (8.0.0-alpha.2503) - restriction: >= net472
