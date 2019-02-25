@@ -48,4 +48,4 @@ type ChauffeurDeliverableComponent() =
                                 |> Seq.map (registerDeliverable composition)
                                 |> Seq.toArray
 
-            composition.Register(fun factory -> new DeliverableResolver(factory, registrations))
+            composition.Register(fun factory -> DeliverableResolver(factory, registrations))

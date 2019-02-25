@@ -12,6 +12,7 @@
     <Compile Include="Deliverable.fs" />
     <Compile Include="Components\CompositionExtensions.fs" />
     <Compile Include="Components\ChauffeurDeliverableComponent.fs" />
+    <Compile Include="Components\UserManagerComponent.fs" />
     <Compile Include="Components\ChauffeurComponent.fs" />
     <Compile Include="Components\FileSystemComponent.fs" />
     <Compile Include="Deliverables\InstallDeliverable.fs" />
@@ -26,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.ApplicationServices" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
