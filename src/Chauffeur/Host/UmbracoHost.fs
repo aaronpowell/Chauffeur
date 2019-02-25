@@ -18,6 +18,9 @@ type UmbracoHost(reader : TextReader, writer : TextWriter) =
     interface IChauffeurHost with
         member __.Run() = task {
             let register = RegisterFactory.Create()
+            RuntimeOptions.InstallEmptyDatabase <- true
+            RuntimeOptions.InstallMissingDatabase <- true
+
             let factory = runtime.Boot(register)
             do! writer.WriteLineAsync("Welcome to Chauffeur, your Umbraco console.")
             let fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location)
