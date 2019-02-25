@@ -15,6 +15,7 @@
     <Compile Include="Components\UserManagerComponent.fs" />
     <Compile Include="Components\ChauffeurComponent.fs" />
     <Compile Include="Components\FileSystemComponent.fs" />
+    <Compile Include="Deliverables\UnknownDeliverable.fs" />
     <Compile Include="Deliverables\InstallDeliverable.fs" />
     <Compile Include="Deliverables\QuitDeliverable.fs" />
     <Compile Include="UmbracoOverrides\NullHttpContextAccessor.fs" />

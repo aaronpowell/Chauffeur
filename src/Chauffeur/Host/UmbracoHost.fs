@@ -43,7 +43,9 @@ type UmbracoHost(reader : TextReader, writer : TextWriter) =
                     let! runResult = deliverable.Run (Array.head parts) (Array.skip 1 parts)
                     result <- runResult
                 | None ->
-                    do! writer.WriteLineAsync(sprintf "'%s' didn't match a known deliverable name or alias" rl)
+                    let deliverable = deliverableResolver.Resolve "unknown" |> Option.get
+                    let! runResult = deliverable.Run (Array.head parts) (Array.skip 1 parts)
+                    result <- runResult
 
             return result
         }
