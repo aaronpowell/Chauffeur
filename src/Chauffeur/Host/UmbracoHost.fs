@@ -37,9 +37,9 @@ type UmbracoHost(reader : TextReader, writer : TextWriter) =
 
                 let deliverableResolver = factory.GetInstance<DeliverableResolver>()
 
-                match deliverableResolver.Resolve rl with
+                let parts = rl.Split(' ')
+                match deliverableResolver.Resolve parts.[0] with
                 | Some deliverable ->
-                    let parts = rl.Split(' ')
                     let! runResult = deliverable.Run (Array.head parts) (Array.skip 1 parts)
                     result <- runResult
                 | None ->
