@@ -65,7 +65,8 @@ module InstallDeliverable =
 
 open Umbraco.Core.Migrations.Install
 open InstallDeliverable
-open Umbraco.Core.Configuration
+open Umbraco.Core.Logging
+open Umbraco.Core.Scoping
 
 [<DeliverableName("install")>]
 type InstallDeliverable
@@ -73,9 +74,9 @@ type InstallDeliverable
       writer,
       settings : IChauffeurSettings,
       fileSystem : IFileSystem,
-      databaseBuilder : DatabaseBuilder,
       sqlCeFactory : ISqlCeFactory,
-      globalSettings : IGlobalSettings) =
+      logger : ILogger,
+      scopeProvider : IScopeProvider) =
     inherit Deliverable(reader, writer)
 
     let connStr = settings.ConnectionString
@@ -93,29 +94,23 @@ type InstallDeliverable
                     match fileSystem.File.Exists dbPath with
                     | true -> ignore()
                     | false ->
-                        let! result = makeDb
+                        let! _ = makeDb
                                         writer.WriteLineAsync
                                         (prompt writer.WriteAsync reader.ReadLineAsync)
                                         (fun () -> sqlCeFactory.CreateDatabase connStr.ConnectionString)
                                         args
                         ignore()
-                | false ->
-                    ignore()
+                | false -> ignore()
 
-                // start hack
-                let version = globalSettings.ConfigurationStatus
-                globalSettings.ConfigurationStatus <- ""
-                // end hack part 1
+                use scope = scopeProvider.CreateScope()
+                let umbracoDatabase = scope.Database
+                let creator = DatabaseSchemaCreator(umbracoDatabase, logger)
+                creator.InitializeDatabaseSchema()
+                scope.Complete() |> ignore
 
-                let result = databaseBuilder.CreateSchemaAndData()
-
-                // hack part 2
-                globalSettings.ConfigurationStatus <- version
-
-                match result.Success with
+                match scope.Complete() with
                 | true -> return DeliverableResponse.Continue
                 | false ->
-                    do! writer.WriteLineAsync(sprintf "Failed to install db: %s" result.Message)
+                    do! writer.WriteLineAsync("Failed to install db. Check the Umbraco logs.")
                     return DeliverableResponse.FinishedWithError
         }
-        
