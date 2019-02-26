@@ -15,6 +15,7 @@
     <WarningsAsErrors />
   </PropertyGroup>
   <ItemGroup>
+    <None Include="paket.references" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

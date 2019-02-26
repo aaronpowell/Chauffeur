@@ -4,6 +4,7 @@
     <TargetFramework>net472</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="paket.references" />
     <Compile Include="ServiceContainerExtensions.fs" />
     <Compile Include="ISqlCeEngineFactory.fs" />
     <Compile Include="IChauffeurSettings.fs" />

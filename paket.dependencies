@@ -16,3 +16,9 @@ group Build
     nuget Fake.IO.FileSystem
     nuget Fake.Core.Target
     nuget Fake.Core.ReleaseNotes
+
+group Tests
+    source https://api.nuget.org/v3/index.json
+    nuget xunit
+    nuget xunit.runner.visualstudio
+    nuget fsunit.xunit
