@@ -22,3 +22,4 @@ group Tests
     nuget xunit
     nuget xunit.runner.visualstudio
     nuget fsunit.xunit
+    nuget NSubstitute

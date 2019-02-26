@@ -5,7 +5,7 @@ open System.Reflection
 open Chauffeur
 open Umbraco.Core.Composing
 
-type internal Registration =
+type Registration =
      { Type : Type
        KnownAs : seq<string> }
 
@@ -24,7 +24,7 @@ module internal ChauffeurDeliverableComponent =
         { Type = t
           KnownAs = Array.append [| name |] aliases }
 
-type internal DeliverableResolver(factory : IFactory, registrations) =
+type DeliverableResolver(factory : IFactory, registrations) =
     let finder registrations key =
         registrations |> Array.tryFind (fun r -> let x = r.KnownAs |> Seq.tryFind (fun a -> a = key)
                                                  match x with

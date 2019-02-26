@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Umbraco.Core;
 using Umbraco.Core.Composing;
+using Chauffeur.Components;
+using Microsoft.FSharp.Core;
 
 namespace Chauffeur.Deliverables
 {
@@ -32,7 +34,10 @@ namespace Chauffeur.Deliverables
 
         private async Task Print(string command)
         {
-            if (container.GetInstance<Deliverable>() is IProvideDirections deliverable)
+            var deliverableResolver = container.GetInstance<DeliverableResolver>();
+
+            var result = deliverableResolver.Resolve(command);
+            if (FSharpOption<Deliverable>.get_IsSome(result) && result.Value is IProvideDirections deliverable)
             {
                 await deliverable.Directions();
                 return;
