@@ -12,6 +12,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="paket.references" />
+    <Compile Include="MockTextWriter.fs" />
+    <Compile Include="QuitDeliverableTests.fs" />
+    <Compile Include="UnknownDeliverableTests.fs" />
     <Compile Include="CommandLineParserTests.fs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,4 @@
-namespace Chaffeur.Tests
+namespace Chauffeur.Tests
 
 open Xunit
 open CommandLineParser
