@@ -140,8 +140,18 @@ namespace Chauffeur.Deliverables
             try
             {
                 var resetToken = await userManager.GeneratePasswordResetTokenAsync(user.Id);
-                await userManager.ChangePasswordWithResetAsync(user.Id, resetToken, args[1]);
-                await Out.WriteLineAsync($"User '{username}' has had their password updated");
+                var result = await userManager.ResetPasswordAsync(user.Id, resetToken, args[1]);
+
+                if (!result.Succeeded)
+                {
+                    await Out.WriteLineAsync("There were errors changing the password:");
+                    foreach (var err in result.Errors)
+                        await Out.WriteLineAsync($"\t{err}");
+                }
+                else
+                {
+                    await Out.WriteLineAsync($"User '{username}' has had their password updated");
+                }
             }
             catch (NotSupportedException ex)
             {
