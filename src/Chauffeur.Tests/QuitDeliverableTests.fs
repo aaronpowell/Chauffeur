@@ -1,13 +1,19 @@
 ﻿namespace Chauffeur.Tests
 
+
 module QuitDeliverableTests =
     open Xunit
     open Chauffeur.Deliverables
     open FsUnit.Xunit
     open Chauffeur
+    open FSharp.Control.Tasks.V2
 
     [<Fact>]
     let ``Shutdown response returned when run``() =
-        let deliverable = QuitDeliverable(null, null)
+        task {
+            let deliverable = QuitDeliverable(null, null)
 
-        deliverable.Run "" Array.empty |> should equal DeliverableResponse.Shutdown
+            let! result = deliverable.Run "" Array.empty
+
+            result |> should equal DeliverableResponse.Shutdown
+        }
