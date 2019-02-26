@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net472</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Include="MockTextReader.fs" />
+      <Compile Include="MockTextWriter.fs" />
+      <Compile Include="UmbracoHostTestBase.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="paket.references" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-62909-01" PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Chauffeur\Chauffeur.fsproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="System.Web" />
+        <Reference Include="System.Web.ApplicationServices" />
+    </ItemGroup>
+    <Import Project="..\..\.paket\Paket.Restore.targets" />
+
+</Project>

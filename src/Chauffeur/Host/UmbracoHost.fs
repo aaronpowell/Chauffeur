@@ -14,15 +14,31 @@ open Chauffeur.Components
 open CommandLineParser
 
 type UmbracoHost(reader : TextReader, writer : TextWriter) =
+    do
+        RuntimeOptions.InstallEmptyDatabase <- true
+        RuntimeOptions.InstallMissingDatabase <- true
+
     let runtime = new ChauffeurRuntime(reader, writer)
+    let register = RegisterFactory.Create()
+    let factory = runtime.Boot(register)
+
+    let handleInput (factory : IFactory) (rl : string) =
+        task {
+            let deliverableResolver = factory.GetInstance<DeliverableResolver>()
+
+            let parts = parseCommandLine rl
+            match deliverableResolver.Resolve parts.[0] with
+            | Some deliverable ->
+                return! deliverable.Run (List.head parts) ((List.skip 1 parts) |> List.toArray)
+            | None ->
+                let deliverable = deliverableResolver.Resolve "unknown" |> Option.get
+                return! deliverable.Run (List.head parts) ((List.skip 1 parts) |> List.toArray)
+        }
+
+    let handleInput' = handleInput factory
 
     interface IChauffeurHost with
         member __.Run() = task {
-            let register = RegisterFactory.Create()
-            RuntimeOptions.InstallEmptyDatabase <- true
-            RuntimeOptions.InstallMissingDatabase <- true
-
-            let factory = runtime.Boot(register)
             do! writer.WriteLineAsync("Welcome to Chauffeur, your Umbraco console.")
             let fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location)
             do! writer.WriteLineAsync(sprintf "You're running Chauffeur v%s against Umbraco %A" (fvi.FileVersion) (UmbracoVersion.SemanticVersion))
@@ -35,21 +51,13 @@ type UmbracoHost(reader : TextReader, writer : TextWriter) =
             while result <> DeliverableResponse.Shutdown do
                 do! writer.WriteAsync("umbraco> ")
                 let! rl = reader.ReadLineAsync()
-
-                let deliverableResolver = factory.GetInstance<DeliverableResolver>()
-
-                let parts = parseCommandLine rl
-                match deliverableResolver.Resolve parts.[0] with
-                | Some deliverable ->
-                    let! runResult = deliverable.Run (List.head parts) ((List.skip 1 parts) |> List.toArray)
-                    result <- runResult
-                | None ->
-                    let deliverable = deliverableResolver.Resolve "unknown" |> Option.get
-                    let! runResult = deliverable.Run (List.head parts) ((List.skip 1 parts) |> List.toArray)
-                    result <- runResult
+                let! r = handleInput' rl
+                result <- r
 
             return result
         }
+
+        member __.RunWithArgs args = handleInput' (String.concat " " args)
 
     interface IDisposable with
         member __.Dispose() =
