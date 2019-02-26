@@ -19,6 +19,7 @@
     <Compile Include="Deliverables\InstallDeliverable.fs" />
     <Compile Include="Deliverables\QuitDeliverable.fs" />
     <Compile Include="UmbracoOverrides\NullHttpContextAccessor.fs" />
+    <Compile Include="Host\CommandLineParser.fs" />
     <Compile Include="Host\IChauffeurHost.fs" />
     <Compile Include="Host\ChauffeurRuntime.fs" />
     <Compile Include="Host\UmbracoHost.fs" />

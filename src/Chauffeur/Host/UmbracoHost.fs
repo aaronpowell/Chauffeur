@@ -11,6 +11,7 @@ open Umbraco.Core.Composing
 
 open Chauffeur
 open Chauffeur.Components
+open CommandLineParser
 
 type UmbracoHost(reader : TextReader, writer : TextWriter) =
     let runtime = new ChauffeurRuntime(reader, writer)
@@ -37,14 +38,14 @@ type UmbracoHost(reader : TextReader, writer : TextWriter) =
 
                 let deliverableResolver = factory.GetInstance<DeliverableResolver>()
 
-                let parts = rl.Split(' ')
+                let parts = parseCommandLine rl
                 match deliverableResolver.Resolve parts.[0] with
                 | Some deliverable ->
-                    let! runResult = deliverable.Run (Array.head parts) (Array.skip 1 parts)
+                    let! runResult = deliverable.Run (List.head parts) ((List.skip 1 parts) |> List.toArray)
                     result <- runResult
                 | None ->
                     let deliverable = deliverableResolver.Resolve "unknown" |> Option.get
-                    let! runResult = deliverable.Run (Array.head parts) (Array.skip 1 parts)
+                    let! runResult = deliverable.Run (List.head parts) ((List.skip 1 parts) |> List.toArray)
                     result <- runResult
 
             return result
