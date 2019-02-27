@@ -18,9 +18,10 @@ Environment.setEnvironVar "VisualStudioVersion" "15.0"
 
 let authors = ["Aaron Powell"]
 
-let chauffeurDir = "./Chauffeur/bin/"
-let chauffeurRunnerDir = "./Chauffeur.Runner/bin/"
-let chauffeurTestingToolsDir = "./Chauffeur.TestingTools/bin/"
+let chauffeurDir = "./src/Chauffeur/bin/"
+let chauffeurDeliverablesDir = "./src/Chauffeur.Deliverables/bin/"
+let chauffeurRunnerDir = "./src/Chauffeur.Runner/bin/"
+let chauffeurTestingToolsDir = "./src/Chauffeur.TestingTools/bin/"
 let packagingRoot = "./.packaging/"
 let packagingDir = packagingRoot @@ "chauffeur"
 let packagingRunnerDir = packagingRoot @@ "chauffeur.runner"
@@ -46,15 +47,15 @@ let releaseNotes =
 
 let trimBranchName (branch: string) =
     let trimmed = match branch.Length > 10 with
-                    | true -> branch.Substring(0, 10)
-                    | _ -> branch
+                  | true -> branch.Substring(0, 10)
+                  | _ -> branch
 
     trimmed.Replace(".", "")
 
 let prv = match Environment.environVar "BUILD_SOURCEBRANCHNAME" with
-            | null -> ""
-            | "master" -> ""
-            | branch -> sprintf "-%s%s" (trimBranchName branch) (
+          | null -> ""
+          | "master" -> ""
+          | branch -> sprintf "-%s%s" (trimBranchName branch) (
                             match Environment.environVar "BUILD_BUILDNUMBER" with
                             | null -> ""
                             | _ -> sprintf "-%s" (Environment.environVar "BUILD_BUILDNUMBER")
@@ -76,11 +77,27 @@ Target.create "DotNetRestore" (fun _ ->
     DotNet.restore id "src/Chauffeur.sln"
 )
 
+Target.create "Package Chauffeur" (fun _ ->
+    DotNet.pack (fun p ->
+        {p with
+            Configuration = buildMode
+            OutputPath = Some packagingDir
+            MSBuildParams = { p.MSBuildParams 
+                              with Properties =
+                                   [("Author", authors |> String.concat(","))
+                                    ("PackageVersion", nugetVersion)] }
+        }) (chauffeurDir + "../Chauffeur.fsproj")
+)
+
 Target.create "Default" ignore
+Target.create "Package" ignore
 
 "Clean"
     ==> "DotNetRestore"
     ==> "Build"
     ==> "Default"
+
+"Package Chauffeur"
+    ==> "Package"
 
 Target.runOrDefault "Default"

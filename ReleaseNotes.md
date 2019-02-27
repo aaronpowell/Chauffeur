@@ -1,3 +1,9 @@
+## New in 2.0.0 (Unreleased)
+* Complete rewrite to support Umbraco 8
+* Migrated to F# as the core language
+* Uses the new boot pipeline in Umbraco 8
+* Migrated some Deliverables to F#, others are still in C# in a separate project
+
 ## New in 1.4.0 (2018/11/22)
 * Moving away from AppVeyor to Azure DevOps for builds
 * Added editorconfig file to enforce coding standards
