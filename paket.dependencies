@@ -4,10 +4,9 @@ nuget taskbuilder.fs
 nuget System.IO.Abstractions
 
 group Umbraco
-    source https://www.myget.org/F/umbracocore/api/v3/index.json
     source https://api.nuget.org/v3/index.json
-    nuget UmbracoCMS.Core prerelease
-    nuget UmbracoCMS.Web prerelease
+    nuget UmbracoCMS.Core
+    nuget UmbracoCMS.Web
 
 // [ FAKE GROUP ]
 group Build
