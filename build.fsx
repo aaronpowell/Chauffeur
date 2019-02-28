@@ -20,7 +20,7 @@ let chauffeurDir = "./src/Chauffeur/bin/"
 let chauffeurRunnerDir = "./src/Chauffeur.Runner/bin/"
 let chauffeurTestingToolsDir = "./src/Chauffeur.TestingTools/bin/"
 let packagingDir = "../../.packaging/"
-let testDir = "./.testresults/coverage.json"
+let testDir = "./.testresults"
 let buildMode = match Environment.environVarOrDefault "buildMode" "Debug" with
                 | "Release" -> DotNet.BuildConfiguration.Release
                 | _ -> DotNet.BuildConfiguration.Debug
@@ -105,7 +105,9 @@ Target.create "Unit Tests" (fun _ ->
          "--exclude"
          "[xunit.*]*"
          "--output"
-         testDir]
+         testDir @@ "unit-tests.xml"
+         "--format"
+         "cobertura"]
     |> Proc.run
     |> ignore
 
@@ -119,9 +121,9 @@ Target.create "Unit Tests" (fun _ ->
          "--exclude"
          "[xunit.*]*"
          "--output"
-         testDir
-         "--merge-with"
-         testDir]
+         testDir @@ "legacy-unit-tests.xml"
+         "--format"
+         "cobertura"]
     |> Proc.run
     |> ignore
 )

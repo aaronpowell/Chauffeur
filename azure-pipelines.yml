@@ -36,16 +36,17 @@ steps:
     ScriptArguments: 'target Test'
 
 - task: PublishTestResults@2
-  displayName: 'Publish Test Results .testresults/coverage.json'
+  displayName: 'Publish Test Results'
   inputs:
     testResultsFormat: XUnit
 
-    testResultsFiles: '.testresults/coverage.json'
+    testResultsFiles: '.testresults/*.xml'
 
     mergeTestResults: true
 
 - powershell: |
-   ./.fake/codecov/codecov.exe -t $(CodeCov_Token) -f .testresults/coverage.json -v
+   ./.fake/codecov/codecov.exe -t $(CodeCov_Token) -f .testresults/unit-tests.xml -v
+   ./.fake/codecov/codecov.exe -t $(CodeCov_Token) -f .testresults/legacy-unit-tests.xml -v
   failOnStderr: true
 
   displayName: 'Upload coverage'
