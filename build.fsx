@@ -22,7 +22,7 @@ let chauffeurDir = "./src/Chauffeur/bin/"
 let chauffeurDeliverablesDir = "./src/Chauffeur.Deliverables/bin/"
 let chauffeurRunnerDir = "./src/Chauffeur.Runner/bin/"
 let chauffeurTestingToolsDir = "./src/Chauffeur.TestingTools/bin/"
-let packagingRoot = "./.packaging/"
+let packagingRoot = "../../.packaging/"
 let packagingDir = packagingRoot @@ "chauffeur"
 let packagingRunnerDir = packagingRoot @@ "chauffeur.runner"
 let packagingTestingToolsDir = packagingRoot @@ "chauffeur.testingtools"
@@ -82,7 +82,8 @@ Target.create "Package Chauffeur" (fun _ ->
         {p with
             Configuration = buildMode
             OutputPath = Some packagingDir
-            MSBuildParams = { p.MSBuildParams 
+            NoBuild = true
+            MSBuildParams = { p.MSBuildParams
                               with Properties =
                                    [("Author", authors |> String.concat(","))
                                     ("PackageVersion", nugetVersion)] }
