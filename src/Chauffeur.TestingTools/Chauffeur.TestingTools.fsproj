@@ -12,6 +12,14 @@
         <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <PackageDescription>Chauffeur Testing Tools is a series of helpers for using Chauffeur to setup Umbraco for integration testing with Umbraco's API</PackageDescription>
+        <PackageLicenseUrl>https://github.com/aaronpowell/Chauffeur/blob/master/License.md</PackageLicenseUrl>
+        <PackageIconUrl>https://raw.githubusercontent.com/aaronpowell/Chauffeur/master/chauffeur_logo_for_nuget.png?sanitize=true</PackageIconUrl>
+        <PackageTags>umbraco deployment</PackageTags>
+        <Copyright>Copyright 2014 - 2019</Copyright>
+    </PropertyGroup>
+
     <ItemGroup>
       <Compile Include="MockTextReader.fs" />
       <Compile Include="MockTextWriter.fs" />

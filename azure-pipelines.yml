@@ -13,38 +13,27 @@ steps:
   inputs:
     ScriptArguments: 'target Build'
 
-
 - task: isaacabraham.fsharp-helpers-extension.a2dadf20-1a83-4220-a4ee-b52f6c77f3cf.FAKE5@1
   displayName: Package
   inputs:
     ScriptArguments: 'target Package'
 
-
 - task: isaacabraham.fsharp-helpers-extension.a2dadf20-1a83-4220-a4ee-b52f6c77f3cf.FAKE5@1
   displayName: 'Unit Tests'
   inputs:
-    ScriptArguments: 'target UnitTests'
-
-
-- task: isaacabraham.fsharp-helpers-extension.a2dadf20-1a83-4220-a4ee-b52f6c77f3cf.FAKE5@1
-  displayName: 'Integration Tests'
-  inputs:
-    ScriptArguments: 'target IntegrationTests'
-
+    ScriptArguments: 'target Test'
 
 - task: PublishTestResults@2
-  displayName: 'Publish Test Results .testresults/results-*.xml'
+  displayName: 'Publish Test Results .testresults/coverage.json'
   inputs:
     testResultsFormat: XUnit
 
-    testResultsFiles: '.testresults/results-*.xml'
+    testResultsFiles: '.testresults/coverage.json'
 
     mergeTestResults: true
 
-
 - powershell: |
-   ./tools/codecov/tools/codecov.exe -t $(CodeCov_Token) -f .testresults/coverage-unit-tests.xml -v
-   ./tools/codecov/tools/codecov.exe -t $(CodeCov_Token) -f .testresults/coverage-integration-tests.xml -v
+   ./.fake/codecov/codecov.exe -t $(CodeCov_Token) -f .testresults/coverage.json -v
   failOnStderr: true
 
   displayName: 'Upload coverage'

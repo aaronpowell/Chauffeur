@@ -12,6 +12,13 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
+  <PropertyGroup>
+    <PackageDescription>Chauffeur Runner is a CLI for executing Chauffeur deliverables against an Umbraco instance.</PackageDescription>
+    <PackageLicenseUrl>https://github.com/aaronpowell/Chauffeur/blob/master/License.md</PackageLicenseUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/aaronpowell/Chauffeur/master/chauffeur_logo_for_nuget.png?sanitize=true</PackageIconUrl>
+    <PackageTags>umbraco deployment</PackageTags>
+    <Copyright>Copyright 2014 - 2019</Copyright>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>..\Chauffeur.Demo\bin\</OutputPath>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

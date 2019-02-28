@@ -14,32 +14,16 @@ open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing.Operators
 open Fake.Core.TargetOperators
 
-Environment.setEnvironVar "VisualStudioVersion" "15.0"
-
 let authors = ["Aaron Powell"]
 
 let chauffeurDir = "./src/Chauffeur/bin/"
-let chauffeurDeliverablesDir = "./src/Chauffeur.Deliverables/bin/"
 let chauffeurRunnerDir = "./src/Chauffeur.Runner/bin/"
 let chauffeurTestingToolsDir = "./src/Chauffeur.TestingTools/bin/"
-let packagingRoot = "../../.packaging/"
-let packagingDir = packagingRoot @@ "chauffeur"
-let packagingRunnerDir = packagingRoot @@ "chauffeur.runner"
-let packagingTestingToolsDir = packagingRoot @@ "chauffeur.testingtools"
-let testDir = "./.testresults"
+let packagingDir = "../../.packaging/"
+let testDir = "./.testresults/coverage.json"
 let buildMode = match Environment.environVarOrDefault "buildMode" "Debug" with
                 | "Release" -> DotNet.BuildConfiguration.Release
                 | _ -> DotNet.BuildConfiguration.Debug
-let isCIBuild = not (isNull (Environment.environVar "AGENT_ID"))
-let projectName = "Chauffeur"
-let chauffeurSummary = "Chauffeur is a tool for helping with delivering changes to an Umbraco instance."
-let chauffeurDescription = chauffeurSummary
-
-let chauffeurRunnerSummary = "Chauffeur Runner is a CLI for executing Chauffeur deliverables against an Umbraco instance."
-let chauffeurRunnerDescription = chauffeurRunnerSummary
-
-let chauffeurTestingToolsSummary = "Chauffeur Testing Tools is a series of helpers for using Chauffeur to setup Umbraco for integration testing with Umbraco's API"
-let chauffeurTestingToolsDescription = chauffeurRunnerSummary
 
 let install = lazy DotNet.install DotNet.Versions.FromGlobalJson
 
@@ -85,7 +69,7 @@ Target.create "DotNetRestore" (fun _ ->
     DotNet.restore (fun args -> args |> dotnetSimple) "src/Chauffeur.sln"
 )
 
-Target.create "Package Chauffeur" (fun _ ->
+let pack project =
     DotNet.pack (fun p ->
         {p with
             Configuration = buildMode
@@ -93,13 +77,58 @@ Target.create "Package Chauffeur" (fun _ ->
             NoBuild = true
             MSBuildParams = { p.MSBuildParams
                               with Properties =
-                                   [("Author", authors |> String.concat(","))
-                                    ("PackageVersion", nugetVersion)] }
-        } |> dotnetSimple) (chauffeurDir + "../Chauffeur.fsproj")
+                                   [("Authors", authors |> String.concat(","))
+                                    ("PackageVersion", nugetVersion)
+                                    ("PackageReleaseNotes", releaseNotes.Notes |> String.concat("\n"))] }
+        } |> dotnetSimple) project
+
+Target.create "Package Chauffeur" (fun _ ->
+    pack (chauffeurDir + "../Chauffeur.fsproj")
+)
+
+Target.create "Package Chauffeur Runner" (fun _ ->
+    pack (chauffeurRunnerDir + "../Chauffeur.Runner.fsproj")
+)
+
+Target.create "Package Chauffeur Testing Tools" (fun _ ->
+    pack (chauffeurTestingToolsDir + "../Chauffeur.TestingTools.fsproj")
+)
+
+Target.create "Unit Tests" (fun _ ->
+    CreateProcess.fromRawCommand
+        "./.fake/coverlet.exe"
+        [".\\src\\Chauffeur.Tests\\bin\\Debug\\net472\\Chauffeur.Tests.dll"
+         "--target"
+         "dotnet"
+         "--targetargs"
+         "test ./src/Chauffeur.Tests/ --no-build"
+         "--exclude"
+         "[xunit.*]*"
+         "--output"
+         testDir]
+    |> Proc.run
+    |> ignore
+
+    CreateProcess.fromRawCommand
+        "./.fake/coverlet.exe"
+        [sprintf ".\\src\\Chauffeur.Deliverables.Tests\\bin\\%A\\net472\\Chauffeur.Deliverables.Tests.dll" buildMode
+         "--target"
+         "dotnet"
+         "--targetargs"
+         "test ./src/Chauffeur.Deliverables.Tests/ --no-build"
+         "--exclude"
+         "[xunit.*]*"
+         "--output"
+         testDir
+         "--merge-with"
+         testDir]
+    |> Proc.run
+    |> ignore
 )
 
 Target.create "Default" ignore
 Target.create "Package" ignore
+Target.create "Test" ignore
 
 "Clean"
     ==> "DotNetRestore"
@@ -108,5 +137,14 @@ Target.create "Package" ignore
 
 "Package Chauffeur"
     ==> "Package"
+
+"Package Chauffeur Runner"
+    ==> "Package"
+
+"Package Chauffeur Testing Tools"
+    ==> "Package"
+
+"Unit Tests"
+    ==> "Test"
 
 Target.runOrDefault "Default"

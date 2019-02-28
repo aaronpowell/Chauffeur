@@ -11,6 +11,13 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
+  <PropertyGroup>
+    <PackageDescription>Chauffeur is a tool for helping with delivering changes to an Umbraco instance.</PackageDescription>
+    <PackageLicenseUrl>https://github.com/aaronpowell/Chauffeur/blob/master/License.md</PackageLicenseUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/aaronpowell/Chauffeur/master/chauffeur_logo_for_nuget.png?sanitize=true</PackageIconUrl>
+    <PackageTags>umbraco deployment</PackageTags>
+    <Copyright>Copyright 2014 - 2019</Copyright>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
     <Compile Include="ServiceContainerExtensions.fs" />
