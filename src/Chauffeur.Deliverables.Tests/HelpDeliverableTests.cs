@@ -19,9 +19,10 @@ namespace Chauffeur.Deliverables.Tests
             {
             }
 
-            public Task Directions()
+            public async Task<bool> Directions()
             {
-                return Out.WriteLineAsync("I have directions");
+                await Out.WriteLineAsync("I have directions");
+                return true;
             }
         }
 

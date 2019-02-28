@@ -3,5 +3,5 @@
 open System.Threading.Tasks
 
 type IProvideDirections =
-    abstract Directions : unit -> Task
+    abstract Directions : unit -> Task<bool>
 

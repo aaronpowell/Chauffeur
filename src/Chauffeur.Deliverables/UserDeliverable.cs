@@ -207,7 +207,7 @@ namespace Chauffeur.Deliverables
             await Out.WriteLineAsync($"User '{username}' has had their login name updated");
         }
 
-        public async Task Directions()
+        public async Task<bool> Directions()
         {
             await Out.WriteLineAsync("A series of operations that can be run against an Umbraco User.");
             await Out.WriteLineAsync();
@@ -218,6 +218,8 @@ namespace Chauffeur.Deliverables
             await Out.WriteLineAsync("\tChanges the user name for a given user.");
             await Out.WriteLineAsync("change-loginname <username> <new loginname>");
             await Out.WriteLineAsync("\tChanges the login name for a given user.");
+
+            return true;
         }
     }
 }

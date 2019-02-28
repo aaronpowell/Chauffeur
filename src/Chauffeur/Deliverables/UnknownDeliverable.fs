@@ -18,4 +18,7 @@ type UnknownDeliverable(reader, writer) =
 
     interface IProvideDirections with
         member __.Directions() =
-            writer.WriteLineAsync("Seriously, you're asking for help on the unknown command? Good luck with that")
+            task {
+                do! writer.WriteLineAsync("Seriously, you're asking for help on the unknown command? Good luck with that")
+                return true
+            }
