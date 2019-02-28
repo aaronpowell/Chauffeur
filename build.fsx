@@ -41,6 +41,14 @@ let chauffeurRunnerDescription = chauffeurRunnerSummary
 let chauffeurTestingToolsSummary = "Chauffeur Testing Tools is a series of helpers for using Chauffeur to setup Umbraco for integration testing with Umbraco's API"
 let chauffeurTestingToolsDescription = chauffeurRunnerSummary
 
+let install = lazy DotNet.install DotNet.Versions.FromGlobalJson
+
+let inline withWorkDir wd =
+    DotNet.Options.lift install.Value
+    >> DotNet.Options.withWorkingDirectory wd
+
+let inline dotnetSimple arg = DotNet.Options.lift install.Value arg
+
 let releaseNotes =
     File.read "ReleaseNotes.md"
         |> ReleaseNotes.parse
@@ -66,15 +74,15 @@ Target.create "Clean" (fun _ ->
     !! "src/**/bin"
     ++ "src/**/obj"
     -- "src/Chauffeur.Demo"
-    |> Shell.cleanDirs 
+    |> Shell.cleanDirs
 )
 
 Target.create "Build" (fun _ ->
-    DotNet.build (fun p -> { p with Configuration = buildMode }) "src/Chauffeur.sln"
+    DotNet.build (fun p -> { p with Configuration = buildMode } |> dotnetSimple) "src/Chauffeur.sln"
 )
 
 Target.create "DotNetRestore" (fun _ ->
-    DotNet.restore id "src/Chauffeur.sln"
+    DotNet.restore (fun args -> args |> dotnetSimple) "src/Chauffeur.sln"
 )
 
 Target.create "Package Chauffeur" (fun _ ->
@@ -87,7 +95,7 @@ Target.create "Package Chauffeur" (fun _ ->
                               with Properties =
                                    [("Author", authors |> String.concat(","))
                                     ("PackageVersion", nugetVersion)] }
-        }) (chauffeurDir + "../Chauffeur.fsproj")
+        } |> dotnetSimple) (chauffeurDir + "../Chauffeur.fsproj")
 )
 
 Target.create "Default" ignore
