@@ -21,6 +21,10 @@ steps:
   inputs:
     ScriptArguments: 'target Build'
 
+- script: |
+    git checkout ./.paket/Paket.Restore.targets
+  displayName: Use the shipped paket target
+
 - task: isaacabraham.fsharp-helpers-extension.a2dadf20-1a83-4220-a4ee-b52f6c77f3cf.FAKE5@1
   displayName: Package
   inputs:
