@@ -494,10 +494,6 @@
     <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.2.6.1\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Chauffeur.Deliverables\Chauffeur.Deliverables.csproj">
-      <Project>{7e8cad0d-a393-4708-891f-35ff943ad8db}</Project>
-      <Name>Chauffeur.Deliverables</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Chauffeur\Chauffeur.fsproj">
       <Project>{0ca57b5f-ca78-45eb-966e-36e41aafbe30}</Project>
       <Name>Chauffeur</Name>

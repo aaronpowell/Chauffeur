@@ -14,7 +14,6 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Chauffeur\Chauffeur.fsproj" />
-        <ProjectReference Include="..\Chauffeur.Deliverables\Chauffeur.Deliverables.csproj" />
     </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />
 
