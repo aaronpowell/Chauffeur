@@ -15,7 +15,7 @@ if ($Target -eq 'Setup') {
     dotnet tool install coverlet.console --tool-path ./$fakeDir
 
     (New-Object System.Net.WebClient).DownloadFile("https://github.com/codecov/codecov-exe/releases/download/1.2.0/Codecov.zip", (Join-Path $pwd "Codecov.zip")) # Download Codecov.zip from github release.
-    Expand-Archive .\Codecov.zip -DestinationPath ./codecov/$fakeDir
+    Expand-Archive .\Codecov.zip -DestinationPath ./$fakeDir/codecov
     Remove-Item .\Codecov.zip
 } else {
     . "$fakeDir/fake.exe" run ./build.fsx target $Target
