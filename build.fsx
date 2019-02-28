@@ -107,7 +107,7 @@ Target.create "Unit Tests" (fun _ ->
          "--output"
          testDir @@ "unit-tests.xml"
          "--format"
-         "cobertura"]
+         "opencover"]
     |> Proc.run
     |> ignore
 
@@ -123,7 +123,7 @@ Target.create "Unit Tests" (fun _ ->
          "--output"
          testDir @@ "legacy-unit-tests.xml"
          "--format"
-         "cobertura"]
+         "opencover"]
     |> Proc.run
     |> ignore
 )
