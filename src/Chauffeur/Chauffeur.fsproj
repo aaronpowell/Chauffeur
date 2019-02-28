@@ -24,6 +24,7 @@
     <Compile Include="Components\UserManagerComponent.fs" />
     <Compile Include="Components\ChauffeurComponent.fs" />
     <Compile Include="Components\FileSystemComponent.fs" />
+    <Compile Include="Deliverables\UserDeliverable.fs" />
     <Compile Include="Deliverables\HelpDeliverable.fs" />
     <Compile Include="Deliverables\UnknownDeliverable.fs" />
     <Compile Include="Deliverables\InstallDeliverable.fs" />

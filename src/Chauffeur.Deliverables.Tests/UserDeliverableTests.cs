@@ -16,7 +16,7 @@ namespace Chauffeur.Deliverables.Tests
         public async Task NoArgumentsWillWriteOutMessage()
         {
             var writer = new MockTextWriter();
-            var deliverable = new UserDeliverable(null, writer, null, null, null, null);
+            var deliverable = new UserDeliverable(null, writer, null, null, null);
 
             await deliverable.Run("user", new string[0]);
 
@@ -27,7 +27,7 @@ namespace Chauffeur.Deliverables.Tests
         public async Task ChangePasswordWillFailIfExpectedArgumentsAreNotProvided()
         {
             var writer = new MockTextWriter();
-            var deliverable = new UserDeliverable(null, writer, null, null, null, null);
+            var deliverable = new UserDeliverable(null, writer, null, null, null);
 
             await deliverable.Run("user", new[] { "change-password" });
 
@@ -38,7 +38,7 @@ namespace Chauffeur.Deliverables.Tests
         public async Task ChangeUserWillFailIfExpectedArgumentsAreNotProvided()
         {
             var writer = new MockTextWriter();
-            var deliverable = new UserDeliverable(null, writer, null, null, null, null);
+            var deliverable = new UserDeliverable(null, writer, null, null, null);
 
             await deliverable.Run("user", new[] { "change-name" });
 
@@ -49,7 +49,7 @@ namespace Chauffeur.Deliverables.Tests
         public async Task ChangeUserNameWillFailIfExpectedArgumentsAreNotProvided()
         {
             var writer = new MockTextWriter();
-            var deliverable = new UserDeliverable(null, writer, null, null, null, null);
+            var deliverable = new UserDeliverable(null, writer, null, null, null);
 
             await deliverable.Run("user", new[] { "change-loginname" });
 
@@ -63,7 +63,7 @@ namespace Chauffeur.Deliverables.Tests
             var userService = Substitute.For<IUserService>();
             userService.GetByUsername(Arg.Any<string>()).Returns((IUser)null);
 
-            var deliverable = new UserDeliverable(null, writer, userService, null, null, null);
+            var deliverable = new UserDeliverable(null, writer, userService, null, null);
 
             await deliverable.Run("user", new[] { "change-password", "0", "a" });
 
@@ -78,7 +78,7 @@ namespace Chauffeur.Deliverables.Tests
             var userService = Substitute.For<IUserService>();
             userService.GetByUsername(Arg.Any<string>()).Returns((IUser)null);
 
-            var deliverable = new UserDeliverable(null, writer, userService, null, null, null);
+            var deliverable = new UserDeliverable(null, writer, userService, null, null);
 
             await deliverable.Run("user", new[] { "change-name", "0", "b" });
 
@@ -92,7 +92,7 @@ namespace Chauffeur.Deliverables.Tests
             var userService = Substitute.For<IUserService>();
             userService.GetByUsername(Arg.Any<string>()).Returns((IUser)null);
 
-            var deliverable = new UserDeliverable(null, writer, userService, null, null, null);
+            var deliverable = new UserDeliverable(null, writer, userService, null, null);
 
             await deliverable.Run("user", new[] { "change-loginname", "0", "c" });
 
@@ -118,7 +118,7 @@ namespace Chauffeur.Deliverables.Tests
                 .ResetPasswordAsync(Arg.Any<int>(), Arg.Any<string>(), Arg.Any<string>())
                 .Returns(Task.FromResult(new Microsoft.AspNet.Identity.IdentityResult()));
 
-            var deliverable = new UserDeliverable(null, writer, userService, userManager, null, null);
+            var deliverable = new UserDeliverable(null, writer, userService, userManager, null);
 
             await deliverable.Run("user", new[] { "change-password", "0", "ab" });
 
@@ -136,7 +136,7 @@ namespace Chauffeur.Deliverables.Tests
             user.Name = "a";
             userService.GetByUsername("a").Returns(user);
 
-            var deliverable = new UserDeliverable(null, writer, userService, null, null, null);
+            var deliverable = new UserDeliverable(null, writer, userService, null, null);
 
             await deliverable.Run("user", new[] { "change-name", "a", "ab" });
 
@@ -155,7 +155,7 @@ namespace Chauffeur.Deliverables.Tests
             user.Username = "a";
             userService.GetByUsername("a").Returns(user);
 
-            var deliverable = new UserDeliverable(null, writer, userService, null, null, null);
+            var deliverable = new UserDeliverable(null, writer, userService, null, null);
 
             await deliverable.Run("user", new[] { "change-loginname", "a", "ab" });
 
