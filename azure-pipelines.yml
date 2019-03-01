@@ -42,8 +42,7 @@ steps:
 - task: PublishTestResults@2
   displayName: 'Publish Test Results'
   inputs:
-    testResultsFormat: XUnit
-
+    testResultsFormat: VSTest
     testResultsFiles: '.testresults/*.trx'
 
     mergeTestResults: true
