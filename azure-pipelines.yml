@@ -6,19 +6,11 @@ steps:
   inputs:
     version: '2.1.600-preview-009497'
 
-- script: |
-    mv global.json src/global.json
-  displayName: Futzing with dotnet versions
-
 - task: PowerShell@2
   displayName: 'Setup environment'
   inputs:
     filePath: ./build.ps1
     arguments: '-Target Setup'
-
-- script: |
-    mv src/global.json global.json
-  displayName: Futzing with dotnet versions
 
 - task: isaacabraham.fsharp-helpers-extension.a2dadf20-1a83-4220-a4ee-b52f6c77f3cf.FAKE5@1
   displayName: Build
