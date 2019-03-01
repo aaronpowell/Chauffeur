@@ -40,13 +40,13 @@ steps:
   inputs:
     testResultsFormat: XUnit
 
-    testResultsFiles: '.testresults/*.xml'
+    testResultsFiles: '.testresults/*.trx'
 
     mergeTestResults: true
 
 - powershell: |
-   ./.fake/codecov/codecov.exe -t $(CodeCov_Token) -f .testresults/unit-tests.xml -v
-   ./.fake/codecov/codecov.exe -t $(CodeCov_Token) -f .testresults/legacy-unit-tests.xml -v
+   ./.fake/codecov/codecov.exe -t $(CodeCov_Token) -f .testresults/unit-tests.xml -v --branch $(Build.SourceBranchName)
+   ./.fake/codecov/codecov.exe -t $(CodeCov_Token) -f .testresults/legacy-unit-tests.xml -v --branch $(Build.SourceBranchName)
   failOnStderr: true
 
   displayName: 'Upload coverage'

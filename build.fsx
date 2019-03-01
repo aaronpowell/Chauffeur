@@ -95,35 +95,26 @@ Target.create "Package Chauffeur Testing Tools" (fun _ ->
 )
 
 Target.create "Unit Tests" (fun _ ->
-    CreateProcess.fromRawCommand
-        "./.fake/coverlet.exe"
-        [".\\src\\Chauffeur.Tests\\bin\\Debug\\net472\\Chauffeur.Tests.dll"
-         "--target"
-         "dotnet"
-         "--targetargs"
-         "test ./src/Chauffeur.Tests/ --no-build"
-         "--exclude"
-         "[xunit.*]*"
-         "--output"
-         testDir @@ "unit-tests.xml"
-         "--format"
-         "opencover"]
+    let runCoverlet testProject coverageFile =
+        CreateProcess.fromRawCommand
+            "./.fake/coverlet.exe"
+            [sprintf ".\\src\\%s\\bin\\%A\\net472\\%s.dll" testProject buildMode testProject
+             "--target"
+             "dotnet"
+             "--targetargs"
+             sprintf "test ./src/%s/ --no-build --logger trx --results-directory %s" testProject (".." @@ ".." @@ testDir)
+             "--exclude"
+             "[xunit.*]*"
+             "--output"
+             testDir @@ coverageFile
+             "--format"
+             "opencover"]
+
+    runCoverlet "Chauffeur.Tests" "unit-tests.xml"
     |> Proc.run
     |> ignore
 
-    CreateProcess.fromRawCommand
-        "./.fake/coverlet.exe"
-        [sprintf ".\\src\\Chauffeur.Deliverables.Tests\\bin\\%A\\net472\\Chauffeur.Deliverables.Tests.dll" buildMode
-         "--target"
-         "dotnet"
-         "--targetargs"
-         "test ./src/Chauffeur.Deliverables.Tests/ --no-build"
-         "--exclude"
-         "[xunit.*]*"
-         "--output"
-         testDir @@ "legacy-unit-tests.xml"
-         "--format"
-         "opencover"]
+    runCoverlet "Chauffeur.Deliverables.Tests" "legacy-unit-tests.xml"
     |> Proc.run
     |> ignore
 )
