@@ -63,4 +63,8 @@ steps:
     ArtifactName: 'test results'
   continueOnError: true
 
-
+- task: PowerShell@2
+  displayName: 'Create variables from nuspec'
+  inputs:
+    filePath: ./build.ps1
+    arguments: '-Target CreateVariables'
