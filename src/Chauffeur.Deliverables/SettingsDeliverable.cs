@@ -45,7 +45,7 @@ namespace Chauffeur.Deliverables
             {
                 Setting = key,
                 Value = dic[key]
-            }));
+            }), new Dictionary<string, string>());
 
             return DeliverableResponse.Continue;
         }

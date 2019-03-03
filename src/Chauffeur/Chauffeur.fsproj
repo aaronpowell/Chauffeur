@@ -20,6 +20,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
+    <Compile Include="TextWriterExtensions.fs" />
     <Compile Include="ServiceContainerExtensions.fs" />
     <Compile Include="ISqlCeEngineFactory.fs" />
     <Compile Include="IChauffeurSettings.fs" />
