@@ -1,7 +1,13 @@
 queue:
-  name: Hosted VS2017
+  name: Hosted Windows 2019 with VS2019
 
 steps:
+- task: DotNetCoreInstaller@0
+  inputs:
+    packageType: sdk
+    version: '2.1.600-preview-009472'
+    includePreviewVersions: true
+
 - task: PowerShell@2
   displayName: 'Setup environment'
   inputs:
@@ -13,38 +19,32 @@ steps:
   inputs:
     ScriptArguments: 'target Build'
 
+- script: |
+    git checkout ./.paket/Paket.Restore.targets
+  displayName: Use the shipped paket target
 
 - task: isaacabraham.fsharp-helpers-extension.a2dadf20-1a83-4220-a4ee-b52f6c77f3cf.FAKE5@1
   displayName: Package
   inputs:
     ScriptArguments: 'target Package'
 
-
 - task: isaacabraham.fsharp-helpers-extension.a2dadf20-1a83-4220-a4ee-b52f6c77f3cf.FAKE5@1
-  displayName: 'Unit Tests'
+  displayName: 'Tests'
   inputs:
-    ScriptArguments: 'target UnitTests'
-
-
-- task: isaacabraham.fsharp-helpers-extension.a2dadf20-1a83-4220-a4ee-b52f6c77f3cf.FAKE5@1
-  displayName: 'Integration Tests'
-  inputs:
-    ScriptArguments: 'target IntegrationTests'
-
+    ScriptArguments: 'target Test'
 
 - task: PublishTestResults@2
-  displayName: 'Publish Test Results .testresults/results-*.xml'
+  displayName: 'Publish Test Results'
   inputs:
-    testResultsFormat: XUnit
-
-    testResultsFiles: '.testresults/results-*.xml'
+    testResultsFormat: VSTest
+    testResultsFiles: '.testresults/*.trx'
 
     mergeTestResults: true
 
-
 - powershell: |
-   ./tools/codecov/tools/codecov.exe -t $(CodeCov_Token) -f .testresults/coverage-unit-tests.xml -v
-   ./tools/codecov/tools/codecov.exe -t $(CodeCov_Token) -f .testresults/coverage-integration-tests.xml -v
+   ./.fake/codecov/codecov.exe -t $(CodeCov_Token) -f .testresults/unit-tests.xml -v --branch $(Build.SourceBranchName)
+   ./.fake/codecov/codecov.exe -t $(CodeCov_Token) -f .testresults/legacy-unit-tests.xml -v --branch $(Build.SourceBranchName)
+   ./.fake/codecov/codecov.exe -t $(CodeCov_Token) -f .testresults/integration-tests.xml -v --branch $(Build.SourceBranchName)
   failOnStderr: true
 
   displayName: 'Upload coverage'
@@ -55,6 +55,7 @@ steps:
     PathtoPublish: .packaging
 
     ArtifactName: packages
+  continueOnError: true
 
 
 - task: PublishBuildArtifacts@1
@@ -63,5 +64,10 @@ steps:
     PathtoPublish: .testresults
 
     ArtifactName: 'test results'
+  continueOnError: true
 
-
+- task: PowerShell@2
+  displayName: 'Create variables from nuspec'
+  inputs:
+    filePath: ./build.ps1
+    arguments: '-Target CreateVariables'

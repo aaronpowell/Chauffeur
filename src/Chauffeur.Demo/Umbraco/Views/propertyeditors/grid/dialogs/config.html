@@ -1,0 +1,16 @@
+<div ng-if="model.config">
+    <umb-property
+        property="configValue"
+        ng-repeat="configValue in model.config">
+        <umb-property-editor model="configValue" is-pre-value="true"></umb-property-editor>
+    </umb-property>
+</div>
+
+<div ng-if="model.styles">
+    <h4>Style</h4>
+    <umb-property
+        property="styleValue"
+        ng-repeat="styleValue in model.styles">
+        <umb-property-editor model="styleValue" is-pre-value="true"></umb-property-editor>
+    </umb-property>
+</div>

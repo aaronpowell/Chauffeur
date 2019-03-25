@@ -1,0 +1,8 @@
+﻿group Umbraco
+    UmbracoCMS.Core
+    UmbracoCMS.Web
+
+group Tests
+    xunit
+    xunit.runner.visualstudio
+    NSubstitute

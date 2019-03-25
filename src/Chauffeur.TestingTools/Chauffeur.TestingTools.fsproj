@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net472</TargetFramework>
+        <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <!-- Optional: Embed source files that are not tracked by the source control manager in the PDB -->
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
+        <IncludeSymbols>false</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageDescription>Chauffeur Testing Tools is a series of helpers for using Chauffeur to setup Umbraco for integration testing with Umbraco's API</PackageDescription>
+        <PackageLicenseUrl>https://github.com/aaronpowell/Chauffeur/blob/master/License.md</PackageLicenseUrl>
+        <PackageIconUrl>https://raw.githubusercontent.com/aaronpowell/Chauffeur/master/chauffeur_logo_for_nuget.png?sanitize=true</PackageIconUrl>
+        <PackageTags>umbraco deployment</PackageTags>
+        <Copyright>Copyright 2014 - 2019</Copyright>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Include="MockTextReader.fs" />
+      <Compile Include="MockTextWriter.fs" />
+      <Compile Include="UmbracoHostTestBase.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="paket.references" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-18618-05" PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Chauffeur\Chauffeur.fsproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="System.Web" />
+        <Reference Include="System.Web.ApplicationServices" />
+    </ItemGroup>
+    <Import Project="..\..\.paket\Paket.Restore.targets" />
+
+</Project>
