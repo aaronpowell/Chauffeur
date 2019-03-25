@@ -2,6 +2,11 @@ queue:
   name: Hosted Windows 2019 with VS2019
 
 steps:
+- script: |
+    dotnet --version
+    dotnet --list-sdks
+    dotnet --list-runtimes
+
 - task: DotNetCoreInstaller@0
   inputs:
     packageType: sdk
