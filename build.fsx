@@ -119,6 +119,27 @@ Target.create "Unit Tests" (fun _ ->
     |> ignore
 )
 
+Target.create "Integration Tests" (fun _ ->
+    let runCoverlet testProject coverageFile =
+        CreateProcess.fromRawCommand
+            "./.fake/coverlet.exe"
+            [sprintf ".\\src\\%s\\bin\\%A\\net472\\%s.dll" testProject buildMode testProject
+             "--target"
+             "dotnet"
+             "--targetargs"
+             sprintf "test ./src/%s/ --no-build --logger trx --results-directory %s" testProject (".." @@ ".." @@ testDir)
+             "--exclude"
+             "[xunit.*]*"
+             "--output"
+             testDir @@ coverageFile
+             "--format"
+             "opencover"]
+
+    runCoverlet "Chauffeur.Tests.Integration" "integration-tests.xml"
+    |> Proc.run
+    |> ignore
+)
+
 Target.create "Default" ignore
 Target.create "Package" ignore
 Target.create "Test" ignore
@@ -138,6 +159,9 @@ Target.create "Test" ignore
     ==> "Package"
 
 "Unit Tests"
+    ==> "Test"
+
+"Integration Tests"
     ==> "Test"
 
 Target.runOrDefault "Default"
