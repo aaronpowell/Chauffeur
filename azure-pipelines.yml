@@ -4,7 +4,7 @@ queue:
 steps:
 - task: DotNetCoreInstaller@0
   inputs:
-    version: '2.1.600-preview-009497'
+    version: '2.1.602'
 
 - task: PowerShell@2
   displayName: 'Setup environment'
