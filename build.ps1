@@ -11,8 +11,8 @@ param(
 $fakeDir = ".fake"
 
 if ($Target -eq 'Setup') {
-    dotnet tool install fake-cli --tool-path ./$fakeDir
-    dotnet tool install coverlet.console --tool-path ./$fakeDir
+    dotnet tool install fake-cli --tool-path ./$fakeDir --version 5.12.6
+    dotnet tool install coverlet.console --tool-path ./$fakeDir --version 1.5.0
 
     (New-Object System.Net.WebClient).DownloadFile("https://github.com/codecov/codecov-exe/releases/download/1.2.0/Codecov.zip", (Join-Path $pwd "Codecov.zip")) # Download Codecov.zip from github release.
     Expand-Archive .\Codecov.zip -DestinationPath ./$fakeDir/codecov
