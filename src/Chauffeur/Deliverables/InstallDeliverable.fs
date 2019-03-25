@@ -82,30 +82,27 @@ type InstallDeliverable
     let connStr = settings.ConnectionString
 
     override __.Run _ args =
+        let makeDb' = makeDb writer.WriteLineAsync (prompt writer.WriteAsync reader.ReadLineAsync) (fun () -> sqlCeFactory.CreateDatabase connStr.ConnectionString)
+
         task {
             match connStrExists connStr with
             | true ->
                 do! writer.WriteLineAsync("No connection string is setup for your Umbraco instance. Chauffeur expects your web.config to be setup in your deployment package before you try and install.")
                 return DeliverableResponse.Continue
             | false ->
-                match isSqlCe connStr with
-                | true ->
-                    let dbPath = getSqlCePath (AppDomain.CurrentDomain.GetData("DataDirectory") :?> string) fileSystem.Path.Combine connStr.ConnectionString
-                    match fileSystem.File.Exists dbPath with
-                    | true -> ignore()
-                    | false ->
-                        let! _ = makeDb
-                                        writer.WriteLineAsync
-                                        (prompt writer.WriteAsync reader.ReadLineAsync)
-                                        (fun () -> sqlCeFactory.CreateDatabase connStr.ConnectionString)
-                                        args
-                        ignore()
-                | false -> ignore()
+                let! createDb = match isSqlCe connStr with
+                                | true ->
+                                    let dbPath = getSqlCePath (AppDomain.CurrentDomain.GetData("DataDirectory") :?> string) fileSystem.Path.Combine connStr.ConnectionString
+                                    match fileSystem.File.Exists dbPath with
+                                    | true -> task { return true }
+                                    | false ->  task { return! makeDb' args }
+                                 | false -> task { return true }
 
                 use scope = scopeProvider.CreateScope()
-                let umbracoDatabase = scope.Database
-                let creator = DatabaseSchemaCreator(umbracoDatabase, logger)
-                creator.InitializeDatabaseSchema()
+                if createDb then
+                    let umbracoDatabase = scope.Database
+                    let creator = DatabaseSchemaCreator(umbracoDatabase, logger)
+                    creator.InitializeDatabaseSchema()
                 scope.Complete() |> ignore
 
                 match scope.Complete() with

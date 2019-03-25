@@ -4,10 +4,14 @@ open System
 open System.IO
 open Chauffeur.Host
 open System.Reflection
+open System.Threading
 
 module ChauffeurSetup =
     let private cwd = FileInfo(Assembly.GetExecutingAssembly().Location).Directory.FullName
     let private dbFolder = "databases"
+
+    let internal setData (domain : AppDomain) key value =
+        domain.SetData(key, value)
 
     let internal setDataDirectory() =
         let now = DateTimeOffset.Now
@@ -17,7 +21,22 @@ module ChauffeurSetup =
 
         Directory.CreateDirectory folderForRun |> ignore
 
-        AppDomain.CurrentDomain.SetData("DataDirectory", folderForRun)
+        let setDomainData = setData AppDomain.CurrentDomain
+        let setThreadData = Thread.GetDomain() |> setData
+
+        let asm = Assembly.GetExecutingAssembly()
+        let exePath = (new FileInfo(asm.Location)).Directory
+
+        setDomainData "DataDirectory" folderForRun
+        setDomainData ".appDomain" "From Domain"
+        setDomainData ".appId" "From Domain"
+        setDomainData ".appVPath" exePath.FullName
+        setDomainData ".appPath" exePath.FullName
+
+        setThreadData ".appDomain" "From Thread"
+        setThreadData ".appId" "From Thread"
+        setThreadData ".appVPath" exePath.FullName
+        setThreadData ".appPath" exePath.FullName
 
         folderForRun
 
