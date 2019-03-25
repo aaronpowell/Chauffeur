@@ -2,15 +2,10 @@ queue:
   name: Hosted Windows 2019 with VS2019
 
 steps:
-- script: |
-    dotnet --version
-    dotnet --list-sdks
-    dotnet --list-runtimes
-
 - task: DotNetCoreInstaller@0
   inputs:
     packageType: sdk
-    version: '2.1.602'
+    version: '2.1.600-preview-009472'
     includePreviewVersions: true
 
 - task: PowerShell@2
