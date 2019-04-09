@@ -19,19 +19,22 @@ namespace Chauffeur.Deliverables
         private readonly IMigrationRunnerService migrationRunner;
         private readonly IMigrationEntryService migrationEntryService;
         private readonly IChauffeurSettings chauffeurSettings;
+        private readonly IXmlDocumentWrapper xmlDocumentWrapper;
 
         public UpgradeDeliverable(
             TextReader reader,
             TextWriter writer,
             IMigrationRunnerService migrationRunner,
             IMigrationEntryService migrationEntryService,
-            IChauffeurSettings chauffeurSettings
+            IChauffeurSettings chauffeurSettings,
+            IXmlDocumentWrapper xmlDocumentWrapper
             )
             : base(reader, writer)
         {
             this.migrationRunner = migrationRunner;
             this.migrationEntryService = migrationEntryService;
             this.chauffeurSettings = chauffeurSettings;
+            this.xmlDocumentWrapper = xmlDocumentWrapper;
         }
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
@@ -61,15 +64,14 @@ namespace Chauffeur.Deliverables
 
             chauffeurSettings.TryGetSiteRootDirectory(out string path);
             var configPath = Path.Combine(path, "web.config");
-            XmlDocument xmld = new XmlDocument();
-            xmld.Load(configPath);
+            XmlDocument xmld = xmlDocumentWrapper.LoadDocument(configPath);
 
             XmlElement status = (XmlElement)xmld.SelectSingleNode("/configuration/appSettings/add[@key='umbracoConfigurationStatus']");
             if (status != null)
             {
                 status.SetAttribute("value", targetVersion.ToString());
             }
-            xmld.Save(configPath);
+            xmlDocumentWrapper.SaveDocument(xmld, configPath);
 
             await Out.WriteLineAsync("Upgrading completed");
             return DeliverableResponse.Continue;

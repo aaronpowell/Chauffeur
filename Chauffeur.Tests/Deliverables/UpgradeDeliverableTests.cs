@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Xml;
 using Chauffeur.Deliverables;
 using Chauffeur.Host;
 using Chauffeur.Services;
@@ -16,13 +17,23 @@ namespace Chauffeur.Tests.Deliverables
 {
     public class UpgradeDeliverableTests
     {
+        private readonly MockTextWriter writer;
+        private readonly IChauffeurSettings settings;
+        private readonly IXmlDocumentWrapper xmlDocumentWrapper;
+        private readonly IMigrationRunnerService migrationRunnerService;
+        
+        public UpgradeDeliverableTests()
+        {
+            writer = new MockTextWriter();
+            settings = Substitute.For<IChauffeurSettings>();
+            xmlDocumentWrapper = Substitute.For<IXmlDocumentWrapper>();
+            migrationRunnerService = Substitute.For<IMigrationRunnerService>();
+        }
+
         [Fact]
         public async Task NoMigrationEntries_WillWarnAndExit()
         {
-            var writer = new MockTextWriter();
-            var settings = Substitute.For<IChauffeurSettings>();
-            var deliverable = new UpgradeDeliverable(null, writer, null, MigrationEntryService(), settings);
-
+            var deliverable = new UpgradeDeliverable(null, writer, null, MigrationEntryService(), settings, xmlDocumentWrapper);
             var response = await deliverable.Run(null, null);
 
             Assert.Single(writer.Messages);
@@ -32,10 +43,8 @@ namespace Chauffeur.Tests.Deliverables
         [Fact]
         public async Task SameVersions_NothingDone()
         {
-            var writer = new MockTextWriter();
-            var settings = Substitute.For<IChauffeurSettings>();
-            var deliverable = new UpgradeDeliverable(null, writer, null, MigrationEntryService(UmbracoVersion.GetSemanticVersion()), settings);
 
+            var deliverable = new UpgradeDeliverable(null, writer, null, MigrationEntryService(UmbracoVersion.GetSemanticVersion()), settings, xmlDocumentWrapper);
             var response = await deliverable.Run(null, null);
 
             Assert.Single(writer.Messages);
@@ -45,9 +54,9 @@ namespace Chauffeur.Tests.Deliverables
         [Fact]
         public async Task CorrectSameVersionSelected_NothingDone()
         {
-            var writer = new MockTextWriter();
-            var settings = Substitute.For<IChauffeurSettings>();
-            var deliverable = new UpgradeDeliverable(null, writer, null, MigrationEntryService(new SemVersion(7, 1), UmbracoVersion.GetSemanticVersion(), new SemVersion(7,3)), settings);
+
+            var deliverable = new UpgradeDeliverable(null, writer, null, 
+                MigrationEntryService(new SemVersion(7, 1), UmbracoVersion.GetSemanticVersion(), new SemVersion(7,3)), settings, xmlDocumentWrapper);
 
             var response = await deliverable.Run(null, null);
 
@@ -58,12 +67,27 @@ namespace Chauffeur.Tests.Deliverables
         [Fact]
         public async Task DifferentVersions_UpgradeIsCompleted()
         {
-            var writer = new MockTextWriter();
-
-            var migrationRunnerService = Substitute.For<IMigrationRunnerService>();
             migrationRunnerService.Execute(Arg.Any<SemVersion>(), Arg.Any<SemVersion>()).Returns(true);
-            var settings = Substitute.For<IChauffeurSettings>();
-            var deliverable = new UpgradeDeliverable(null, writer, migrationRunnerService, MigrationEntryService(new SemVersion(7,1)), settings);
+            var anyStringArg = Arg.Any<string>();
+            settings.TryGetSiteRootDirectory(out anyStringArg).Returns( 
+                x => {
+                    x[0] = @"C:\test\umbraco";
+                    return true;
+                });
+
+            var xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(
+                 "<configuration>" +
+                 "<appSettings>" +
+                 "<add key=\"umbracoConfigurationStatus\" value=\"1.1.1\" />" +
+                 "</appSettings>" +
+                 "</configuration>"
+                 );
+
+            xmlDocumentWrapper.LoadDocument(Arg.Any<string>()).Returns(xmlDoc);
+
+            var deliverable = new UpgradeDeliverable(null, writer, migrationRunnerService, 
+                MigrationEntryService(new SemVersion(7,1)), settings, xmlDocumentWrapper);
 
             var response = await deliverable.Run(null, null);
 
@@ -74,11 +98,10 @@ namespace Chauffeur.Tests.Deliverables
         [Fact]
         public async Task UpgradeFailes_ErrorStateReturned()
         {
-            var writer = new MockTextWriter();
-            var migrationRunnerService = Substitute.For<IMigrationRunnerService>();
             migrationRunnerService.Execute(Arg.Any<SemVersion>(), Arg.Any<SemVersion>()).Returns(false);
-            var settings = Substitute.For<IChauffeurSettings>();
-            var deliverable = new UpgradeDeliverable(null, writer, migrationRunnerService, MigrationEntryService(new SemVersion(7, 1)), settings);
+
+            var deliverable = new UpgradeDeliverable(null, writer, migrationRunnerService, 
+                MigrationEntryService(new SemVersion(7, 1)), settings, xmlDocumentWrapper);
 
             var response = await deliverable.Run(null, null);
 
