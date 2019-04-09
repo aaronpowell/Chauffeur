@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Chauffeur.Deliverables;
+using Chauffeur.Host;
 using Chauffeur.Services;
 using NSubstitute;
 using Semver;
@@ -19,8 +20,8 @@ namespace Chauffeur.Tests.Deliverables
         public async Task NoMigrationEntries_WillWarnAndExit()
         {
             var writer = new MockTextWriter();
-            
-            var deliverable = new UpgradeDeliverable(null, writer, null, MigrationEntryService());
+            var settings = Substitute.For<IChauffeurSettings>();
+            var deliverable = new UpgradeDeliverable(null, writer, null, MigrationEntryService(), settings);
 
             var response = await deliverable.Run(null, null);
 
@@ -32,8 +33,8 @@ namespace Chauffeur.Tests.Deliverables
         public async Task SameVersions_NothingDone()
         {
             var writer = new MockTextWriter();
-            
-            var deliverable = new UpgradeDeliverable(null, writer, null, MigrationEntryService(UmbracoVersion.GetSemanticVersion()));
+            var settings = Substitute.For<IChauffeurSettings>();
+            var deliverable = new UpgradeDeliverable(null, writer, null, MigrationEntryService(UmbracoVersion.GetSemanticVersion()), settings);
 
             var response = await deliverable.Run(null, null);
 
@@ -45,8 +46,8 @@ namespace Chauffeur.Tests.Deliverables
         public async Task CorrectSameVersionSelected_NothingDone()
         {
             var writer = new MockTextWriter();
-            
-            var deliverable = new UpgradeDeliverable(null, writer, null, MigrationEntryService(new SemVersion(7, 1), UmbracoVersion.GetSemanticVersion(), new SemVersion(7,3)));
+            var settings = Substitute.For<IChauffeurSettings>();
+            var deliverable = new UpgradeDeliverable(null, writer, null, MigrationEntryService(new SemVersion(7, 1), UmbracoVersion.GetSemanticVersion(), new SemVersion(7,3)), settings);
 
             var response = await deliverable.Run(null, null);
 
@@ -61,8 +62,8 @@ namespace Chauffeur.Tests.Deliverables
 
             var migrationRunnerService = Substitute.For<IMigrationRunnerService>();
             migrationRunnerService.Execute(Arg.Any<SemVersion>(), Arg.Any<SemVersion>()).Returns(true);
-
-            var deliverable = new UpgradeDeliverable(null, writer, migrationRunnerService, MigrationEntryService(new SemVersion(7,1)));
+            var settings = Substitute.For<IChauffeurSettings>();
+            var deliverable = new UpgradeDeliverable(null, writer, migrationRunnerService, MigrationEntryService(new SemVersion(7,1)), settings);
 
             var response = await deliverable.Run(null, null);
 
@@ -76,7 +77,8 @@ namespace Chauffeur.Tests.Deliverables
             var writer = new MockTextWriter();
             var migrationRunnerService = Substitute.For<IMigrationRunnerService>();
             migrationRunnerService.Execute(Arg.Any<SemVersion>(), Arg.Any<SemVersion>()).Returns(false);
-            var deliverable = new UpgradeDeliverable(null, writer, migrationRunnerService, MigrationEntryService(new SemVersion(7, 1)));
+            var settings = Substitute.For<IChauffeurSettings>();
+            var deliverable = new UpgradeDeliverable(null, writer, migrationRunnerService, MigrationEntryService(new SemVersion(7, 1)), settings);
 
             var response = await deliverable.Run(null, null);
 

@@ -1,6 +1,10 @@
-﻿using System.IO;
+﻿using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web.Configuration;
+using System.Xml;
+using Chauffeur.Host;
 using Chauffeur.Services;
 using Semver;
 using Umbraco.Core;
@@ -14,17 +18,20 @@ namespace Chauffeur.Deliverables
     {
         private readonly IMigrationRunnerService migrationRunner;
         private readonly IMigrationEntryService migrationEntryService;
+        private readonly IChauffeurSettings chauffeurSettings;
 
         public UpgradeDeliverable(
             TextReader reader,
             TextWriter writer,
             IMigrationRunnerService migrationRunner,
-            IMigrationEntryService migrationEntryService
+            IMigrationEntryService migrationEntryService,
+            IChauffeurSettings chauffeurSettings
             )
             : base(reader, writer)
         {
             this.migrationRunner = migrationRunner;
             this.migrationEntryService = migrationEntryService;
+            this.chauffeurSettings = chauffeurSettings;
         }
 
         public override async Task<DeliverableResponse> Run(string command, string[] args)
@@ -51,6 +58,18 @@ namespace Chauffeur.Deliverables
                 await Out.WriteLineAsync("Upgrading failed, see log for full details");
                 return DeliverableResponse.FinishedWithError;
             }
+
+            chauffeurSettings.TryGetSiteRootDirectory(out string path);
+            var configPath = Path.Combine(path, "web.config");
+            XmlDocument xmld = new XmlDocument();
+            xmld.Load(configPath);
+
+            XmlElement status = (XmlElement)xmld.SelectSingleNode("/configuration/appSettings/add[@key='umbracoConfigurationStatus']");
+            if (status != null)
+            {
+                status.SetAttribute("value", targetVersion.ToString());
+            }
+            xmld.Save(configPath);
 
             await Out.WriteLineAsync("Upgrading completed");
             return DeliverableResponse.Continue;
