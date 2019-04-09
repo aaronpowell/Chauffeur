@@ -22,6 +22,14 @@ namespace Chauffeur.Tests.Deliverables
             }
         }
 
+        [DeliverableName("mock2")]
+        class MockDeliverableNoDirections : Deliverable
+        {
+            public MockDeliverableNoDirections(MockTextWriter writer) : base(null, writer)
+            {
+            }
+        }
+
         [Fact]
         public async Task DisplaysAllAvailableDeliverables()
         {
@@ -52,6 +60,34 @@ namespace Chauffeur.Tests.Deliverables
             await deliverable.Run(null, new[] { "mock" });
 
             Assert.Equal("I have directions", writer.Messages.First());
+        }
+
+        [Fact]
+        public async Task DisplaysErrorWhenDeliverableDoesntProvideDirections()
+        {
+            var container = Substitute.For<IContainer>();
+
+            var writer = new MockTextWriter();
+            var mockDeliverable = new MockDeliverableNoDirections(writer);
+            container.ResolveDeliverableByName(Arg.Is("mock2")).Returns(mockDeliverable);
+
+            var deliverable = new HelpDeliverable(null, writer, container);
+
+            await deliverable.Run(null, new[] { "mock2" });
+
+            Assert.Equal("The deliverable 'mock2' doesn't implement help, you best contact the author", writer.Messages.First());
+        }
+
+        [Fact]
+        public async Task HelpProvidesDirections()
+        {
+            var container = Substitute.For<IContainer>();
+            var writer = new MockTextWriter();
+            var deliverable = new HelpDeliverable(null, writer, container);
+            container.ResolveDeliverableByName(Arg.Is("help")).Returns(deliverable);
+
+            await deliverable.Run(null, new[] { "help" });
+            Assert.Equal(4, writer.Messages.Count());
         }
     }
 }

@@ -252,11 +252,24 @@ namespace Chauffeur.Tests.Deliverables
 </umbPackage>";
         #endregion
 
+        #region
+        private const string filesXml = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no""?>
+<umbPackage>
+  <files>
+    <file>
+      <guid>foo.txt</guid>
+      <orgPath>/</orgPath>
+      <orgName>foo.txt</orgName>
+    </file>
+  </files>
+</umbPackage>";
+        #endregion
+
         [Fact]
         public async Task NoPackagesAbortsEarly()
         {
             var writer = Substitute.ForPartsOf<TextWriter>();
-            var package = new PackageDeliverable(null, writer, null, null, null, null);
+            var package = new PackageDeliverable(null, writer, null, null, null, null, null);
 
             await package.Run(null, new string[0]);
 
@@ -274,7 +287,7 @@ namespace Chauffeur.Tests.Deliverables
                 x[0] = "";
                 return true;
             });
-            var package = new PackageDeliverable(null, writer, new MockFileSystem(), settings, null, null);
+            var package = new PackageDeliverable(null, writer, new MockFileSystem(), settings, null, null, null);
 
             await package.Run(null, new[] { "Test" });
 
@@ -299,7 +312,7 @@ namespace Chauffeur.Tests.Deliverables
             var packagingService = Substitute.For<IPackagingService>();
             packagingService.ImportContentTypes(Arg.Any<XElement>()).Returns(Enumerable.Empty<IContentType>());
 
-            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>());
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>(), null);
 
             await package.Run(null, new[] { "Text" });
 
@@ -324,7 +337,7 @@ namespace Chauffeur.Tests.Deliverables
             var packagingService = Substitute.For<IPackagingService>();
             packagingService.ImportContentTypes(Arg.Any<XElement>()).Returns(Enumerable.Empty<IContentType>());
 
-            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>());
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>(), null);
 
             await package.Run(null, new[] { "Text" });
 
@@ -349,7 +362,7 @@ namespace Chauffeur.Tests.Deliverables
             var packagingService = Substitute.For<IPackagingService>();
             packagingService.ImportDataTypeDefinitions(Arg.Any<XElement>()).Returns(Enumerable.Empty<IDataTypeDefinition>());
 
-            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>());
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>(), Substitute.For<IDataTypeService>());
 
             await package.Run(null, new[] { "Text" });
 
@@ -374,7 +387,7 @@ namespace Chauffeur.Tests.Deliverables
             var packagingService = Substitute.For<IPackagingService>();
             packagingService.ImportTemplates(Arg.Any<XElement>()).Returns(Enumerable.Empty<ITemplate>());
 
-            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>());
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>(), null);
 
             await package.Run(null, new[] { "Text" });
 
@@ -399,11 +412,65 @@ namespace Chauffeur.Tests.Deliverables
             var packagingService = Substitute.For<IPackagingService>();
             packagingService.ImportMacros(Arg.Any<XElement>()).Returns(Enumerable.Empty<IMacro>());
 
-            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>());
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>(), null);
 
             await package.Run(null, new[] { "Text" });
 
             packagingService.Received(1).ImportMacros(Arg.Any<XElement>());
         }
+
+        [Fact]
+        public async Task CanOverrideTheDefaultLookupDirectory()
+        {
+            var writer = new MockTextWriter();
+            var settings = Substitute.For<IChauffeurSettings>();
+            settings.TryGetChauffeurDirectory(out string dir).Returns(x =>
+             {
+                 x[0] = "";
+                 return false;
+             });
+            var fs = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { "C:\\Path\\Text.xml", new MockFileData(multipleDocumentTypesXml) }
+            });
+
+            var packagingService = Substitute.For<IPackagingService>();
+            packagingService.ImportContentTypes(Arg.Any<XElement>()).Returns(Enumerable.Empty<IContentType>());
+
+            var package = new PackageDeliverable(null, writer, fs, settings, packagingService, Substitute.For<IContentTypeService>(), null);
+
+            await package.Run(null, new[] { "Text", "-f:C:\\Path" });
+
+            packagingService.Received(1).ImportContentTypes(Arg.Any<XElement>());
+        }
+
+        [Fact]
+        public async Task CanImportPackageWithFiles()
+        {
+            var writer = new MockTextWriter();
+            var settings = Substitute.For<IChauffeurSettings>();
+            const string siteRootPath = "C:\\SiteRoot";
+            settings.TryGetSiteRootDirectory(out string dir).Returns(x =>
+            {
+                x[0] = siteRootPath;
+                return true;
+            });
+            var fs = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { "C:\\Path\\Text.xml", new MockFileData(filesXml) },
+                { "C:\\Path\\foo.txt", new MockFileData("something") }
+            });
+            fs.AddDirectory(siteRootPath);
+
+            var package = new PackageDeliverable(null, writer, fs, settings, null, null, null);
+
+            await package.Run(null, new[] { "Text", "-f:C:\\Path" });
+
+            Assert.Collection(
+                fs.Directory.GetFiles(siteRootPath),
+                item => Assert.Equal("foo.txt", fs.Path.GetFileName(item))
+            );
+        }
+
     }
 }

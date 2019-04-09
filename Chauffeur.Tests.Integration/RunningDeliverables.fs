@@ -1,16 +1,15 @@
 ﻿module ``Running Deliverables``
 
 open Chauffeur
-open TestHelpers
 open Xunit
 open System.IO
 open FsUnit.Xunit
 open System.Data.SqlServerCe
 open System.Data
 open System
+open Chauffeur.TestingTools
 
-let setupDelivery deliverableName steps dbLocation =
-    let chauffeurFolder = getChauffeurFolder dbLocation
+let setupDelivery deliverableName steps (chauffeurFolder: DirectoryInfo) =
     File.AppendAllText(Path.Combine([| chauffeurFolder.FullName; deliverableName |]), steps)
 
 let connStrings = System.Configuration.ConfigurationManager.ConnectionStrings
@@ -32,7 +31,7 @@ type ``Working with a fresh install``() =
 
     [<Fact>]
     member x.``Can install an instance with a Deliverable``() =
-        setupInstallDelivery x.DatabaseLocation
+        x.GetChauffeurFolder() |> setupInstallDelivery
         async {
             let! response = [| "delivery" |]
                             |> x.Host.Run
@@ -43,7 +42,7 @@ type ``Working with a fresh install``() =
 
     [<Fact>]
     member x.``Tracks the delivery in the database``() =
-        setupInstallDelivery x.DatabaseLocation
+        x.GetChauffeurFolder() |> setupInstallDelivery
         async {
             let! response = [| "delivery" |]
                             |> x.Host.Run
@@ -59,7 +58,7 @@ type ``Working with a fresh install``() =
 
     [<Fact>]
     member x.``Won't re-run the delivery if it was previously run``() =
-        setupInstallDelivery x.DatabaseLocation
+        x.GetChauffeurFolder() |> setupInstallDelivery
         async {
             let! response1 = [| "delivery" |]
                              |> x.Host.Run
@@ -78,7 +77,8 @@ type ``Multi-step delivery``() =
     inherit UmbracoHostTestBase()
     [<Fact>]
     member x.``Can run a delivery with multiple steps``() =
-        setupDelivery "some.delivery" (sprintf "install y%sct get-all" System.Environment.NewLine) x.DatabaseLocation
+        x.GetChauffeurFolder()
+        |> setupDelivery "some.delivery" (sprintf "install y%sct get-all" System.Environment.NewLine)
         async {
             let! response = [| "delivery" |]
                             |> x.Host.Run
@@ -88,7 +88,8 @@ type ``Multi-step delivery``() =
 
     [<Fact>]
     member x.``Can run a delivery with multiple steps including comments``() =
-        setupDelivery "some.delivery" (sprintf "install y%s## this is a comment%sct get-all" Environment.NewLine Environment.NewLine) x.DatabaseLocation
+        x.GetChauffeurFolder()
+        |> setupDelivery "some.delivery" (sprintf "install y%s## this is a comment%sct get-all" Environment.NewLine Environment.NewLine)
         async {
             let! response = [| "delivery" |]
                             |> x.Host.Run
@@ -102,8 +103,8 @@ type ``Multiple deliveries``() =
 
     [<Fact>]
     member x.``Can run multiple deliveries at once``() =
-        setupInstallDelivery x.DatabaseLocation
-        setupDelivery "002-get-doctypes.delivery" "ct get-all" x.DatabaseLocation
+        x.GetChauffeurFolder() |> setupInstallDelivery
+        x.GetChauffeurFolder() |>setupDelivery "002-get-doctypes.delivery" "ct get-all"
         async {
             let! response = [| "delivery" |]
                             |> x.Host.Run
@@ -114,8 +115,8 @@ type ``Multiple deliveries``() =
 
     [<Fact>]
     member x.``Multiple deliveriers are tracked individually``() =
-        setupInstallDelivery x.DatabaseLocation
-        setupDelivery "002-get-doctypes.delivery" "ct get-all" x.DatabaseLocation
+        x.GetChauffeurFolder() |> setupInstallDelivery
+        x.GetChauffeurFolder() |> setupDelivery "002-get-doctypes.delivery" "ct get-all"
         async {
             let! response = [| "delivery" |]
                             |> x.Host.Run
@@ -137,7 +138,7 @@ type ``Deliveries with parameters``() =
 
     [<Fact>]
     member x.``When passing $Install flag it will be sustituted and used``() =
-        setupInstallDelivery x.DatabaseLocation
+        x.GetChauffeurFolder() |> setupInstallDelivery
         async {
             let! response = [| "delivery -p:Install=y" |]
                             |> x.Host.Run
@@ -149,5 +150,92 @@ type ``Deliveries with parameters``() =
                 row.["Name"] :?> string |> should equal deliveryName
                 row.["SignedFor"] :?> bool |> should be True
             rows.[0] |> asserter "001-install.delivery"
+        }
+        |> Async.RunSynchronously
+
+type ``Checking delivery status``() =
+    inherit UmbracoHostTestBase()
+    let setupInstallDelivery = setupDelivery "001-install.delivery" "install y"
+
+    [<Fact>]
+    member x.``Can check the status of a deliverable``() =
+        x.GetChauffeurFolder() |> setupInstallDelivery
+        async {
+            let! _ = [| "delivery" |]
+                            |> x.Host.Run
+                            |> Async.AwaitTask
+
+            x.TextWriter.Flush()
+
+            let! _ = [| "delivery-tracking"
+                        "status"
+                        "001-install" |]
+                     |> x.Host.Run
+                     |> Async.AwaitTask
+
+            let msgs = x.TextWriter.Messages
+
+            msgs |> should haveLength 2
+            msgs.[0] |> should startWith "001-install"
+        }
+        |> Async.RunSynchronously
+
+    [<Fact>]
+    member x.``Can check the status of a deliverable won't include deliverables not run``() =
+        x.GetChauffeurFolder() |> setupInstallDelivery
+        async {
+            let! _ = [| "delivery" |]
+                            |> x.Host.Run
+                            |> Async.AwaitTask
+
+            x.TextWriter.Flush()
+
+            let! _ = [| "delivery-tracking"
+                        "status"
+                        "002-not-existing" |]
+                     |> x.Host.Run
+                     |> Async.AwaitTask
+
+            let msgs = x.TextWriter.Messages
+
+            msgs |> should haveLength 1
+        }
+        |> Async.RunSynchronously
+
+    [<Fact>]
+    member x.``Can get all the signed for deliverables``() =
+        x.GetChauffeurFolder() |> setupInstallDelivery
+        async {
+            let! _ = [| "delivery" |]
+                            |> x.Host.Run
+                            |> Async.AwaitTask
+
+            x.TextWriter.Flush()
+
+            let! _ = [| "delivery-tracking"
+                        "signed-for" |]
+                     |> x.Host.Run
+                     |> Async.AwaitTask
+
+            let msgs = x.TextWriter.Messages
+
+            msgs |> should haveLength 2
+            msgs.[0] |> should startWith "001-install"
+        }
+        |> Async.RunSynchronously
+
+    [<Fact>]
+    member x.``Can get available deliveries``() =
+        x.GetChauffeurFolder() |> setupInstallDelivery
+        async {
+            let! _ = [| "delivery-tracking"
+                        "available" |]
+                     |> x.Host.Run
+                     |> Async.AwaitTask
+
+            let msgs = x.TextWriter.Messages
+
+            msgs |> should haveLength 2
+            msgs.[0] |> should startWith "001-install"
         }
         |> Async.RunSynchronously

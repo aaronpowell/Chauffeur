@@ -1,10 +1,10 @@
 ﻿module ``Connection string override``
 
-open Chauffeur.Host
 open Xunit
 open FsUnit.Xunit
-open TestHelpers
 open System.Configuration
+open Chauffeur.TestingTools
+open Chauffeur.TestingTools.ChauffeurSetup
 
 type ``Override connection string as argument``() =
     inherit UmbracoHostTestBase()

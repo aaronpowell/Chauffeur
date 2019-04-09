@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Umbraco.Core;
@@ -37,7 +38,7 @@ namespace Chauffeur.Deliverables
             }
 
             await Out.WriteLineFormattedAsync(
-                "The command '{0}' doesn't implement help, you best contact the author",
+                "The deliverable '{0}' doesn't implement help, you best contact the author",
                 command
             );
         }
@@ -47,18 +48,24 @@ namespace Chauffeur.Deliverables
             var deliverables = container.ResolveAllDeliverables();
             await Out.WriteLineAsync("The following deliverables are loaded. Use `help <deliverable>` for detailed help");
 
+            var toWrite = new List<string>();
+
             foreach (var deliverable in deliverables)
             {
                 var type = deliverable.GetType();
                 var name = type.GetCustomAttribute<DeliverableNameAttribute>(false).Name;
                 var aliases = type.GetCustomAttributes<DeliverableAliasAttribute>(false).Select(a => a.Alias);
 
-                await Out.WriteLineFormattedAsync(
-                    "{0}{1}",
-                    name,
-                    aliases.Any() ? string.Format(" (aliases: {0})", string.Join(", ", aliases)) : string.Empty
+                toWrite.Add(
+                    string.Format(
+                        "{0}{1}",
+                        name,
+                        aliases.Any() ? string.Format(" (aliases: {0})", string.Join(", ", aliases)) : string.Empty
+                    )
                 );
             }
+
+            await Task.WhenAll(toWrite.OrderBy(s => s).Select(Out.WriteLineAsync).ToArray());
         }
 
         public async Task Directions()

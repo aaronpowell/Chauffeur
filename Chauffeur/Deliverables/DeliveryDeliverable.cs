@@ -70,15 +70,14 @@ namespace Chauffeur.Deliverables
                 dbNotReady = true;
             }
 
-            string directory;
-            if (!settings.TryGetChauffeurDirectory(out directory))
+            if (!settings.TryGetChauffeurDirectory(out string chauffeurDirectory))
             {
                 await Out.WriteLineAsync("Error accessing the Chauffeur directory. Check your file system permissions");
                 return DeliverableResponse.Continue;
             }
 
             var allDeliveries = fileSystem.Directory
-                .GetFiles(directory, "*.delivery", SearchOption.TopDirectoryOnly)
+                .GetFiles(chauffeurDirectory, "*.delivery", SearchOption.TopDirectoryOnly)
                 .ToArray();
 
             if (!allDeliveries.Any())
@@ -87,10 +86,15 @@ namespace Chauffeur.Deliverables
                 return DeliverableResponse.Continue;
             }
 
-            var @params = args.Where(arg => arg.StartsWith("-p:"))
-                .Select(arg => arg.Replace("-p:", string.Empty))
-                .Select(arg => arg.Split('='))
-                .ToDictionary(arg => arg[0], arg => arg[1]);
+            var @params = ParseParameterTokens(args, chauffeurDirectory);
+
+            var stopAtDeliverableParam = args.FirstOrDefault(arg => arg.StartsWith("-s:"));
+
+            if (stopAtDeliverableParam != null)
+            {
+                var stopDeliverableName = stopAtDeliverableParam.Replace("-s:", string.Empty);
+                allDeliveries = allDeliveries.TakeWhile(name => fileSystem.Path.GetFileName(name) != stopDeliverableName).ToArray();
+            }
 
             if (dbNotReady)
             {
@@ -121,6 +125,26 @@ namespace Chauffeur.Deliverables
             await ProcessDeliveries(allDeliveries, @params);
 
             return DeliverableResponse.Continue;
+        }
+
+        private Dictionary<string, string> ParseParameterTokens(string[] args, string chauffeurDirectory)
+        {
+            var @params = args.Where(arg => arg.StartsWith("-p:"))
+                            .Select(arg => arg.Replace("-p:", string.Empty))
+                            .Select(arg => arg.Split('='))
+                            .ToDictionary(arg => arg[0], arg => arg[1]);
+
+            @params.Add("ChauffeurPath", chauffeurDirectory);
+
+            if (settings.TryGetSiteRootDirectory(out string siteRootDirectory))
+                @params.Add("WebsiteRootPath", siteRootDirectory);
+
+            if (settings.TryGetUmbracoDirectory(out string umbracoDirectory))
+                @params.Add("UmbracoPath", umbracoDirectory);
+
+            @params.Add("UmbracoVersion", settings.UmbracoVersion);
+
+            return @params;
         }
 
         private async Task ProcessDeliveries(string[] allDeliveries, IDictionary<string, string> @params)
@@ -162,6 +186,13 @@ namespace Chauffeur.Deliverables
                 Hash = HashDelivery(file),
                 SignedFor = true
             };
+
+            if (!await AreAllParametersSpecified(instructions, @params))
+            {
+                tracking.SignedFor = false;
+                return tracking;
+            }
+
             foreach (var instruction in instructions)
             {
                 var result = await host.Run(new[] { replaceTokens(@params, instruction) });
@@ -194,6 +225,39 @@ namespace Chauffeur.Deliverables
             return true;
         }
 
+        private async Task<bool> AreAllParametersSpecified(
+            IEnumerable<string> instructions,
+            IDictionary<string, string> @params)
+        {
+            var parameters = instructions
+                .SelectMany(x => GetInstructionParametersNames(x))
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+
+            var missingParameters = parameters.Except(@params.Keys).OrderBy(x => x).ToList();
+            if (missingParameters.Count != 0)
+            {
+                await Out.WriteLineAsync($"The following parameters have not been specified:");
+                foreach (var missingParameter in missingParameters)
+                {
+                    await Out.WriteLineAsync($" - {missingParameter}");
+                }
+
+                return false;
+            }
+
+            return true;
+
+            IEnumerable<string> GetInstructionParametersNames(string instruction)
+            {
+                return tokenRegex
+                    .Matches(instruction)
+                    .Cast<Match>()
+                    .Select(x => x.Groups[1].Value);
+            }
+        }
+
         private static string HashDelivery(FileInfoBase file)
         {
             using (var fs = file.OpenRead())
@@ -215,7 +279,7 @@ namespace Chauffeur.Deliverables
 
     [TableName(DeliveryDeliverable.TableName)]
     [PrimaryKey("Id")]
-    class ChauffeurDeliveryTable
+    internal class ChauffeurDeliveryTable
     {
         [Column("Id")]
         [PrimaryKeyColumn(Name = "PK_id", IdentitySeed = 1)]

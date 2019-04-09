@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Chauffeur.Runner")]
-[assembly: AssemblyDescription("Chauffeur Runner is a CLI for executing Chauffeur deliverables against an Umbraco instance.")]
+[assembly: AssemblyProduct("Chauffeur.Runner")]
 [assembly: AssemblyConfiguration("")]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM

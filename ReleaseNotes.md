@@ -1,3 +1,38 @@
+## New in 1.4.0 (2018/11/22)
+* Moving away from AppVeyor to Azure DevOps for builds
+* Added editorconfig file to enforce coding standards
+* Merged [PR #85](https://github.com/aaronpowell/Chauffeur/pull/85) from @stevetemple
+    * Introduces an `UpgradeDeliverable` for using the Umbraco migration runner to upgrade from one version to another
+* Created some templates for GitHub on issues and stuff.
+
+## New in 1.3.0 (2018/09/04)
+* Updated the minimum Umbraco version to 7.8.0
+* Implementing a solution to better support deploying with Azure AppServices (issue [79](https://github.com/aaronpowell/Chauffeur/issues/79))
+* Added a feature to `Chauffeur.TestingTools` to allow you to create a package easily
+* Fixing [81](https://github.com/aaronpowell/Chauffeur/issues/81), where DataType PreValues aren't updated on package run
+* Fixing [77](https://github.com/aaronpowell/Chauffeur/issues/77), handling leading `/` on file paths when importing
+* Updated build process to use FAKE 5 and paket for dependencies
+* Added code coverage reports via [codecov](https://codecov.io/gh/aaronpowell/chauffeur)
+
+## New in 1.2.0 (2018/08/28)
+* Merging PR [78](https://github.com/aaronpowell/Chauffeur/pull/78) to handle missing parameters properly
+
+## New in 1.1.1 (2018/07/04)
+* Fixing bug [72](https://github.com/aaronpowell/Chauffeur/issues/72) which was caused be a broken commandline parser
+
+## New in 1.1.0 (2018/06/28)
+* Making the text reader/writer extensions public so other devs can use them
+* Adding a new deliverable `delivery-tracking` that shows the tracking of your `*.delivery` files
+* Extracting the code for standing up the integration test host as a NuGet package
+* Extending the `User` deliverable to use the `BackOfficeIdentity` and associated APIs, this also means you can now create users via Chauffeur
+
+## New in 1.0.0 (2018/02/28)
+* Added support for importing files via the package deliverable
+* Added ability to define a custom path for where a package resides in the package deliverable (intended to work with path importing)
+
+## New in 0.12.3 (2018/01/10)
+* Fixes #67 by hacking the assembly resolver
+
 ## New in 0.12.2 (02/11/2017)
 * Fixes issue #65 where a NuGet dependency was missing
 

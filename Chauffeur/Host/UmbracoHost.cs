@@ -34,14 +34,16 @@ namespace Chauffeur.Host
             Container.RegisterFrom<ChauffeurSettingBuilder>();
             Container.RegisterFrom<FileSystemBuilder>();
             Container.RegisterFrom<SqlSyntaxProviderBuilder>();
+            Container.RegisterFrom<UserManagerBuilder>();
             Container.Register(() => Container).As<IContainer>();
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             var builders = assemblies
                 .Where(asm => !asm.IsDynamic)
-#if DEBUG
+                // Exclude VS Dll's that could be loaded when running from within VS (or a test runner)
+                .Where(asm => !asm.FullName.Contains("Microsoft.VisualStudio"))
+                // Exclude xunit, for when used under automation test scenarios
                 .Where(asm => !asm.FullName.Contains("xunit"))
-#endif
                 .SelectMany(a => a.GetExportedTypes())
                 .Where(t => t.IsClass)
                 .Where(t => typeof(IBuildDependencies).IsAssignableFrom(t))
@@ -103,8 +105,7 @@ namespace Chauffeur.Host
         {
             if (string.IsNullOrEmpty(command))
                 return DeliverableResponse.Continue;
-
-            var args = command.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            string[] args = ParseCommandline(command);
 
             var what = args[0].ToLower();
             args = args.Skip(1).ToArray();
@@ -135,6 +136,48 @@ namespace Chauffeur.Host
 
                 return DeliverableResponse.FinishedWithError;
             }
+        }
+
+        internal static string[] ParseCommandline(string input)
+        {
+            var items = new List<string>();
+            var buffer = string.Empty;
+            var hold = false;
+
+            foreach (var s in input)
+            {
+                if (s == '"')
+                {
+                    if (hold)
+                    {
+                        items.Add(buffer);
+                        buffer = string.Empty;
+                        hold = false;
+                    }
+                    else
+                    {
+                        hold = true;
+                    }
+                    continue;
+                }
+
+                if (s == ' ' && !hold)
+                {
+                    if (buffer != string.Empty)
+                    {
+                        items.Add(buffer);
+                    }
+                    buffer = string.Empty;
+                    continue;
+                }
+
+                buffer += s;
+            }
+
+            if (buffer != string.Empty)
+                items.Add(buffer);
+
+            return items.ToArray();
         }
 
         private async Task<string> Prompt()

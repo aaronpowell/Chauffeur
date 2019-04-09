@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Chauffeur
 {
-    static class TextReaderExtensions
+    public static class TextReaderExtensions
     {
         public static async Task<string> ReadLineWithDefaultAsync(this TextReader reader, string @default)
         {

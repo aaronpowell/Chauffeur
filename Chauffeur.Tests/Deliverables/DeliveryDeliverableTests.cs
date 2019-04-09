@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.IO.Abstractions.TestingHelpers;
-using System.Linq;
 using System.Threading.Tasks;
 using Chauffeur.Deliverables;
 using Chauffeur.Host;
@@ -291,6 +290,51 @@ namespace Chauffeur.Tests.Deliverables
         }
 
         [Fact]
+        public async Task WhenRunWithMissingParameters_ErrorsAndOutputsMissingParameters()
+        {
+            var provider = Substitute.For<ISqlSyntaxProvider>();
+            provider.DoesTableExist(Arg.Any<Database>(), Arg.Any<string>()).Returns(true);
+
+            var settings = Substitute.For<IChauffeurSettings>();
+            settings.TryGetChauffeurDirectory(out var s).Returns(x =>
+            {
+                x[0] = @"c:\foo";
+                return true;
+            });
+
+            var cmd = Substitute.For<IDbCommand>();
+            cmd.ExecuteScalar().Returns(1);
+            var conn = Substitute.For<IDbConnection>();
+            conn.CreateCommand().Returns(cmd);
+            var db = new Database(conn);
+
+            var writer = new MockTextWriter();
+
+            var deliverableScript = "foo $test$ $bar$ $baz$";
+            var fs = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                {@"c:\foo\bar.delivery", new MockFileData(deliverableScript)}
+            });
+
+            var host = Substitute.For<IChauffeurHost>();
+            host.Run(Arg.Any<string[]>()).Returns(Task.FromResult(DeliverableResponse.Continue));
+
+            var dbSchema = new DatabaseSchemaHelper(db, null, provider);
+
+            var deliverable = new DeliveryDeliverable(null, writer, dbSchema, db, settings, fs, host, provider);
+
+            await deliverable.Run(null, Array.Empty<string>());
+
+            Assert.Equal(new[]
+            {
+                "The following parameters have not been specified:",
+                " - bar",
+                " - baz",
+                " - test"
+            }, writer.Messages);
+        }
+
+        [Fact]
         public async Task CommentsInDelivery_WillNotBeGivenToTheHost()
         {
             var provider = Substitute.For<ISqlSyntaxProvider>();
@@ -328,5 +372,47 @@ namespace Chauffeur.Tests.Deliverables
 
             host.Received(1).Run(Arg.Any<string[]>()).IgnoreAwaitForNSubstituteAssertion();
         }
+
+        [Fact]
+        public async Task StopDeliverableName_WillOnlyRunUpToNamedDeliverable()
+        {
+            var provider = Substitute.For<ISqlSyntaxProvider>();
+            provider.DoesTableExist(Arg.Any<Database>(), Arg.Any<string>()).Returns(true);
+
+            var settings = Substitute.For<IChauffeurSettings>();
+            string s;
+            settings.TryGetChauffeurDirectory(out s).Returns(x =>
+            {
+                x[0] = @"c:\foo";
+                return true;
+            });
+
+            var cmd = Substitute.For<IDbCommand>();
+            cmd.ExecuteScalar().Returns(1);
+            var conn = Substitute.For<IDbConnection>();
+            conn.CreateCommand().Returns(cmd);
+            var db = new Database(conn);
+
+            var writer = new MockTextWriter();
+
+            var deliverableScript = "foo";
+            var fs = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                {@"c:\foo\001.delivery", new MockFileData(deliverableScript)},
+                {@"c:\foo\002.delivery", new MockFileData(deliverableScript)}
+            });
+
+            var host = Substitute.For<IChauffeurHost>();
+            host.Run(Arg.Any<string[]>()).Returns(Task.FromResult(DeliverableResponse.Continue));
+
+            var dbSchema = new DatabaseSchemaHelper(db, null, provider);
+
+            var deliverable = new DeliveryDeliverable(null, writer, dbSchema, db, settings, fs, host, provider);
+
+            await deliverable.Run(null, new[] { "-s:002.delivery" });
+
+            host.Received(1).Run(Arg.Any<string[]>()).IgnoreAwaitForNSubstituteAssertion();
+        }
+
     }
 }

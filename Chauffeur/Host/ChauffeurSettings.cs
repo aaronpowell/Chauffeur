@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using Umbraco.Core.IO;
@@ -61,20 +62,13 @@ namespace Chauffeur.Host
             return fileSystem.Directory.Exists(umbracoDirectory);
         }
 
-        public ConnectionStringSettings ConnectionString
-        {
-            get
-            {
-                return ConfigurationManager.ConnectionStrings["umbracoDbDSN"];
-            }
-        }
+        public ConnectionStringSettings ConnectionString =>
+            ConfigurationManager.ConnectionStrings["umbracoDbDSN"];
 
-        public string UmbracoVersion
-        {
-            get
-            {
-                return ConfigurationManager.AppSettings["umbracoConfigurationStatus"];
-            }
-        }
+        public string UmbracoVersion =>
+            ConfigurationManager.AppSettings["umbracoConfigurationStatus"];
+
+        public string ChauffeurVersion =>
+            FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ToString();
     }
 }
