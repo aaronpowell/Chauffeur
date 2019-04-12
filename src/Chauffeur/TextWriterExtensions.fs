@@ -22,11 +22,15 @@
                                     |> Array.map (fun p -> p.GetValue(row).ToString()))
             |> Seq.toArray
 
-        let colLengths (header : string array) (rows : string array array) =
-            header
-            |> Array.mapi (fun i _ -> rows
-                                      |> Array.map (fun row -> row.[i].Length)
-                                      |> Array.max)
+        let colLengths (rows : string array array) =
+            let cells = [0..rows.[0].Length - 1]
+
+            cells
+            |> List.map (fun i ->
+                            rows
+                            |> Array.map(fun row -> row.[i].Length)
+                            |> Array.max
+                        )
 
         [<System.Runtime.CompilerServices.Extension>]
         let WriteTableAsync<'T> (writer : TextWriter) (rows : IEnumerable<'T>) (columnMappings : IDictionary<string, string>) =
@@ -34,9 +38,10 @@
 
             let headerRow = header props columnMappings
             let dataRows = data props rows
-            let lengths = colLengths headerRow dataRows
 
             let allData = Array.concat [[| headerRow |]; dataRows]
+
+            let lengths = colLengths allData
 
             Task.WhenAll(
                 allData
