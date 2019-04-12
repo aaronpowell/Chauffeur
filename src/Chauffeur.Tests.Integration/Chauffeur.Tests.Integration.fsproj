@@ -5,6 +5,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Include="TestSamples.fs" />
+      <Compile Include="DocumentTypeSetup.fs" />
       <None Include="config\umbracoSettings.config">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>

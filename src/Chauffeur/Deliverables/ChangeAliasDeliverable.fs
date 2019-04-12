@@ -1,7 +1,6 @@
 ﻿namespace Chauffeur.Deliverables
 
 open Chauffeur
-open System.Collections.Generic
 open FSharp.Control.Tasks.V2
 open Umbraco.Core.Services
 
@@ -13,7 +12,7 @@ type ChangeAliasDeliverable(reader, writer, contentTypeService : IContentTypeSer
     override __.Run _ args =
         match args with
         | [|"document-type"; old; ``new``|]
-        | [|"docType-type"; old; ``new``|]
+        | [|"doc-type"; old; ``new``|]
         | [|"dt"; old; ``new``|] -> task {
             let ct = contentTypeService.Get old
             ct.Alias <- ``new``

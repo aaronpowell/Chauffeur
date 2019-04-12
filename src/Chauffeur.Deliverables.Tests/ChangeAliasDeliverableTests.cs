@@ -60,7 +60,7 @@ namespace Chauffeur.Deliverables.Tests
 
             await deliverable.Run(null, new[] { what, old, @new });
 
-            Assert.Equal(result.Alias, @new);
+            Assert.Equal(@new, result.Alias);
         }
     }
 }
