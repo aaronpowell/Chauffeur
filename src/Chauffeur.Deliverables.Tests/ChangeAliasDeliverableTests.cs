@@ -12,7 +12,7 @@ namespace Chauffeur.Deliverables.Tests
         public async Task NoArguments_WillWarnAndExit()
         {
             var writer = new MockTextWriter();
-            var delivery = new ChangeAliasDeliverable(writer, null, null);
+            var delivery = new ChangeAliasDeliverable(null, writer, null);
 
             await delivery.Run(null, new string[0]);
 
@@ -23,7 +23,7 @@ namespace Chauffeur.Deliverables.Tests
         public async Task WhatOnly_WillWarnAndExit()
         {
             var writer = new MockTextWriter();
-            var delivery = new ChangeAliasDeliverable(writer, null, null);
+            var delivery = new ChangeAliasDeliverable(null, writer, null);
 
             await delivery.Run(null, new[] { "dt" });
 
@@ -34,7 +34,7 @@ namespace Chauffeur.Deliverables.Tests
         public async Task MissingNewAlias_WillWarnAndExit()
         {
             var writer = new MockTextWriter();
-            var delivery = new ChangeAliasDeliverable(writer, null, null);
+            var delivery = new ChangeAliasDeliverable(null, writer, null);
 
             await delivery.Run(null, new[] { "dt", "old" });
 
@@ -56,7 +56,7 @@ namespace Chauffeur.Deliverables.Tests
             result.Alias = old;
             cts.Get(Arg.Is(old)).Returns(result);
 
-            var deliverable = new ChangeAliasDeliverable(writer, null, cts);
+            var deliverable = new ChangeAliasDeliverable(null, writer, cts);
 
             await deliverable.Run(null, new[] { what, old, @new });
 

@@ -9,6 +9,10 @@ open Chauffeur.TestingTools
 
 let connStrings = System.Configuration.ConfigurationManager.ConnectionStrings
 
+// this is a hack to ensure that that DLL is loaded in the app domain
+let ctd = typeof<Chauffeur.Deliverables.ContentTypeDeliverable>
+printfn "%s" ctd.FullName
+
 type ``Successfully setup the database``() =
     inherit UmbracoHostTestBase()
 
@@ -45,7 +49,6 @@ type ``Successfully setup the database``() =
                 if reader.Read() then
                     let tableName = reader.GetString 0
                     knownTables |> should contain tableName
-                    //List.contains tableName knownTables |> should equal true
                     testTable reader
                 else ignore
             cmd.ExecuteReader()
