@@ -9,8 +9,8 @@ type UnknownDeliverable(reader, writer) =
 
     override __.Run name args =
         task {
-            let cmd = [| name |]
-                      |> Array.append args
+            let cmd = args
+                      |> Array.append [| name |]
                       |> String.concat " "
             do! writer.WriteLineAsync(sprintf "Unknown command '%s' entered, check `help` for available commands" cmd)
             return DeliverableResponse.Continue

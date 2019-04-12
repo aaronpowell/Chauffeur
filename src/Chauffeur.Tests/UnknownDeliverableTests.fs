@@ -14,9 +14,13 @@ module UnknownDeliverableTests =
             let reader = new MockTextWriter()
             let deliverable = UnknownDeliverable(null, reader)
 
-            let! _ = deliverable.Run "foo" Array.empty
+            let! _ = deliverable.Run "foo" [|"a"; "b"|]
 
             reader.Messages |> should haveLength 1
+
+            let msg = reader.Messages |> List.head
+
+            msg |> should equal "Unknown command 'foo a b' entered, check `help` for available commands"
         }
 
     [<Fact>]
