@@ -5,6 +5,7 @@ open Chauffeur
 open FSharp.Control.Tasks.V2
 open Umbraco.Core.Services
 open System.IO.Abstractions
+open System.Xml.Linq
 
 module ContentTypeDeliverable =
     open Umbraco.Core.Models
@@ -65,6 +66,8 @@ module ContentTypeDeliverable =
 
 open ContentTypeDeliverable
 open Umbraco.Core.Models
+open Umbraco.Core.Packaging
+open Umbraco.Core.Models.Packaging
 
 [<DeliverableName("content-type")>]
 [<DeliverableAlias("ct")>]
@@ -74,7 +77,8 @@ type ContentTypeDeliverable
       contentTypeService : IContentTypeService,
       serializer : IEntityXmlSerializer,
       fileSystem : IFileSystem,
-      settings : IChauffeurSettings) =
+      settings : IChauffeurSettings,
+      packageInstallation : IPackageInstallation) =
     inherit Deliverable(reader, writer)
 
     let byId (id : int) = contentTypeService.Get id
@@ -103,32 +107,34 @@ type ContentTypeDeliverable
                 ignore()
             return DeliverableResponse.Continue }
 
-        | "import" :: fileNames -> task {
-            //if (!args.Any())
-            //{
-            //    await Out.WriteLineAsync("No import target defined");
-            //    return;
-            //}
+        | "import" :: fileName :: _ -> task {
+            match settings.TryGetChauffeurDirectory() with
+            | (true, dir) ->
+                let importFile = fileSystem.Path.Combine(dir, sprintf "%s.xml" fileName)
+                match (fileSystem.File.Exists importFile) with
+                | true ->
+                    let xml = XDocument.Load importFile
+                    let pkgDef = PackageDefinition()
+                    pkgDef.DocumentTypes <- new System.Collections.Generic.List<string>()
+                    let pkgCompiled = CompiledPackage()
+                    pkgCompiled.DocumentTypes <- [| xml.Root |]
+                    pkgCompiled.DataTypes <- Array.empty
+                    pkgCompiled.Templates <- Array.empty
+                    pkgCompiled.DictionaryItems <- Array.empty
+                    pkgCompiled.Macros <- Array.empty
+                    pkgCompiled.Stylesheets <- Array.empty
+                    pkgCompiled.Documents <- Array.empty
+                    pkgCompiled.Languages <- Array.empty
+                    pkgCompiled.Actions <- "<Actions></Actions>"
+                    let summary = packageInstallation.InstallPackageData(pkgDef, pkgCompiled, 0)
 
-            //var deliveryName = args[0].Trim();
+                    do! writer.WriteLineAsync("Content Type has been imported")
+                | false ->
+                    do! writer.WriteLineAsync(sprintf "Unable to locate the import script '%s'" fileName)
+            | (false, _) ->
+                ignore()
 
-            //string directory;
-            //if (!settings.TryGetChauffeurDirectory(out directory))
-            //    return;
-
-            //var file = fileSystem.Path.Combine(directory, deliveryName + ".xml");
-            //if (!fileSystem.File.Exists(file))
-            //{
-            //    await Out.WriteLineAsync($"Unable to located the import script '{deliveryName}'");
-            //    return;
-            //}
-
-            //var xml = XDocument.Load(file);
-
-            //packagingService.ImportContentTypes(xml.Elements().First());
-
-            //await Out.WriteLineAsync("Content Type has been imported");
-            return failwith "Not supported yet" }
+            return DeliverableResponse.Continue }
 
         | "remove" :: id :: _ -> task {
             get' id |> contentTypeService.Delete

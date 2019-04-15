@@ -22,6 +22,7 @@ namespace Chauffeur.Deliverables.Tests
                 service,
                 null,
                 null,
+                null,
                 null
             );
 
@@ -42,6 +43,7 @@ namespace Chauffeur.Deliverables.Tests
                 service,
                 null,
                 null,
+                null,
                 null
             );
 
@@ -60,6 +62,7 @@ namespace Chauffeur.Deliverables.Tests
                 null,
                 Substitute.For<TextWriter>(),
                 service,
+                null,
                 null,
                 null,
                 null
@@ -83,6 +86,7 @@ namespace Chauffeur.Deliverables.Tests
                 service,
                 null,
                 null,
+                null,
                 null
             );
 
@@ -104,6 +108,7 @@ namespace Chauffeur.Deliverables.Tests
                 null,
                 Substitute.For<TextWriter>(),
                 service,
+                null,
                 null,
                 null,
                 null
