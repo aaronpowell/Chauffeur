@@ -68,6 +68,7 @@ open ContentTypeDeliverable
 open Umbraco.Core.Models
 open Umbraco.Core.Packaging
 open Umbraco.Core.Models.Packaging
+open Packaging
 
 [<DeliverableName("content-type")>]
 [<DeliverableAlias("ct")>]
@@ -78,7 +79,7 @@ type ContentTypeDeliverable
       serializer : IEntityXmlSerializer,
       fileSystem : IFileSystem,
       settings : IChauffeurSettings,
-      packageInstallation : IPackageInstallation) =
+      packageInstallation : IPackageInstallWrapper) =
     inherit Deliverable(reader, writer)
 
     let byId (id : int) = contentTypeService.Get id
@@ -114,19 +115,10 @@ type ContentTypeDeliverable
                 match (fileSystem.File.Exists importFile) with
                 | true ->
                     let xml = XDocument.Load importFile
-                    let pkgDef = PackageDefinition()
-                    pkgDef.DocumentTypes <- new System.Collections.Generic.List<string>()
-                    let pkgCompiled = CompiledPackage()
+                    let pkgDef = createPackageDefinition
+                    let pkgCompiled = createCompiledPackage
                     pkgCompiled.DocumentTypes <- [| xml.Root |]
-                    pkgCompiled.DataTypes <- Array.empty
-                    pkgCompiled.Templates <- Array.empty
-                    pkgCompiled.DictionaryItems <- Array.empty
-                    pkgCompiled.Macros <- Array.empty
-                    pkgCompiled.Stylesheets <- Array.empty
-                    pkgCompiled.Documents <- Array.empty
-                    pkgCompiled.Languages <- Array.empty
-                    pkgCompiled.Actions <- "<Actions></Actions>"
-                    let summary = packageInstallation.InstallPackageData(pkgDef, pkgCompiled, 0)
+                    let _ = packageInstallation.ImportPackage pkgDef pkgCompiled
 
                     do! writer.WriteLineAsync("Content Type has been imported")
                 | false ->

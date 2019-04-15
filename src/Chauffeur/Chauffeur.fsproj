@@ -19,6 +19,7 @@
     <Copyright>Copyright 2014 - 2019</Copyright>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Packaging.fs" />
     <None Include="paket.references" />
     <Compile Include="TextWriterExtensions.fs" />
     <Compile Include="ServiceContainerExtensions.fs" />
