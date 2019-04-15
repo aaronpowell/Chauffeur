@@ -38,7 +38,7 @@ steps:
   inputs:
     testResultsFormat: VSTest
     testResultsFiles: '.testresults/*.trx'
-
+    failTaskOnFailedTests: true
     mergeTestResults: true
 
 - powershell: |
