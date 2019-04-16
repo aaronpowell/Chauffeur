@@ -24,3 +24,4 @@ group Tests
     nuget xunit.runner.visualstudio
     nuget fsunit.xunit
     nuget NSubstitute
+    nuget System.IO.Abstractions.TestingHelpers

@@ -1,35 +1,32 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net472</TargetFramework>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <Compile Include="TestSamples.fs" />
-      <Compile Include="DocumentTypeSetup.fs" />
-      <None Include="config\umbracoSettings.config">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Include="App.config" />
-      <Compile Include="TestHelpers.fs" />
-      <Compile Include="InstallDeliverable.fs" />
-      <None Include="paket.references" />
-    </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-18618-05" PrivateAssets="All" />
-    </ItemGroup>
-    <ItemGroup>
-        <Reference Include="System.Web" />
-        <Reference Include="System.Web.ApplicationServices" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include="paket.references" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\Chauffeur.TestingTools\Chauffeur.TestingTools.fsproj" />
-    </ItemGroup>
-    <Import Project="..\..\.paket\Paket.Restore.targets" />
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="TestSamples.fs" />
+    <Compile Include="DocumentTypeSetup.fs" />
+    <None Include="config\umbracoSettings.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="App.config" />
+    <Compile Include="TestHelpers.fs" />
+    <Compile Include="InstallDeliverable.fs" />
+    <None Include="paket.references" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-18618-05" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.ApplicationServices" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="paket.references" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Chauffeur.TestingTools\Chauffeur.TestingTools.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

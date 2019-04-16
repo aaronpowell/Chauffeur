@@ -6,3 +6,4 @@ group Tests
     xunit
     xunit.runner.visualstudio
     NSubstitute
+    System.IO.Abstractions.TestingHelpers
