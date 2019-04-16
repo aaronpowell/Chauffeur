@@ -42,7 +42,7 @@ namespace Chauffeur.Deliverables.Tests
             serializer.Serialize(Arg.Any<IEnumerable<IDataType>>())
                 .Returns(new System.Xml.Linq.XElement("Foo"));
 
-            var deliverable = new DataTypeDeliverable(null, writer, dataTypeService, fs, settings, serializer);
+            var deliverable = new DataTypeDeliverable(null, writer, dataTypeService, fs, settings, serializer, null);
 
             await deliverable.Run("data-type", new[] { "export" });
 

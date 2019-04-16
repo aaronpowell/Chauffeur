@@ -33,6 +33,7 @@
     <Compile Include="Components\UserManagerComponent.fs" />
     <Compile Include="Components\ChauffeurComponent.fs" />
     <Compile Include="Components\FileSystemComponent.fs" />
+    <Compile Include="Deliverables\DataTypeDeliverable.fs" />
     <Compile Include="Deliverables\ContentTypeDeliverable.fs" />
     <Compile Include="Deliverables\ChangeAliasDeliverable.fs" />
     <Compile Include="Deliverables\SettingsDeliverable.fs" />
