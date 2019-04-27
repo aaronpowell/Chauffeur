@@ -19,7 +19,7 @@ namespace Chauffeur.Deliverables
         private readonly IMigrationRunnerService migrationRunner;
         private readonly IMigrationEntryService migrationEntryService;
         private readonly IChauffeurSettings chauffeurSettings;
-        private readonly IXmlDocumentWrapper xmlDocumentWrapper;
+        private readonly IXmlDocumentService xmlDocumentWrapper;
 
         public UpgradeDeliverable(
             TextReader reader,
@@ -27,7 +27,7 @@ namespace Chauffeur.Deliverables
             IMigrationRunnerService migrationRunner,
             IMigrationEntryService migrationEntryService,
             IChauffeurSettings chauffeurSettings,
-            IXmlDocumentWrapper xmlDocumentWrapper
+            IXmlDocumentService xmlDocumentWrapper
             )
             : base(reader, writer)
         {

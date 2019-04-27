@@ -11,12 +11,12 @@ namespace Chauffeur.Deliverables
     [DeliverableAlias("pl")]
     public class PackageListDeliverable : Deliverable
     {
-        private readonly ICreatedPackageWrapper createdPackagesWrapper;
+        private readonly ICreatedPackageService createdPackagesWrapper;
 
         public PackageListDeliverable(
             TextReader reader, 
             TextWriter writer,
-            ICreatedPackageWrapper createdPackagesWrapper
+            ICreatedPackageService createdPackagesWrapper
             ) : base(reader, writer)
         {
             this.createdPackagesWrapper = createdPackagesWrapper;

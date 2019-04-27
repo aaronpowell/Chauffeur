@@ -8,7 +8,7 @@ using System.Xml;
 
 namespace Chauffeur.Services
 {
-    public class XmlDocumentWrapper : IXmlDocumentWrapper
+    public class XmlDocumentService : IXmlDocumentService
     {
         public XmlDocument LoadDocument(string filePath)
         {

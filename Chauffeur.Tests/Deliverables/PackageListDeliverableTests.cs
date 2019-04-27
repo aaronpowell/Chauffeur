@@ -17,7 +17,7 @@ namespace Chauffeur.Tests.Deliverables
         {
             var reader = Substitute.ForPartsOf<TextReader>();
             var writer = Substitute.ForPartsOf<TextWriter>();
-            var createdPackager = Substitute.For<ICreatedPackageWrapper>();
+            var createdPackager = Substitute.For<ICreatedPackageService>();
             var packagelist = new PackageListDeliverable(reader, writer, createdPackager);
 
             IList<CreatedPackage> testdata = new List<CreatedPackage>()
@@ -40,7 +40,7 @@ namespace Chauffeur.Tests.Deliverables
         {
             var reader = Substitute.ForPartsOf<TextReader>();
             var writer = Substitute.ForPartsOf<TextWriter>();
-            var createdPackager = Substitute.For<ICreatedPackageWrapper>();
+            var createdPackager = Substitute.For<ICreatedPackageService>();
             var packagelist = new PackageListDeliverable(reader, writer, createdPackager);
 
             IList<CreatedPackage> testdata = new List<CreatedPackage>();

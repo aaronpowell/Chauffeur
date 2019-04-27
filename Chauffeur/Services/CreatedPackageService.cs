@@ -7,7 +7,7 @@ using umbraco.cms.businesslogic.packager;
 
 namespace Chauffeur.Services.Interfaces
 {
-    class CreatedPackageWrapper : ICreatedPackageWrapper
+    class CreatedPackageWrapper : ICreatedPackageService
     {
         public List<CreatedPackage> GetAllCreatedPackages()
         {
