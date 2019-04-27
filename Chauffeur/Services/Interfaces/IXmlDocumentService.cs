@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace Chauffeur.Services
+namespace Chauffeur.Services.Interfaces
 {
-    public interface IXmlDocumentWrapper
+    public interface IXmlDocumentService
     {
         XmlDocument LoadDocument(string filePath);
         void SaveDocument(XmlDocument document, string filePath);

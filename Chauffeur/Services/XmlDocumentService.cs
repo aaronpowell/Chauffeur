@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Chauffeur.Services.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +8,7 @@ using System.Xml;
 
 namespace Chauffeur.Services
 {
-    public class XmlDocumentWrapper : IXmlDocumentWrapper
+    public class XmlDocumentService : IXmlDocumentService
     {
         public XmlDocument LoadDocument(string filePath)
         {

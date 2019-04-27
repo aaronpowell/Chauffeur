@@ -234,6 +234,8 @@
     <Compile Include="Deliverables\DeliveryDeliverable.cs" />
     <Compile Include="Deliverables\DeliveryTrackingDeliverable.cs" />
     <Compile Include="Deliverables\DictionaryDeliverable.cs" />
+    <Compile Include="Deliverables\PackageCreateDeliverable.cs" />
+    <Compile Include="Deliverables\PackageListDeliverable.cs" />
     <Compile Include="Deliverables\UpgradeDeliverable.cs" />
     <Compile Include="Deliverables\InstallDeliverable.cs" />
     <Compile Include="Deliverables\PackageDeliverable.cs" />
@@ -260,11 +262,13 @@
     <Compile Include="IProvideDirections.cs" />
     <Compile Include="IRegistrationBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\IMigrationRunnerService.cs" />
-    <Compile Include="Services\IXmlDocumentWrapper.cs" />
+    <Compile Include="Services\CreatedPackageService.cs" />
+    <Compile Include="Services\Interfaces\ICreatedPackageService.cs" />
+    <Compile Include="Services\Interfaces\IMigrationRunnerService.cs" />
+    <Compile Include="Services\Interfaces\IXmlDocumentService.cs" />
     <Compile Include="Services\MigrationRunnerService.cs" />
     <Compile Include="Services\OverridingPackagingService.cs" />
-    <Compile Include="Services\XmlDocumentWrapper.cs" />
+    <Compile Include="Services\XmlDocumentService.cs" />
     <Compile Include="ShittyIoC.cs" />
     <Compile Include="TextReaderExtensions.cs" />
     <Compile Include="TextWriterExtensions.cs" />
