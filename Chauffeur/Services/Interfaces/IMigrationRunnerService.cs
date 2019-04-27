@@ -1,6 +1,6 @@
 ﻿using Semver;
 
-namespace Chauffeur.Services
+namespace Chauffeur.Services.Interfaces
 {
     public interface IMigrationRunnerService
     {

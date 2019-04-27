@@ -3,7 +3,7 @@ using System.Linq;
 using System.Xml;
 using Chauffeur.Deliverables;
 using Chauffeur.Host;
-using Chauffeur.Services;
+using Chauffeur.Services.Interfaces;
 using NSubstitute;
 using Semver;
 using Umbraco.Core;

@@ -246,6 +246,7 @@
     <Compile Include="Deliverables\DeliveryDeliverableTests.cs" />
     <Compile Include="Deliverables\DictionaryDeliverableTests.cs" />
     <Compile Include="Deliverables\HelpDeliverableTests.cs" />
+    <Compile Include="Deliverables\PackageListDeliverableTests.cs" />
     <Compile Include="Deliverables\UpgradeDeliverableTests.cs" />
     <Compile Include="Deliverables\InstallDeliverableTests.cs" />
     <Compile Include="Deliverables\PackageDeliverableTests.cs" />

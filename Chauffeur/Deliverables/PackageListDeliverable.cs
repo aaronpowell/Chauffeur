@@ -1,12 +1,10 @@
-﻿using Chauffeur;
-using Chauffeur.Services;
+﻿using Chauffeur.Services.Interfaces;
 using System.IO;
 using System.Threading.Tasks;
-using umbraco.cms.businesslogic.packager;
 
 namespace Chauffeur.Deliverables
 {
-    
+
 
     [DeliverableName("package-list")]
     [DeliverableAlias("pkg-list")]

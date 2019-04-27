@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Web.Configuration;
 using System.Xml;
 using Chauffeur.Host;
-using Chauffeur.Services;
+using Chauffeur.Services.Interfaces;
 using Semver;
 using Umbraco.Core;
 using Umbraco.Core.Configuration;

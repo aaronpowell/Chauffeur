@@ -1,4 +1,5 @@
 ﻿using Chauffeur.Services;
+using Chauffeur.Services.Interfaces;
 using Umbraco.Core;
 using Umbraco.Core.Persistence;
 using Umbraco.Core.Services;

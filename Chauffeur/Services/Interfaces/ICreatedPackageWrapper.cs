@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using umbraco.cms.businesslogic.packager;
 
-namespace Chauffeur.Services
+namespace Chauffeur.Services.Interfaces
 {
     public interface ICreatedPackageWrapper
     {
