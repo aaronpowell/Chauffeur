@@ -24,11 +24,6 @@ namespace Chauffeur.Services
             _package.Publish();
         }
 
-        //public CreatedPackage GetById(int id)
-        //{
-        //    return CreatedPackage.GetById(id);
-        //}
-
         ICreatedPackageService ICreatedPackageService.GetById(int id)
         {
             _package = CreatedPackage.GetById(id);
