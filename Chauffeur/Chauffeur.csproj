@@ -234,6 +234,7 @@
     <Compile Include="Deliverables\DeliveryDeliverable.cs" />
     <Compile Include="Deliverables\DeliveryTrackingDeliverable.cs" />
     <Compile Include="Deliverables\DictionaryDeliverable.cs" />
+    <Compile Include="Deliverables\PackageCreateDeliverable.cs" />
     <Compile Include="Deliverables\PackageListDeliverable.cs" />
     <Compile Include="Deliverables\UpgradeDeliverable.cs" />
     <Compile Include="Deliverables\InstallDeliverable.cs" />

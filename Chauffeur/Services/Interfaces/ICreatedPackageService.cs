@@ -10,6 +10,10 @@ namespace Chauffeur.Services.Interfaces
     public interface ICreatedPackageService
     {
         List<CreatedPackage> GetAllCreatedPackages();
-        CreatedPackage GetById(int id);
+        ICreatedPackageService GetById(int id);
+
+        PackageInstance Data { get; set; }
+
+        void Publish();
     }
 }

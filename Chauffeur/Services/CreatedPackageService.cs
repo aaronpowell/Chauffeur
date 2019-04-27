@@ -10,14 +10,31 @@ namespace Chauffeur.Services
 {
     class CreatedPackageService : ICreatedPackageService
     {
+        CreatedPackage _package;
+
+        public PackageInstance Data { get => _package.Data; set => throw new NotImplementedException(); }
+
         public List<CreatedPackage> GetAllCreatedPackages()
         {
             return CreatedPackage.GetAllCreatedPackages();
         }
 
-        public CreatedPackage GetById(int id)
+        public void Publish()
         {
-            return CreatedPackage.GetById(id);
+            _package.Publish();
         }
+
+        //public CreatedPackage GetById(int id)
+        //{
+        //    return CreatedPackage.GetById(id);
+        //}
+
+        ICreatedPackageService ICreatedPackageService.GetById(int id)
+        {
+            _package = CreatedPackage.GetById(id);
+            return this;
+        }
+
+
     }
 }

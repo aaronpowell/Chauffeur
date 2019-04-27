@@ -311,6 +311,16 @@
   <ItemGroup>
     <Folder Include="bin\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Chauffeur.Runner\Chauffeur.Runner.csproj">
+      <Project>{5573c895-08b4-4f69-9d53-f3ee1786fe32}</Project>
+      <Name>Chauffeur.Runner</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Chauffeur\Chauffeur.csproj">
+      <Project>{003afae1-5879-4441-bcb8-669905d9e0b5}</Project>
+      <Name>Chauffeur</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
