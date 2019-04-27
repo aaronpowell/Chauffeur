@@ -36,6 +36,9 @@ namespace Chauffeur.DependencyBuilders
             container.Register(() => services.MigrationEntryService);
             container.Register(() => new OverridingPackagingService(services.PackagingService, services.MacroService, services.DataTypeService, services.ContentTypeService))
                 .As<IPackagingService>();
+            container.Register(() => new MigrationRunnerService(services.MigrationEntryService, context.ProfilingLogger.Logger, context.DatabaseContext.Database))
+                .As<IMigrationRunnerService>();
+            container.Register(() => new XmlDocumentWrapper()).As<IXmlDocumentWrapper>();
             container.Register(() => services.UserService);
         }
 

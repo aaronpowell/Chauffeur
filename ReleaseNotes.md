@@ -1,3 +1,9 @@
+## New in 1.4.1 (2019/04/12)
+* Merged [PR #94](https://github.com/aaronpowell/Chauffeur/pull/94) from @stuartcrouch
+  * Fixes the UpgradeDeliverable failing with missing dependency registrations
+  * Update web.config when Deliverable is run
+  * More test coverage of UpgradeDeliverable
+
 ## New in 1.4.0 (2018/11/22)
 * Moving away from AppVeyor to Azure DevOps for builds
 * Added editorconfig file to enforce coding standards
