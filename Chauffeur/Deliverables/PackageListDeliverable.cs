@@ -11,20 +11,20 @@ namespace Chauffeur.Deliverables
     [DeliverableAlias("pl")]
     public class PackageListDeliverable : Deliverable
     {
-        private readonly ICreatedPackageService createdPackagesWrapper;
+        private readonly ICreatedPackageService createdPackagesService;
 
         public PackageListDeliverable(
             TextReader reader, 
             TextWriter writer,
-            ICreatedPackageService createdPackagesWrapper
+            ICreatedPackageService createdPackagesService
             ) : base(reader, writer)
         {
-            this.createdPackagesWrapper = createdPackagesWrapper;
+            this.createdPackagesService = createdPackagesService;
         }
 
         public async override Task<DeliverableResponse> Run(string command, string[] args)
         {
-            var packages = createdPackagesWrapper.GetAllCreatedPackages();
+            var packages = createdPackagesService.GetAllCreatedPackages();
             bool foundPackages = false;
 
             foreach (var package in packages)

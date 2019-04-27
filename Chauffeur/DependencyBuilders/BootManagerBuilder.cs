@@ -40,6 +40,7 @@ namespace Chauffeur.DependencyBuilders
             container.Register(() => new MigrationRunnerService(services.MigrationEntryService, context.ProfilingLogger.Logger, context.DatabaseContext.Database))
                 .As<IMigrationRunnerService>();
             container.Register(() => new XmlDocumentService()).As<IXmlDocumentService>();
+            container.Register(() => new CreatedPackageService()).As<ICreatedPackageService>();
             container.Register(() => services.UserService);
         }
 

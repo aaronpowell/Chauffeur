@@ -1,13 +1,14 @@
-﻿using System;
+﻿using Chauffeur.Services.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using umbraco.cms.businesslogic.packager;
 
-namespace Chauffeur.Services.Interfaces
+namespace Chauffeur.Services
 {
-    class CreatedPackageWrapper : ICreatedPackageService
+    class CreatedPackageService : ICreatedPackageService
     {
         public List<CreatedPackage> GetAllCreatedPackages()
         {
