@@ -3,7 +3,7 @@ using System.Linq;
 using System.Xml;
 using Chauffeur.Deliverables;
 using Chauffeur.Host;
-using Chauffeur.Services;
+using Chauffeur.Services.Interfaces;
 using NSubstitute;
 using Semver;
 using Umbraco.Core;
@@ -19,14 +19,14 @@ namespace Chauffeur.Tests.Deliverables
     {
         private readonly MockTextWriter writer;
         private readonly IChauffeurSettings settings;
-        private readonly IXmlDocumentWrapper xmlDocumentWrapper;
+        private readonly IXmlDocumentService xmlDocumentWrapper;
         private readonly IMigrationRunnerService migrationRunnerService;
         
         public UpgradeDeliverableTests()
         {
             writer = new MockTextWriter();
             settings = Substitute.For<IChauffeurSettings>();
-            xmlDocumentWrapper = Substitute.For<IXmlDocumentWrapper>();
+            xmlDocumentWrapper = Substitute.For<IXmlDocumentService>();
             migrationRunnerService = Substitute.For<IMigrationRunnerService>();
         }
 

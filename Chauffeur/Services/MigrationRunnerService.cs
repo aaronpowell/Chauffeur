@@ -1,4 +1,5 @@
-﻿using Semver;
+﻿using Chauffeur.Services.Interfaces;
+using Semver;
 using Umbraco.Core;
 using Umbraco.Core.Logging;
 using Umbraco.Core.Persistence;
