@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Web.Configuration;
 using System.Xml;
 using Chauffeur.Host;
-using Chauffeur.Services;
+using Chauffeur.Services.Interfaces;
 using Semver;
 using Umbraco.Core;
 using Umbraco.Core.Configuration;
@@ -19,7 +19,7 @@ namespace Chauffeur.Deliverables
         private readonly IMigrationRunnerService migrationRunner;
         private readonly IMigrationEntryService migrationEntryService;
         private readonly IChauffeurSettings chauffeurSettings;
-        private readonly IXmlDocumentWrapper xmlDocumentWrapper;
+        private readonly IXmlDocumentService xmlDocumentWrapper;
 
         public UpgradeDeliverable(
             TextReader reader,
@@ -27,7 +27,7 @@ namespace Chauffeur.Deliverables
             IMigrationRunnerService migrationRunner,
             IMigrationEntryService migrationEntryService,
             IChauffeurSettings chauffeurSettings,
-            IXmlDocumentWrapper xmlDocumentWrapper
+            IXmlDocumentService xmlDocumentWrapper
             )
             : base(reader, writer)
         {
