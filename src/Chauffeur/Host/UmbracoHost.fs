@@ -13,13 +13,15 @@ open Chauffeur
 open Chauffeur.Components
 open CommandLineParser
 
-type UmbracoHost(reader : TextReader, writer : TextWriter) =
+type UmbracoHost(reader : TextReader, writer : TextWriter) as self =
+    let runtime = new ChauffeurRuntime(reader, writer)
+    let register = RegisterFactory.Create()
+
     do
         RuntimeOptions.InstallEmptyDatabase <- true
         RuntimeOptions.InstallMissingDatabase <- true
+        register.Register<IChauffeurHost>(fun _ -> self :> IChauffeurHost)
 
-    let runtime = new ChauffeurRuntime(reader, writer)
-    let register = RegisterFactory.Create()
     let factory = runtime.Boot(register)
 
     let handleInput (factory : IFactory) (rl : string) =
