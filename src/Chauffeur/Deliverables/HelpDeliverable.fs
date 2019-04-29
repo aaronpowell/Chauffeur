@@ -50,6 +50,7 @@ type HelpDeliverable(reader, writer, container : IFactory) =
 
             let tasks = deliverables
                         |> Seq.map(metadata)
+                        |> Seq.sortBy(fun (s, _) -> s)
                         |> Seq.map(fun (name, aliases) ->
                                     let msg = match aliases |> Seq.length with
                                               | 0 -> name
