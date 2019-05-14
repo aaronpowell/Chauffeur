@@ -5,6 +5,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="RunningDeliverables.fs" />
     <Compile Include="TestSamples.fs" />
     <Compile Include="DocumentTypeSetup.fs" />
     <None Include="config\umbracoSettings.config">
@@ -26,6 +27,7 @@
     <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Chauffeur.Deliverables\Chauffeur.Deliverables.csproj" />
     <ProjectReference Include="..\Chauffeur.TestingTools\Chauffeur.TestingTools.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
