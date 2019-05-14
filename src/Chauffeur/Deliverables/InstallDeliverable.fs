@@ -33,6 +33,7 @@ module InstallDeliverable =
             do! writeLineAsync "The SqlCE database specified in the connection string doesn't appear to exist."
             let! response = match args |> Array.toList with
                             | "y" :: _ | "Y" :: _ -> task { return "Y" }
+                            | "n" :: _ | "N" :: _ -> task { return "N" }
                             | _ -> prompt "Do you want to create it (Y/n)?" "Y"
 
             return! match response with

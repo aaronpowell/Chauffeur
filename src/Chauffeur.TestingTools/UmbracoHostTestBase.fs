@@ -106,3 +106,4 @@ type UmbracoHostTestBase() =
             writer.Dispose()
             reader.Dispose()
             (host :?> IDisposable).Dispose()
+            printfn "The test has shut down"

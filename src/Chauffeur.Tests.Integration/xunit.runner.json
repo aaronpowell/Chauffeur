@@ -1,0 +1,6 @@
+﻿{
+    "appDomain": "required",
+    "maxParallelThreads": 1,
+    "shadowCopy": true,
+    "parallelizeTestCollections": false
+}

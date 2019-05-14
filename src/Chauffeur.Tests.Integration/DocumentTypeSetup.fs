@@ -17,7 +17,7 @@ type ``Importing document types``() =
             do! x.DatabaseLocation
                 |> x.TextWriter.WriteLineAsync
                 |> Async.AwaitTask
-            let! _ = [| "install" |]
+            let! _ = [| "install y" |]
                             |> run
                             |> Async.AwaitTask
             return! [| "ct"; "import"; doctypeName |]
@@ -27,7 +27,6 @@ type ``Importing document types``() =
 
     [<Fact>]
     member x.``Will log an error if you don't have the import file on disk``() =
-        x.TextReader.AddCommand "Y"
         async {
             let! _ = x.ImportDocType
             let messages = x.TextWriter.Messages
@@ -37,7 +36,6 @@ type ``Importing document types``() =
 
     [<Fact>]
     member x.``Will import a document type successfully``() =
-        x.TextReader.AddCommand "Y"
         let run = x.Host.RunWithArgs
         let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
@@ -68,7 +66,6 @@ type ``Importing document types``() =
 
     [<Fact>]
     member x.``Will import a document type successfully with updates``() =
-        x.TextReader.AddCommand "Y"
         let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
             Path.Combine [| chauffeurFolder.FullName
@@ -168,7 +165,6 @@ type ``Importing document types``() =
 
     [<Fact>]
     member x.``Can remove a document type``() =
-        x.TextReader.AddCommand "Y"
         let run = x.Host.RunWithArgs
         let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =
@@ -191,7 +187,6 @@ type ``Importing document types``() =
 
     [<Fact>]
     member x.``Can remove a document type property``() =
-        x.TextReader.AddCommand "Y"
         let run = x.Host.RunWithArgs
         let chauffeurFolder = x.GetChauffeurFolder()
         let filePath =

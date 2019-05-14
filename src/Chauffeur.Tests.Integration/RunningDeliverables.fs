@@ -162,8 +162,8 @@ type ``Checking delivery status``() =
         x.GetChauffeurFolder() |> setupInstallDelivery
         async {
             let! _ = [| "delivery" |]
-                            |> x.Host.RunWithArgs
-                            |> Async.AwaitTask
+                     |> x.Host.RunWithArgs
+                     |> Async.AwaitTask
 
             x.TextWriter.Flush()
 

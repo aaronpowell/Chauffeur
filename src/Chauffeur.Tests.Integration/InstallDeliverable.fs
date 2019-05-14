@@ -18,12 +18,11 @@ type ``Successfully setup the database``() =
 
     [<Fact>]
     member x.``Results in a Continue response``() =
-        x.TextReader.AddCommand "Y"
         async {
             do! x.DatabaseLocation
                 |> x.TextWriter.WriteLineAsync
                 |> Async.AwaitTask
-            let! response = [| "install" |]
+            let! response = [| "install y" |]
                             |> x.Host.RunWithArgs
                             |> Async.AwaitTask
             response |> should equal DeliverableResponse.Continue
@@ -32,12 +31,11 @@ type ``Successfully setup the database``() =
 
     [<Fact>]
     member x.``Creates known tables``() =
-        x.TextReader.AddCommand "Y"
         async {
             do! x.DatabaseLocation
                 |> x.TextWriter.WriteLineAsync
                 |> Async.AwaitTask
-            let! _ = [| "install" |]
+            let! _ = [| "install y" |]
                             |> x.Host.RunWithArgs
                             |> Async.AwaitTask
             use connection = new SqlCeConnection(connStrings.["umbracoDbDSN"].ConnectionString)
@@ -61,12 +59,11 @@ type ``Unsuccessfully setup the database``() =
     inherit UmbracoHostTestBase()
     [<Fact>]
     member x.``Won't create the database when you say not to``() =
-        x.TextReader.AddCommand "N"
         async {
             do! x.DatabaseLocation
                 |> x.TextWriter.WriteLineAsync
                 |> Async.AwaitTask
-            let! _ = [| "install" |]
+            let! _ = [| "install n" |]
                             |> x.Host.RunWithArgs
                             |> Async.AwaitTask
             use connection = new SqlCeConnection(connStrings.["umbracoDbDSN"].ConnectionString)

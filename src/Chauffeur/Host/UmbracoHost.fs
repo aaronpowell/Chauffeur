@@ -22,7 +22,9 @@ type UmbracoHost(reader : TextReader, writer : TextWriter) as self =
         RuntimeOptions.InstallMissingDatabase <- true
         register.Register<IChauffeurHost>(fun _ -> self :> IChauffeurHost)
 
-    let factory = runtime.Boot(register)
+    let factory = match runtime.Boot(register) with
+                  | null -> Current.Factory
+                  | factory -> factory
 
     let handleInput (factory : IFactory) (rl : string) =
         task {

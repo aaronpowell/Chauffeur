@@ -6,7 +6,6 @@ open Umbraco.Core.Runtime
 open Umbraco.Web
 open Chauffeur
 open System.IO
-open System
 
 type internal ChauffeurRuntime(reader : TextReader, writer : TextWriter) =
     inherit CoreRuntime()
@@ -20,4 +19,4 @@ type internal ChauffeurRuntime(reader : TextReader, writer : TextWriter) =
         try
             base.Boot(register)
         with
-            | :? InvalidOperationException -> Current.Factory
+        | _ -> Current.Factory
