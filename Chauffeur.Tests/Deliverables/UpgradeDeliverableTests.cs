@@ -96,7 +96,7 @@ namespace Chauffeur.Tests.Deliverables
         }
 
         [Fact]
-        public async Task UpgradeFailes_ErrorStateReturned()
+        public async Task UpgradeFails_ErrorStateReturned()
         {
             migrationRunnerService.Execute(Arg.Any<SemVersion>(), Arg.Any<SemVersion>()).Returns(false);
 
@@ -109,6 +109,49 @@ namespace Chauffeur.Tests.Deliverables
             Assert.Equal(DeliverableResponse.FinishedWithError, response);
         }
 
+        [Fact]
+        public async Task SameVersions_CheckReturnsNoPendingUpdate()
+        {
+
+            var deliverable = new UpgradeDeliverable(null, writer, null,
+                MigrationEntryService(new SemVersion(7, 1), UmbracoVersion.GetSemanticVersion(), new SemVersion(7, 3)), settings, xmlDocumentWrapper);
+
+            var response = await deliverable.Run(null, new [] { "check" });
+
+            Assert.Single(writer.Messages);
+            Assert.Equal(DeliverableResponse.FinishedWithError, response);
+        }
+
+        [Fact]
+        public async Task DifferentVersions_CheckReturnsPendingUpdate()
+        {
+            migrationRunnerService.Execute(Arg.Any<SemVersion>(), Arg.Any<SemVersion>()).Returns(true);
+            var anyStringArg = Arg.Any<string>();
+            settings.TryGetSiteRootDirectory(out anyStringArg).Returns(
+                x => {
+                    x[0] = @"C:\test\umbraco";
+                    return true;
+                });
+
+            var xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(
+                 "<configuration>" +
+                 "<appSettings>" +
+                 "<add key=\"umbracoConfigurationStatus\" value=\"1.1.1\" />" +
+                 "</appSettings>" +
+                 "</configuration>"
+                 );
+
+            xmlDocumentWrapper.LoadDocument(Arg.Any<string>()).Returns(xmlDoc);
+
+            var deliverable = new UpgradeDeliverable(null, writer, migrationRunnerService,
+                MigrationEntryService(new SemVersion(7, 1)), settings, xmlDocumentWrapper);
+
+            var response = await deliverable.Run(null, new[] { "Check"});
+
+            Assert.Single(writer.Messages);
+            Assert.Equal(DeliverableResponse.Continue, response);
+        }
         private IMigrationEntryService MigrationEntryService(params SemVersion[] versions)
         {
             var migrationEntryService = Substitute.For<IMigrationEntryService>();

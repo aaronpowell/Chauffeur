@@ -18,4 +18,5 @@ The following Deliverables ship in the box with Chauffeur:
 * [Scaffold](deliverable-scaffold.md)
 * [Settings](deliverable-settings.md)
 * [Unknown](deliverable-unknown.md)
+* [Upgrade](deliverable-upgrade.md)
 * [User](deliverable-user.md)
