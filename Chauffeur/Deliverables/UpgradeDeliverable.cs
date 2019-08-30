@@ -47,7 +47,17 @@ namespace Chauffeur.Deliverables
 
             var targetVersion = UmbracoVersion.GetSemanticVersion();
 
-            if (currentVersion == targetVersion)
+            bool sameVersion = currentVersion == targetVersion;
+
+            if (args?.Length == 1 && string.Compare(args[0], "check", true) == 0)
+            {
+                await Out.WriteLineAsync(sameVersion ?
+                    $"There is no pending upgrade. Umbraco is up to date {currentVersion}"
+                    : $"There is a pending upgrade. Umbraco upgrade from {currentVersion} to {targetVersion}");
+                return sameVersion ? DeliverableResponse.FinishedWithError : DeliverableResponse.Continue;
+            }
+
+            if (sameVersion)
             {
                 await Out.WriteLineAsync($"Version is up to date {currentVersion} no work todo");
                 return DeliverableResponse.FinishedWithError;

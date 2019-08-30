@@ -29,3 +29,17 @@ type ``Upgrade Umbraco``() =
 
             x.TextWriter.Messages |> should haveLength 1
         } |> Async.RunSynchronously
+        
+    [<Fact>]
+    member x.``Upgrade will return a message saying there is no pending upgrade``() =
+        async {
+            let! _ = x.InstallUmbraco() |> Async.AwaitTask
+        
+            x.TextWriter.Flush()
+        
+            let! response = x.Host.Run([| "upgrade check" |]) |> Async.AwaitTask
+        
+            response |> should equal DeliverableResponse.FinishedWithError
+            x.TextWriter.Messages |> should haveLength 1
+        } |> Async.RunSynchronously
+               
