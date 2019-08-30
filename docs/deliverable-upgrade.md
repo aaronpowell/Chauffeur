@@ -12,3 +12,11 @@ Upgrades the Umbraco database from one release to another using the internal Umb
 ## Usage
 
     umbraco> upgrade
+
+# Check pending upgrade
+
+Checks if there is an upgrade waiting to be installed.
+
+## Usage
+
+    umbraco> upgrade check
