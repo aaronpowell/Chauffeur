@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.IO.Abstractions.TestingHelpers;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Chauffeur.Host;
 using NPoco;
+using NPoco.Linq;
 using NSubstitute;
 using Umbraco.Core.Logging;
 using Umbraco.Core.Persistence;
@@ -12,6 +14,7 @@ using Umbraco.Core.Persistence.DatabaseModelDefinitions;
 using Umbraco.Core.Persistence.SqlSyntax;
 using Umbraco.Core.Scoping;
 using Xunit;
+using static Chauffeur.Deliverables.DeliveryDeliverableModule;
 
 namespace Chauffeur.Deliverables.Tests
 {
@@ -55,6 +58,7 @@ namespace Chauffeur.Deliverables.Tests
 
             var db = Substitute.For<IUmbracoDatabase>();
             var sqlSyntax = Substitute.For<ISqlSyntaxProvider>();
+            sqlSyntax.DoesTableExist(Arg.Any<IDatabase>(), Arg.Any<string>()).Returns(true);
             var sqlContext = Substitute.For<ISqlContext>();
             db.SqlContext.Returns(sqlContext);
             sqlContext.SqlSyntax.Returns(sqlSyntax);
@@ -97,6 +101,8 @@ namespace Chauffeur.Deliverables.Tests
 
             var provider = Substitute.For<ISqlSyntaxProvider>();
             provider.DoesTableExist(Arg.Any<IDatabase>(), Arg.Any<string>()).Returns(true);
+            provider.Format(Arg.Any<ICollection<ForeignKeyDefinition>>()).Returns(new List<string>());
+            provider.Format(Arg.Any<ICollection<IndexDefinition>>()).Returns(new List<string>());
 
             var sctx = Substitute.For<ISqlContext>();
             sctx.SqlSyntax.Returns(provider);
@@ -147,12 +153,24 @@ namespace Chauffeur.Deliverables.Tests
             });
 
             var db = Substitute.For<IUmbracoDatabase>();
-            db.FirstAsync<ChauffeurDeliveryTable>(Arg.Any<string>(), Arg.Any<object>())
-                .Returns(Task.FromResult(new ChauffeurDeliveryTable { Name = "bar.delivery" }));
+
+            var qp = Substitute.For<IQueryProvider<ChauffeurDeliveryTable>>();
+            qp.FirstOrDefaultAsync().Returns(Task.FromResult(new ChauffeurDeliveryTable { Name = "bar.delivery", SignedFor = true }));
+
+            db.Query<ChauffeurDeliveryTable>().Where(Arg.Any<Expression<Func<ChauffeurDeliveryTable, bool>>>())
+                .Returns(qp);
             var logger = Substitute.For<ILogger>();
 
             var host = Substitute.For<IChauffeurHost>();
             host.RunWithArgs(Arg.Any<string[]>()).Returns(Task.FromResult(DeliverableResponse.Continue));
+
+            var sqlSyntax = Substitute.For<ISqlSyntaxProvider>();
+            var sqlContext = Substitute.For<ISqlContext>();
+            db.SqlContext.Returns(sqlContext);
+            sqlContext.SqlSyntax.Returns(sqlSyntax);
+            sqlSyntax.Format(Arg.Any<ICollection<ForeignKeyDefinition>>()).Returns(new List<string>());
+            sqlSyntax.Format(Arg.Any<ICollection<IndexDefinition>>()).Returns(new List<string>());
+            sqlSyntax.DoesTableExist(Arg.Any<IDatabase>(), Arg.Any<string>()).Returns(true);
 
             var scopeProvider = Substitute.For<IScopeProvider>();
             var scope = Substitute.For<IScope>();
@@ -170,12 +188,11 @@ namespace Chauffeur.Deliverables.Tests
         public async Task DatabaseError_WillStillAttemptFirstDeliverableThenCreateTableAgain()
         {
             var settings = Substitute.For<IChauffeurSettings>();
-            string s;
-            settings.TryGetChauffeurDirectory(out s).Returns(x =>
-            {
-                x[0] = @"c:\foo";
-                return true;
-            });
+            settings.TryGetChauffeurDirectory(out string s).Returns(x =>
+             {
+                 x[0] = @"c:\foo";
+                 return true;
+             });
 
             var writer = new MockTextWriter();
 
@@ -335,6 +352,8 @@ namespace Chauffeur.Deliverables.Tests
             sqlContext.SqlSyntax.Returns(sqlSyntax);
 
             sqlSyntax.DoesTableExist(Arg.Any<IDatabase>(), Arg.Any<string>()).Returns(true);
+            sqlSyntax.Format(Arg.Any<ICollection<ForeignKeyDefinition>>()).Returns(new List<string>());
+            sqlSyntax.Format(Arg.Any<ICollection<IndexDefinition>>()).Returns(new List<string>());
 
             var logger = Substitute.For<ILogger>();
 
@@ -379,6 +398,8 @@ namespace Chauffeur.Deliverables.Tests
 
             var db = Substitute.For<IUmbracoDatabase>();
             var sqlSyntax = Substitute.For<ISqlSyntaxProvider>();
+            sqlSyntax.Format(Arg.Any<ICollection<ForeignKeyDefinition>>()).Returns(new List<string>());
+            sqlSyntax.Format(Arg.Any<ICollection<IndexDefinition>>()).Returns(new List<string>());
             var sqlContext = Substitute.For<ISqlContext>();
             db.SqlContext.Returns(sqlContext);
             sqlContext.SqlSyntax.Returns(sqlSyntax);
@@ -423,6 +444,9 @@ namespace Chauffeur.Deliverables.Tests
 
             var db = Substitute.For<IUmbracoDatabase>();
             var sqlSyntax = Substitute.For<ISqlSyntaxProvider>();
+            sqlSyntax.Format(Arg.Any<ICollection<ForeignKeyDefinition>>()).Returns(new List<string>());
+            sqlSyntax.Format(Arg.Any<ICollection<IndexDefinition>>()).Returns(new List<string>());
+
             var sqlContext = Substitute.For<ISqlContext>();
             db.SqlContext.Returns(sqlContext);
             sqlContext.SqlSyntax.Returns(sqlSyntax);

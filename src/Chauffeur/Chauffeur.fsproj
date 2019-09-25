@@ -18,9 +18,14 @@
     <PackageTags>umbraco deployment</PackageTags>
     <Copyright>Copyright 2014 - 2019</Copyright>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+      <DebugType>embedded</DebugType>
+      <!--<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors>3239;</WarningsAsErrors>-->
+  </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Packaging.fs" />
     <None Include="paket.references" />
+    <Compile Include="Packaging.fs" />
     <Compile Include="TextWriterExtensions.fs" />
     <Compile Include="ServiceContainerExtensions.fs" />
     <Compile Include="ISqlCeEngineFactory.fs" />
@@ -28,11 +33,17 @@
     <Compile Include="IProvideDirections.fs" />
     <Compile Include="DeliverableResponse.fs" />
     <Compile Include="Deliverable.fs" />
+    <Compile Include="UmbracoOverrides\NullHttpContextAccessor.fs" />
     <Compile Include="Components\CompositionExtensions.fs" />
     <Compile Include="Components\ChauffeurDeliverableComponent.fs" />
     <Compile Include="Components\UserManagerComponent.fs" />
     <Compile Include="Components\ChauffeurComponent.fs" />
     <Compile Include="Components\FileSystemComponent.fs" />
+    <Compile Include="Host\CommandLineParser.fs" />
+    <Compile Include="Host\IChauffeurHost.fs" />
+    <Compile Include="Host\ChauffeurRuntime.fs" />
+    <Compile Include="Host\UmbracoHost.fs" />
+    <Compile Include="Deliverables\DeliveryDeliverable.fs" />
     <Compile Include="Deliverables\DataTypeDeliverable.fs" />
     <Compile Include="Deliverables\ContentTypeDeliverable.fs" />
     <Compile Include="Deliverables\ChangeAliasDeliverable.fs" />
@@ -42,11 +53,6 @@
     <Compile Include="Deliverables\UnknownDeliverable.fs" />
     <Compile Include="Deliverables\InstallDeliverable.fs" />
     <Compile Include="Deliverables\QuitDeliverable.fs" />
-    <Compile Include="UmbracoOverrides\NullHttpContextAccessor.fs" />
-    <Compile Include="Host\CommandLineParser.fs" />
-    <Compile Include="Host\IChauffeurHost.fs" />
-    <Compile Include="Host\ChauffeurRuntime.fs" />
-    <Compile Include="Host\UmbracoHost.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-18618-05" PrivateAssets="All" />

@@ -9,6 +9,7 @@ using Umbraco.Core.Logging;
 using Umbraco.Core.Migrations.Install;
 using Umbraco.Core.Persistence;
 using Umbraco.Core.Scoping;
+using static Chauffeur.Deliverables.DeliveryDeliverableModule;
 
 namespace Chauffeur.Deliverables
 {
@@ -119,7 +120,7 @@ namespace Chauffeur.Deliverables
             try
             {
                 var dbSchemaHelper = new DatabaseSchemaCreator(scope.Database, logger);
-                if (!dbSchemaHelper.TableExists(DeliveryDeliverable.TableName))
+                if (!dbSchemaHelper.TableExists(TableName))
                 {
                     await Out.WriteLineAsync("The target database hasn't had `delivery` run against it as there's no tracking table");
                     return;
